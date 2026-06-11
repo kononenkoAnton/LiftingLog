@@ -1,0 +1,20 @@
+:root{
+  --bg:#070b14; --bg2:#0b1220; --ink:#dbe6f0; --dim:#7d8ba0;
+  --mint:#27e6b4; --blue:#5ea8ff;
+  --card:rgba(255,255,255,.04); --line:rgba(255,255,255,.08);
+  --radius:16px; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    radial-gradient(120% 50% at 90% -5%,rgba(39,230,180,.14),transparent),
+    radial-gradient(90% 40% at 0% 100%,rgba(94,168,255,.10),transparent),
+    var(--bg);
+  color:var(--ink); font-family:var(--sans);
+  -webkit-font-smoothing:antialiased; min-height:100dvh;
+}
+#app{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.mono{font-family:var(--mono)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
