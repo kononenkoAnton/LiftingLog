@@ -1,24 +1,36 @@
 import type { PlateStack } from '../lib/load'
 
+// Shared plate colors by denomination (lb). 45 red, 35 blue, 25 yellow,
+// 10 green; 5 and 2.5 are our own picks (orange, silver-white).
+export const PLATE_COLOR: Record<number, string> = {
+  45: '#e23b3b', 35: '#3b74e6', 25: '#e6c52e', 10: '#32d46e', 5: '#e6852e', 2.5: '#dfe7f0',
+}
+
 // Visual height per plate denomination (px).
-const H: Record<number, number> = { 45: 30, 35: 26, 25: 22, 10: 16, 5: 12, 2.5: 9 }
+const H: Record<number, number> = { 45: 34, 35: 29, 25: 24, 10: 18, 5: 14, 2.5: 10 }
+
+const PW = 7 // plate width
 
 export function barbellSvg(plates: PlateStack[]): string {
   const side = plates.flatMap((p) => Array(p.count).fill(p.plate)) as number[]
-  side.sort((a, b) => b - a) // biggest inboard
-  const disc = (h: number, x: number) =>
-    `<rect x="${x}" y="${30 - h / 2}" width="6" height="${h}" rx="2" fill="url(#g)"/>`
-  let x = 70, left = ''
-  for (const p of side) { x -= 8; left += disc(H[p] ?? 9, x) }
-  let xr = 130, right = ''
-  for (const p of side) { right += disc(H[p] ?? 9, xr); xr += 8 }
+  side.sort((a, b) => b - a) // biggest first
+  const outToIn = [...side].reverse() // smallest outermost, biggest inboard
+
+  const disc = (p: number, x: number) => {
+    const h = H[p] ?? 9
+    return `<rect x="${x}" y="${30 - h / 2}" width="${PW}" height="${h}" rx="2" fill="${PLATE_COLOR[p] ?? '#9aa7b8'}"/>`
+  }
+
+  // Left stack grows inward (rightward) from the left end; right mirrors it.
+  let left = ''
+  outToIn.forEach((p, j) => { left += disc(p, 28 + j * PW) })
+  let right = ''
+  outToIn.forEach((p, j) => { right += disc(p, 172 - PW - j * PW) })
+
   return `
-  <svg viewBox="0 0 200 60" width="100%" height="64" role="img" aria-label="Barbell loading">
-    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#27e6b4"/><stop offset="1" stop-color="#11936f"/>
-    </linearGradient></defs>
+  <svg viewBox="0 0 200 60" width="100%" height="120" role="img" aria-label="Barbell loading">
+    <rect x="22" y="27" width="156" height="6" rx="3" fill="#cdd9e8"/>
     ${left}
-    <rect x="68" y="27" width="64" height="6" rx="3" fill="#cdd9e8"/>
     ${right}
   </svg>`
 }

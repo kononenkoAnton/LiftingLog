@@ -2,6 +2,7 @@ import { getSession } from '../data/program'
 import type { Exercise, Weight } from '../data/types'
 import { computeBarbellLoad, kgToLb } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
+import { PLATE_COLOR } from '../components/barbell-svg'
 import { gsap } from 'gsap'
 
 function primaryKg(w: Weight): number | null {
@@ -24,7 +25,13 @@ function weightLabel(w: Weight, perImplement?: boolean): string {
 
 function platesText(perSide: { plate: number; count: number }[]): string {
   if (!perSide.length) return 'empty bar'
-  return perSide.map((p) => `<span class="pl">${p.count > 1 ? p.count + '×' : ''}${p.plate}</span>`).join('')
+  return perSide
+    .map((p) => {
+      const c = PLATE_COLOR[p.plate] ?? '#9aa7b8'
+      const style = `background:${c}22;color:${c};border:1px solid ${c}66`
+      return `<span class="pl" style="${style}">${p.count > 1 ? p.count + '×' : ''}${p.plate}</span>`
+    })
+    .join('')
 }
 
 function heroFor(e: Exercise): string {
