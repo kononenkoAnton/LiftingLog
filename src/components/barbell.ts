@@ -48,7 +48,8 @@ export function mountBarbell(container: HTMLElement, plates: PlateStack[]) {
   place(1); place(-1)
 
   if (!reduce) {
-    gsap.from(made, { scale: 0, duration: 0.5, stagger: 0.04, ease: 'back.out(2)' })
+    // Mesh.scale is a read-only Vector3 — tween its x/y/z components, not a scalar.
+    gsap.from(made.map((m) => m.scale), { x: 0, y: 0, z: 0, duration: 0.5, stagger: 0.04, ease: 'back.out(2)' })
     gsap.to(group.rotation, { y: 0.5, duration: 6, yoyo: true, repeat: -1, ease: 'sine.inOut' })
   }
 
