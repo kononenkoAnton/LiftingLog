@@ -3,13 +3,13 @@ import type { PlateStack } from '../lib/load'
 // Shared plate colors by denomination (lb). 45 red, 35 blue, 25 yellow,
 // 10 green; 5 and 2.5 are our own picks (orange, silver-white).
 export const PLATE_COLOR: Record<number, string> = {
-  45: '#e23b3b', 35: '#3b74e6', 25: '#e6c52e', 10: '#32d46e', 5: '#e6852e', 2.5: '#dfe7f0',
+  45: '#e23b3b', 35: '#3b74e6', 25: '#e6c52e', 10: '#32d46e', 5: '#e6852e', 2.5: '#a06bf0',
 }
 
 // Big plates (45/35/25/10) share one tall height and differ by WIDTH (heavier =
 // thicker). 5 and 2.5 are shorter change plates with their own heights/widths.
 const PHEIGHT: Record<number, number> = { 45: 54, 35: 54, 25: 54, 10: 54, 5: 30, 2.5: 23 }
-const PWIDTH: Record<number, number> = { 45: 17, 35: 15, 25: 13, 10: 11, 5: 9.5, 2.5: 8 }
+const PWIDTH: Record<number, number> = { 45: 17, 35: 15, 25: 13, 10: 11, 5: 9.5, 2.5: 6.5 }
 
 const GAP = 2.5 // gap between plates so each reads as divided
 const CX = 100 // horizontal centre
@@ -20,7 +20,7 @@ function plateRect(p: number, x: number): string {
   const w = PWIDTH[p] ?? 9
   const h = PHEIGHT[p] ?? 18
   const c = PLATE_COLOR[p] ?? '#9aa7b8'
-  const a = `x="${x}" y="${CY - h / 2}" width="${w}" height="${h}" rx="3.5"`
+  const a = `x="${x}" y="${CY - h / 2}" width="${w}" height="${h}" rx="1.8"`
   return (
     `<rect ${a} fill="${c}"/>` +
     `<rect ${a} fill="url(#bbSheen)"/>` + // soft top/bottom shading for depth (no white)
@@ -89,11 +89,11 @@ export function barbellSvg(plates: PlateStack[]): string {
 
     <ellipse cx="${CX}" cy="64" rx="${(contentRight - contentLeft) / 2}" ry="5" fill="url(#bbShadow)"/>
 
-    <rect x="${shaftL}" y="${CY - 2.5}" width="${shaftR - shaftL}" height="5" rx="2.5" fill="url(#bbSteel)"/>
-    <rect x="${capLX}" y="${CY - capH / 2}" width="${capW}" height="${capH}" rx="3" fill="url(#bbSteel)" stroke="rgba(6,11,20,.35)" stroke-width="0.8"/>
-    <rect x="${capRX}" y="${CY - capH / 2}" width="${capW}" height="${capH}" rx="3" fill="url(#bbSteel)" stroke="rgba(6,11,20,.35)" stroke-width="0.8"/>
-    <rect x="${colLX}" y="${CY - collarH / 2}" width="${collarW}" height="${collarH}" rx="1.6" fill="#8c9bb0" stroke="rgba(6,11,20,.3)" stroke-width="0.7"/>
-    <rect x="${colRX}" y="${CY - collarH / 2}" width="${collarW}" height="${collarH}" rx="1.6" fill="#8c9bb0" stroke="rgba(6,11,20,.3)" stroke-width="0.7"/>
+    <rect x="${shaftL}" y="${CY - 2.5}" width="${shaftR - shaftL}" height="5" rx="1.4" fill="url(#bbSteel)"/>
+    <rect x="${capLX}" y="${CY - capH / 2}" width="${capW}" height="${capH}" rx="1.6" fill="url(#bbSteel)" stroke="rgba(6,11,20,.35)" stroke-width="0.8"/>
+    <rect x="${capRX}" y="${CY - capH / 2}" width="${capW}" height="${capH}" rx="1.6" fill="url(#bbSteel)" stroke="rgba(6,11,20,.35)" stroke-width="0.8"/>
+    <rect x="${colLX}" y="${CY - collarH / 2}" width="${collarW}" height="${collarH}" rx="1" fill="#8c9bb0" stroke="rgba(6,11,20,.3)" stroke-width="0.7"/>
+    <rect x="${colRX}" y="${CY - collarH / 2}" width="${collarW}" height="${collarH}" rx="1" fill="#8c9bb0" stroke="rgba(6,11,20,.3)" stroke-width="0.7"/>
 
     ${svgPlates}
   </svg>`
