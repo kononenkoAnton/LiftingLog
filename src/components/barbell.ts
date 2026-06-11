@@ -47,19 +47,32 @@ export function mountBarbell(container: HTMLElement, plates: PlateStack[]) {
   }
   place(1); place(-1)
 
+  const tweens: gsap.core.Tween[] = []
   if (!reduce) {
     // Mesh.scale is a read-only Vector3 — tween its x/y/z components, not a scalar.
-    gsap.from(made.map((m) => m.scale), { x: 0, y: 0, z: 0, duration: 0.5, stagger: 0.04, ease: 'back.out(2)' })
-    gsap.to(group.rotation, { y: 0.5, duration: 6, yoyo: true, repeat: -1, ease: 'sine.inOut' })
+    tweens.push(gsap.from(made.map((m) => m.scale), { x: 0, y: 0, z: 0, duration: 0.5, stagger: 0.04, ease: 'back.out(2)' }))
+    // Infinite tween — must be killed on teardown, or it pins the group in memory.
+    tweens.push(gsap.to(group.rotation, { y: 0.5, duration: 6, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
 
   let raf = 0
   const loop = () => { renderer.render(scene, cam); raf = requestAnimationFrame(loop) }
   loop()
 
+  // Free everything once the container leaves the DOM (route change or refocus
+  // rebuild both remove #bb). Killing the tweens is load-bearing: the infinite
+  // rotation tween holds group.rotation, which would otherwise keep the meshes
+  // alive and make renderer.dispose() ineffective.
   const obs = new MutationObserver(() => {
     if (!document.body.contains(container)) {
-      cancelAnimationFrame(raf); renderer.dispose(); obs.disconnect()
+      tweens.forEach((t) => t.kill())
+      cancelAnimationFrame(raf)
+      made.forEach((m) => (m.geometry as THREE.BufferGeometry).dispose())
+      bar.geometry.dispose()
+      ;(bar.material as THREE.Material).dispose()
+      plateMat.dispose()
+      renderer.dispose()
+      obs.disconnect()
     }
   })
   obs.observe(document.body, { childList: true, subtree: true })
