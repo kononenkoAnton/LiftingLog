@@ -9,9 +9,10 @@ export const PLATE_COLOR: Record<number, string> = {
 // Big plates (45/35/25/10) share one tall height and differ by WIDTH (heavier =
 // thicker). 5 and 2.5 are shorter change plates with their own heights/widths.
 const PHEIGHT: Record<number, number> = { 45: 54, 35: 54, 25: 54, 10: 54, 5: 30, 2.5: 23 }
-const PWIDTH: Record<number, number> = { 45: 17, 35: 15, 25: 13, 10: 11, 5: 9.5, 2.5: 6.5 }
+const PWIDTH: Record<number, number> = { 45: 17, 35: 15, 25: 13, 10: 11, 5: 8, 2.5: 5.5 }
 
-const GAP = 2.5 // gap between plates so each reads as divided
+const GAP = 0 // plates sit flush; a 2px divider line separates them instead
+const DIV = 'rgba(6,11,20,.65)' // divider / outline colour
 const CX = 100 // horizontal centre
 const CY = 36 // vertical centre
 const CG = 30 // visible centre shaft gap between the two stacks
@@ -20,11 +21,12 @@ function plateRect(p: number, x: number): string {
   const w = PWIDTH[p] ?? 9
   const h = PHEIGHT[p] ?? 18
   const c = PLATE_COLOR[p] ?? '#9aa7b8'
-  const a = `x="${x}" y="${CY - h / 2}" width="${w}" height="${h}" rx="1.8"`
+  const a = `x="${x}" y="${CY - h / 2}" width="${w}" height="${h}" rx="1"`
   return (
     `<rect ${a} fill="${c}"/>` +
     `<rect ${a} fill="url(#bbSheen)"/>` + // soft top/bottom shading for depth (no white)
-    `<rect ${a} fill="none" stroke="rgba(6,11,20,.5)" stroke-width="1.2"/>`
+    // 2px outline: shared edges between flush plates read as a 2px divider.
+    `<rect ${a} fill="none" stroke="${DIV}" stroke-width="2"/>`
   )
 }
 
