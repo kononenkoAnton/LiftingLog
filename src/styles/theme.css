@@ -13,7 +13,10 @@ body{
     radial-gradient(90% 40% at 0% 100%,rgba(94,168,255,.10),transparent),
     var(--bg);
   color:var(--ink); font-family:var(--sans);
-  -webkit-font-smoothing:antialiased; min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  /* Background fill: fall back to vh, then the small-viewport unit (covers the
+     toolbar-shown state on iOS Safari without forcing extra scroll). */
+  min-height:100vh; min-height:100svh;
 }
 #app{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 .mono{font-family:var(--mono)}

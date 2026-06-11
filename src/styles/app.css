@@ -1,4 +1,6 @@
-.screen{padding:18px 18px 40px;min-height:100dvh}
+/* Bottom padding clears the iOS Safari toolbar + home indicator so the last
+   rows are reachable. svh keeps the screen within the always-visible area. */
+.screen{padding:18px 18px calc(56px + env(safe-area-inset-bottom));min-height:100vh;min-height:100svh}
 .hero-h{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 18px}
 .hero-h .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
 .hero-h h1{font-size:26px;margin:2px 0 0;font-weight:800;letter-spacing:-.02em}
