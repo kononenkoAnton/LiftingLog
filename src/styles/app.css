@@ -15,8 +15,11 @@
 .wnum{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:14px;
   background:rgba(255,255,255,.07);color:var(--dim)}
 .wnum.next{background:linear-gradient(160deg,var(--mint),#159c79);color:#04210f}
-.wmeta .d{font-size:13px;font-weight:600}
-.wmeta .s{font-size:10px;color:var(--dim);letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+.wmeta{min-width:0}
+.wdate{font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.04em;color:var(--ink);text-transform:uppercase}
+.wtags{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:7px}
+.ltag{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:3px 7px;border-radius:5px;text-transform:uppercase}
+.wcount{font-size:12px;color:var(--dim);margin-left:2px}
 .wrow .arr{margin-left:auto;color:var(--dim)}
 .back{display:inline-block;font-size:12px;color:var(--mint);margin-bottom:10px;text-decoration:none}
 .tag{display:inline-block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);
