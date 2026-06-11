@@ -9,7 +9,7 @@ export const PLATE_COLOR: Record<number, string> = {
 // Big plates (45/35/25/10) share one tall height and differ by WIDTH (heavier =
 // thicker). 5 and 2.5 are shorter change plates with their own heights/widths.
 const PHEIGHT: Record<number, number> = { 45: 54, 35: 54, 25: 54, 10: 54, 5: 30, 2.5: 23 }
-const PWIDTH: Record<number, number> = { 45: 17, 35: 15, 25: 13, 10: 11, 5: 8, 2.5: 5.5 }
+const PWIDTH: Record<number, number> = { 45: 13, 35: 11.5, 25: 10, 10: 8.5, 5: 7, 2.5: 5 }
 
 const GAP = 0 // plates sit flush; a 2px divider line separates them instead
 const DIV = 'rgba(6,11,20,.65)' // divider / outline colour
