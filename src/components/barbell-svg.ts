@@ -9,7 +9,7 @@ export const PLATE_COLOR: Record<number, string> = {
 // Visual height per plate denomination (px).
 const H: Record<number, number> = { 45: 34, 35: 29, 25: 24, 10: 18, 5: 14, 2.5: 10 }
 
-const PW = 7 // plate width
+const PW = 9 // plate width
 
 export function barbellSvg(plates: PlateStack[]): string {
   const side = plates.flatMap((p) => Array(p.count).fill(p.plate)) as number[]

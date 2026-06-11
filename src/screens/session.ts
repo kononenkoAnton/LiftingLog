@@ -43,8 +43,8 @@ function heroFor(e: Exercise): string {
         <div class="big">${weightLabel(e.weight)}</div>
         <div class="conv mono">= ${kgToLb(kg).toFixed(0)} lb → ${load.totalLb} lb total</div>
         <div id="bb"></div>
-        <div class="pside"><span style="color:var(--dim)">Per side</span>
-          <span class="mono">45 ${platesText(load.plates)}</span></div>
+        <div class="pside"><span style="color:var(--dim)">Per side · lb</span>
+          <span class="mono"><span class="pl bar">45 bar</span> ${platesText(load.plates)}</span></div>
       </div>`
   }
   return `

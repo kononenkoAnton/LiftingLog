@@ -10,7 +10,7 @@ const RADIUS: Record<number, number> = { 45: 0.92, 35: 0.82, 25: 0.72, 10: 0.58,
 const BAR_HALF = 2.7
 const SLEEVE_INNER = 1.5
 const END_X = 2.5 // outer face of the plate stack; ~0.2 nub remains to BAR_HALF
-const THICK = 0.16
+const THICK = 0.24 // plate thickness along the bar — chunky enough to read as solid
 
 function webglOK(): boolean {
   try { return !!document.createElement('canvas').getContext('webgl') } catch { return false }
@@ -35,6 +35,8 @@ export function mountBarbell(container: HTMLElement, plates: PlateStack[]) {
   const rim = new THREE.DirectionalLight(0x5ea8ff, 0.5); rim.position.set(-3, 1, -2); scene.add(rim)
 
   const group = new THREE.Group(); scene.add(group)
+  // Hold a 3/4 view so plates always read as solid discs (never edge-on).
+  group.rotation.set(0.12, 0.6, 0)
 
   // Steel bar: thin shaft + thicker sleeves at the ends.
   const steel = new THREE.MeshStandardMaterial({ color: 0xcdd9e8, metalness: 0.9, roughness: 0.25 })
@@ -80,7 +82,8 @@ export function mountBarbell(container: HTMLElement, plates: PlateStack[]) {
     // Mesh.scale is a read-only Vector3 — tween its x/y/z components, not a scalar.
     tweens.push(gsap.from(made.map((m) => m.scale), { x: 0, y: 0, z: 0, duration: 0.5, stagger: 0.04, ease: 'back.out(2)' }))
     // Infinite tween — must be killed on teardown, or it pins the group in memory.
-    tweens.push(gsap.to(group.rotation, { y: 0.5, duration: 6, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+    // Gentle oscillation around the 3/4 base so it stays lively but always readable.
+    tweens.push(gsap.to(group.rotation, { y: 0.82, duration: 5, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
 
   let raf = 0
