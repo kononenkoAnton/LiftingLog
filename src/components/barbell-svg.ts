@@ -18,19 +18,22 @@ const CY = 36
 const PAD = 4 // symmetric left/right padding
 const CAP_W = 10, CAP_H = 13
 const COL_W = 5, COL_H = 11
-const OUTLINE = 'rgba(255,255,255,.92)' // white 1px outline / divider
+const DIVIDER = 'rgba(6,11,20,.5)' // 1px line between adjacent plates (no silhouette outline)
 
 function plateRect(p: number, x: number): string {
   const w = PWIDTH[p] ?? 9
   const h = PHEIGHT[p] ?? 18
   const c = PLATE_COLOR[p] ?? '#9aa7b8'
-  const a = `x="${x}" y="${CY - h / 2}" width="${w}" height="${h}" rx="1"`
+  const a = `x="${x}" y="${CY - h / 2}" width="${w}" height="${h}" rx="2.5"`
   return (
     `<rect ${a} fill="${c}"/>` +
-    `<rect ${a} fill="url(#bbSheen)"/>` + // soft top/bottom shading for depth (no white fill)
-    // 1px white outline: shared edges between flush plates read as a divider.
-    `<rect ${a} fill="none" stroke="${OUTLINE}" stroke-width="1"/>`
+    `<rect ${a} fill="url(#bbSheen)"/>` // soft top/bottom shading for depth
   )
+}
+
+// 1px vertical divider at a boundary between two flush plates.
+function divider(x: number, h: number): string {
+  return `<rect x="${x - 0.5}" y="${CY - h / 2}" width="1" height="${h}" fill="${DIVIDER}"/>`
 }
 
 export function barbellSvg(plates: PlateStack[]): string {
@@ -45,11 +48,25 @@ export function barbellSvg(plates: PlateStack[]): string {
   const startL = colLX + COL_W + 0.5 // left edge of outermost left plate
   const startR = colRX - 0.5 // right edge of outermost right plate
 
-  let left = '', right = ''
+  let left = '', leftDiv = '', right = '', rightDiv = ''
   let xL = startL
-  for (const p of fromEnd) { const w = PWIDTH[p] ?? 9; left += plateRect(p, xL); xL += w }
+  let prevH = 0
+  for (const p of fromEnd) {
+    const w = PWIDTH[p] ?? 9, h = PHEIGHT[p] ?? 18
+    left += plateRect(p, xL)
+    if (prevH) leftDiv += divider(xL, Math.min(prevH, h)) // boundary with previous (outer) plate
+    prevH = h
+    xL += w
+  }
   let xR = startR
-  for (const p of fromEnd) { const w = PWIDTH[p] ?? 9; right += plateRect(p, xR - w); xR -= w }
+  prevH = 0
+  for (const p of fromEnd) {
+    const w = PWIDTH[p] ?? 9, h = PHEIGHT[p] ?? 18
+    right += plateRect(p, xR - w)
+    if (prevH) rightDiv += divider(xR, Math.min(prevH, h))
+    prevH = h
+    xR -= w
+  }
 
   const shaftL = capLX + CAP_W / 2
   const shaftR = capRX + CAP_W / 2
@@ -83,5 +100,7 @@ export function barbellSvg(plates: PlateStack[]): string {
 
     ${left}
     ${right}
+    ${leftDiv}
+    ${rightDiv}
   </svg>`
 }
