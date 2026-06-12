@@ -3,6 +3,7 @@ import type { Exercise, Weight } from '../data/types'
 import { computeBarbellLoad, kgToLb } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
+import { isFinished, toggleFinished } from '../lib/progress'
 import { gsap } from 'gsap'
 
 function primaryKg(w: Weight): number | null {
@@ -76,7 +77,17 @@ export function renderSession(el: HTMLElement, n: number) {
         <div class="note">${e.descEn}<br><span style="opacity:.7">${e.descRu}</span>
           ${e.notesEn ? `<br><br>${e.notesEn}<br><span style="opacity:.7">${e.notesRu ?? ''}</span>` : ''}</div>
         <div style="margin-top:14px" id="mini"></div>
+        <button class="finish ${isFinished(s.num) ? 'done' : ''}" id="finishBtn" type="button">
+          ${isFinished(s.num) ? '✓ Day finished' : 'Mark day finished'}
+        </button>
       </div>`
+
+    const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
+    finishBtn.addEventListener('click', () => {
+      const done = toggleFinished(s.num)
+      finishBtn.classList.toggle('done', done)
+      finishBtn.textContent = done ? '✓ Day finished' : 'Mark day finished'
+    })
 
     const mini = el.querySelector('#mini')!
     s.exercises.forEach((x, i) => {
