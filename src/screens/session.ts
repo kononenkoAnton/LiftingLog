@@ -6,6 +6,14 @@ import { PLATE_COLOR } from '../components/barbell-svg'
 import { isFinished, toggleFinished } from '../lib/progress'
 import { gsap } from 'gsap'
 
+// Distinct per-set loads for a barbell lift (progression / per-set scheme), else
+// null. Each entry is a weight the bar is loaded to for one (or more) sets.
+function stepWeightsOf(w: Weight): number[] | null {
+  if (w.kind === 'progression') return w.kg
+  if (w.kind === 'perSet') return w.steps.map((s) => s.kg)
+  return null
+}
+
 function primaryKg(w: Weight): number | null {
   if (w.kind === 'single') return w.kg
   if (w.kind === 'range') return w.maxKg
@@ -35,19 +43,27 @@ function platesText(perSide: { plate: number; count: number }[]): string {
     .join('')
 }
 
-function heroFor(e: Exercise): string {
-  const kg = primaryKg(e.weight)
-  if (e.equipment === 'barbell' && kg !== null) {
-    const load = computeBarbellLoad(kg)
+// `steps` + `stepIdx` drive the per-set loading; selKg is steps[stepIdx] (or the
+// single/range value). Step chips re-load the bar without leaving the screen.
+function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: number | null): string {
+  if (e.equipment === 'barbell' && selKg !== null) {
+    const load = computeBarbellLoad(selKg)
+    const chips = steps && steps.length > 1
+      ? `<div class="steps">${steps
+          .map((kg, i) => `<button class="step ${i === stepIdx ? 'on' : ''}" data-step="${i}" type="button">${kg}</button>`)
+          .join('')}</div>`
+      : ''
     return `
       <div class="hero">
         <div class="big">${weightLabel(e.weight)}</div>
-        <div class="conv mono">= ${kgToLb(kg).toFixed(0)} lb → ${load.totalLb} lb total</div>
+        ${chips}
+        <div class="conv mono">= ${kgToLb(selKg).toFixed(0)} lb → ${load.totalLb} lb total</div>
         <div id="bb"></div>
         <div class="pside"><span style="color:var(--dim)">Per side · lb</span>
           <span class="mono"><span class="pl bar">45 bar</span> ${platesText(load.plates)}</span></div>
       </div>`
   }
+  const kg = primaryKg(e.weight)
   return `
     <div class="hero">
       <div class="big">${weightLabel(e.weight, e.perImplement)}</div>
@@ -60,9 +76,16 @@ export function renderSession(el: HTMLElement, n: number) {
   if (!s) { el.innerHTML = '<div class="screen">Session not found · <a href="#/">back</a></div>'; return }
   let focusIdx = s.exercises.findIndex((e) => e.equipment === 'barbell')
   if (focusIdx < 0) focusIdx = 0
+  let stepIdx = 0 // selected step within a progression/per-set lift
 
-  const draw = () => {
+  const draw = (animate = true) => {
     const e = s.exercises[focusIdx]
+    const steps = e.equipment === 'barbell' ? stepWeightsOf(e.weight) : null
+    if (steps && stepIdx >= steps.length) stepIdx = 0
+    const selKg = steps ? steps[stepIdx] : primaryKg(e.weight)
+    // per-set schemes carry their own reps; otherwise use the exercise reps
+    const reps = e.weight.kind === 'perSet' ? e.weight.steps[stepIdx].reps : e.reps
+
     el.innerHTML = `
       <div class="screen">
         <div class="shead">
@@ -72,10 +95,10 @@ export function renderSession(el: HTMLElement, n: number) {
         <span class="tag">⬡ ${e.equipment} · #${e.order}</span>
         <div class="exname">${e.nameEn}</div>
         <div class="exru">${e.nameRu}</div>
-        ${heroFor(e)}
+        ${heroFor(e, steps, stepIdx, selKg)}
         <div class="reps">
           <div class="b"><div class="n mono">${e.sets ?? '—'}</div><div class="l">Sets</div></div>
-          <div class="b"><div class="n mono">${e.reps}</div><div class="l">Reps</div></div>
+          <div class="b"><div class="n mono">${reps || '—'}</div><div class="l">Reps</div></div>
         </div>
         <div class="note">${e.descEn}<br><span style="opacity:.7">${e.descRu}</span>
           ${e.notesEn ? `<br><br>${e.notesEn}<br><span style="opacity:.7">${e.notesRu ?? ''}</span>` : ''}</div>
@@ -89,6 +112,11 @@ export function renderSession(el: HTMLElement, n: number) {
       finishBtn.textContent = done ? '✓ Finished' : 'Mark finished'
     })
 
+    // step chips: tap to load that weight on the bar (no full-screen re-animate)
+    el.querySelectorAll<HTMLButtonElement>('.step').forEach((btn) => {
+      btn.addEventListener('click', () => { stepIdx = Number(btn.dataset.step); draw(false) })
+    })
+
     const mini = el.querySelector('#mini')!
     s.exercises.forEach((x, i) => {
       if (i === focusIdx) return
@@ -97,17 +125,15 @@ export function renderSession(el: HTMLElement, n: number) {
       row.innerHTML = `<div class="i">${x.order}</div>
         <div class="exmini-name"><div class="t">${x.nameEn}</div><div class="tr">${x.nameRu}</div></div>
         <div class="w">${weightLabel(x.weight, x.perImplement)}</div>`
-      row.addEventListener('click', () => { focusIdx = i; draw() })
+      row.addEventListener('click', () => { focusIdx = i; stepIdx = 0; draw() })
       mini.appendChild(row)
     })
 
     const bb = el.querySelector<HTMLElement>('#bb')
-    if (bb && e.equipment === 'barbell') {
-      const kg = primaryKg(e.weight)
-      if (kg !== null) mountBarbell(bb, computeBarbellLoad(kg).plates)
-    }
+    if (bb && e.equipment === 'barbell' && selKg !== null) mountBarbell(bb, computeBarbellLoad(selKg).plates)
+
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!reduce) gsap.from('.screen > *', { y: 12, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'power2.out' })
+    if (animate && !reduce) gsap.from('.screen > *', { y: 12, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'power2.out' })
   }
   draw()
 }
