@@ -3,10 +3,6 @@ import { liftTags } from '../lib/focus'
 import { isFinished, toggleFinished } from '../lib/progress'
 import { gsap } from 'gsap'
 
-function checkEl(done: boolean): string {
-  return `<button class="wcheck ${done ? 'done' : ''}" type="button" aria-label="Mark day finished" aria-pressed="${done}">${done ? '✓' : ''}</button>`
-}
-
 const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
@@ -54,7 +50,7 @@ export function renderList(el: HTMLElement) {
       <div id="rows">
         ${[...program.sessions].reverse().map((s) => `
           <div class="wrow ${s.num === next ? 'next' : ''}" data-num="${s.num}" role="link" tabindex="0">
-            <div class="wnum ${s.num === next ? 'next' : ''}">${s.num}</div>
+            <button class="wnum ${isFinished(s.num) ? 'done' : ''}" type="button" aria-label="Mark day finished" aria-pressed="${isFinished(s.num)}">${s.num}</button>
             <div class="wmeta">
               <div class="wdate">${fullDate(s.date)}</div>
               <div class="wtags">
@@ -63,7 +59,6 @@ export function renderList(el: HTMLElement) {
               </div>
             </div>
             <div class="arr">›</div>
-            ${checkEl(isFinished(s.num))}
           </div>`).join('')}
       </div>
     </div>`
@@ -74,12 +69,11 @@ export function renderList(el: HTMLElement) {
     const row = target.closest<HTMLElement>('.wrow')
     if (!row) return
     const num = Number(row.dataset.num)
-    const check = target.closest<HTMLButtonElement>('.wcheck')
-    if (check) {
-      const done = toggleFinished(num) // toggle without navigating
-      check.classList.toggle('done', done)
-      check.textContent = done ? '✓' : ''
-      check.setAttribute('aria-pressed', String(done))
+    const numBtn = target.closest<HTMLButtonElement>('.wnum')
+    if (numBtn) {
+      const done = toggleFinished(num) // tap the number to toggle, without navigating
+      numBtn.classList.toggle('done', done)
+      numBtn.setAttribute('aria-pressed', String(done))
       return
     }
     location.hash = `#/session/${num}`

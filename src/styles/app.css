@@ -12,19 +12,17 @@
 .wrow{display:flex;align-items:center;gap:12px;padding:13px;border-radius:14px;margin-bottom:9px;
   background:var(--card);border:1px solid var(--line);cursor:pointer;text-decoration:none;color:inherit}
 .wrow.next{background:linear-gradient(90deg,rgba(39,230,180,.14),rgba(94,168,255,.05));border-color:rgba(39,230,180,.4)}
-.wnum{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:14px;
-  background:rgba(255,255,255,.07);color:var(--dim)}
-.wnum.next{background:linear-gradient(160deg,var(--mint),#159c79);color:#04210f}
+.wnum{flex:0 0 auto;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-family:inherit;
+  font-weight:800;font-size:15px;background:rgba(255,255,255,.07);color:var(--dim);border:1px solid transparent;
+  cursor:pointer;padding:0;transition:all .15s}
+.wnum:hover{border-color:rgba(39,230,180,.45);color:var(--ink)}
+.wnum.done{background:linear-gradient(160deg,var(--mint),#159c79);color:#04210f;border-color:transparent}
 .wmeta{flex:1;min-width:0}
 .wdate{font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.04em;color:var(--ink);text-transform:uppercase}
 .wtags{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:7px}
 .ltag{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:3px 7px;border-radius:5px;text-transform:uppercase}
 .wcount{font-size:12px;color:var(--dim);margin-left:2px}
 .wrow .arr{color:var(--dim)}
-.wcheck{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:transparent;
-  color:transparent;font-size:13px;font-weight:800;display:grid;place-items:center;cursor:pointer;padding:0;transition:all .15s}
-.wcheck:hover{border-color:var(--mint)}
-.wcheck.done{background:var(--mint);border-color:var(--mint);color:#04210f}
 .shead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
 .shead .back{margin-bottom:0}
 .finish-pill{flex:0 0 auto;padding:7px 14px;border-radius:20px;font-family:var(--sans);font-weight:700;font-size:12px;
