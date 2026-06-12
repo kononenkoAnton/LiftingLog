@@ -34,8 +34,14 @@ function topPullKg(): number {
   return max
 }
 
+// The earliest chronological session not yet finished; null if all are done.
+function firstUnfinished(): number | null {
+  for (const s of program.sessions) if (!isFinished(s.num)) return s.num
+  return null
+}
+
 export function renderList(el: HTMLElement) {
-  const next = 1
+  const total = program.sessions.length
   el.innerHTML = `
     <div class="screen">
       <div class="hero-h">
@@ -43,13 +49,13 @@ export function renderList(el: HTMLElement) {
         <span class="lang">EN · RU</span>
       </div>
       <div class="stats">
-        <div class="chip"><div class="n mono">${program.sessions.length}</div><div class="l">Sessions</div></div>
-        <div class="chip"><div class="n mono">${next}<span style="color:var(--dim)">/${program.sessions.length}</span></div><div class="l">Up next</div></div>
+        <div class="chip"><div class="n mono"><span id="donecount">0</span><span style="color:var(--dim)">/${total}</span></div><div class="l">Done</div></div>
+        <div class="chip"><div class="n mono" id="upnext">—</div><div class="l">Up next</div></div>
         <div class="chip"><div class="n mono">${topPullKg()}<span style="font-size:11px">kg</span></div><div class="l">Top pull</div></div>
       </div>
       <div id="rows">
         ${[...program.sessions].reverse().map((s) => `
-          <div class="wrow ${s.num === next ? 'next' : ''}" data-num="${s.num}" role="link" tabindex="0">
+          <div class="wrow" data-num="${s.num}" role="link" tabindex="0">
             <button class="wnum ${isFinished(s.num) ? 'done' : ''}" type="button" aria-label="Mark day finished" aria-pressed="${isFinished(s.num)}">${s.num}</button>
             <div class="wmeta">
               <div class="wdate">${fullDate(s.date)}</div>
@@ -64,6 +70,23 @@ export function renderList(el: HTMLElement) {
     </div>`
 
   const rows = el.querySelector('#rows')!
+  const upnextEl = el.querySelector('#upnext')!
+  const doneEl = el.querySelector('#donecount')!
+
+  // Recompute the done count and which session is "up next" (first unfinished),
+  // and move the green highlight accordingly. Runs on render and after each toggle.
+  function refreshProgress() {
+    const next = firstUnfinished()
+    const done = program.sessions.filter((s) => isFinished(s.num)).length
+    doneEl.textContent = String(done)
+    upnextEl.innerHTML = next === null
+      ? '<span style="color:var(--mint)">✓</span>'
+      : `${next}<span style="color:var(--dim)">/${total}</span>`
+    rows.querySelectorAll<HTMLElement>('.wrow').forEach((r) => {
+      r.classList.toggle('next', Number(r.dataset.num) === next)
+    })
+  }
+
   rows.addEventListener('click', (e) => {
     const target = e.target as HTMLElement
     const row = target.closest<HTMLElement>('.wrow')
@@ -74,10 +97,13 @@ export function renderList(el: HTMLElement) {
       const done = toggleFinished(num) // tap the number to toggle, without navigating
       numBtn.classList.toggle('done', done)
       numBtn.setAttribute('aria-pressed', String(done))
+      refreshProgress()
       return
     }
     location.hash = `#/session/${num}`
   })
+
+  refreshProgress()
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!reduce) gsap.from('#rows .wrow', { y: 14, opacity: 0, duration: 0.4, stagger: 0.03, ease: 'power2.out' })
