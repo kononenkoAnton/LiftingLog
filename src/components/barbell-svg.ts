@@ -93,7 +93,7 @@ export function barbellSvg(plates: PlateStack[]): string {
 
     <ellipse cx="${VBW / 2}" cy="64" rx="${(capRX + CAP_W - capLX) / 2}" ry="5" fill="url(#bbShadow)"/>
 
-    <rect x="${shaftL}" y="${CY - 2.5}" width="${shaftR - shaftL}" height="5" rx="2.5" fill="url(#bbSteel)"/>
+    <rect x="${shaftL}" y="${CY - 2.5}" width="${shaftR - shaftL}" height="5" rx="1.2" fill="url(#bbSteel)"/>
     <rect x="${colLX}" y="${CY - COL_H / 2}" width="${COL_W}" height="${COL_H}" rx="1" fill="#8c9bb0" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
     <rect x="${colRX}" y="${CY - COL_H / 2}" width="${COL_W}" height="${COL_H}" rx="1" fill="#8c9bb0" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
 
