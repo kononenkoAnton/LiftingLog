@@ -16,7 +16,7 @@ const VBW = 200
 const VBH = 72
 const CY = 36
 const PAD = 4 // symmetric left/right padding
-const CAP_W = 10, CAP_H = 13
+const CAP_W = 10 // length of the pole nub past the plates at each end
 const COL_W = 5, COL_H = 11
 const DIVIDER = 'rgba(6,11,20,.5)' // 1px line between adjacent plates (no silhouette outline)
 
@@ -68,8 +68,9 @@ export function barbellSvg(plates: PlateStack[]): string {
     xR -= w
   }
 
-  const shaftL = capLX + CAP_W / 2
-  const shaftR = capRX + CAP_W / 2
+  // No end caps — the pole continues to the edges as a sleeve nub past the plates.
+  const shaftL = capLX
+  const shaftR = capRX + CAP_W
 
   return `
   <svg viewBox="0 0 ${VBW} ${VBH}" width="100%" style="height:auto;display:block" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Barbell plates loaded per side">
@@ -92,9 +93,7 @@ export function barbellSvg(plates: PlateStack[]): string {
 
     <ellipse cx="${VBW / 2}" cy="64" rx="${(capRX + CAP_W - capLX) / 2}" ry="5" fill="url(#bbShadow)"/>
 
-    <rect x="${shaftL}" y="${CY - 2.5}" width="${shaftR - shaftL}" height="5" rx="1.4" fill="url(#bbSteel)"/>
-    <rect x="${capLX}" y="${CY - CAP_H / 2}" width="${CAP_W}" height="${CAP_H}" rx="1.6" fill="url(#bbSteel)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
-    <rect x="${capRX}" y="${CY - CAP_H / 2}" width="${CAP_W}" height="${CAP_H}" rx="1.6" fill="url(#bbSteel)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+    <rect x="${shaftL}" y="${CY - 2.5}" width="${shaftR - shaftL}" height="5" rx="2.5" fill="url(#bbSteel)"/>
     <rect x="${colLX}" y="${CY - COL_H / 2}" width="${COL_W}" height="${COL_H}" rx="1" fill="#8c9bb0" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
     <rect x="${colRX}" y="${CY - COL_H / 2}" width="${COL_W}" height="${COL_H}" rx="1" fill="#8c9bb0" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
 
