@@ -48,15 +48,16 @@ function platesText(perSide: { plate: number; count: number }[]): string {
 function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: number | null): string {
   if (e.equipment === 'barbell' && selKg !== null) {
     const load = computeBarbellLoad(selKg)
-    const chips = steps && steps.length > 1
+    // Multiple per-set loads → the step selector IS the headline (tap to load).
+    // Single load → one big centered value. Both carry the kg unit.
+    const headline = steps && steps.length > 1
       ? `<div class="steps">${steps
-          .map((kg, i) => `<button class="step ${i === stepIdx ? 'on' : ''}" data-step="${i}" type="button">${kg}</button>`)
+          .map((kg, i) => `<button class="step ${i === stepIdx ? 'on' : ''}" data-step="${i}" type="button">${kg}<span class="u">kg</span></button>`)
           .join('')}</div>`
-      : ''
+      : `<div class="big">${weightLabel(e.weight)}</div>`
     return `
       <div class="hero">
-        <div class="big">${weightLabel(e.weight)}</div>
-        ${chips}
+        ${headline}
         <div class="conv mono">= ${kgToLb(selKg).toFixed(0)} lb → ${load.totalLb} lb total</div>
         <div id="bb"></div>
         <div class="pside"><span style="color:var(--dim)">Per side · lb</span>

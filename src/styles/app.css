@@ -44,9 +44,10 @@
 .hero .big{font-size:40px;font-weight:800;line-height:1.12;padding:2px 0;
   background:linear-gradient(90deg,var(--mint),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero .conv{font-size:11px;color:var(--dim);margin-top:3px}
-.steps{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 2px}
-.step{font-family:var(--mono);font-size:13px;font-weight:700;padding:5px 12px;border-radius:9px;cursor:pointer;
+.steps{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:4px 0 6px}
+.step{font-family:var(--mono);font-size:24px;font-weight:800;line-height:1;padding:10px 15px;border-radius:13px;cursor:pointer;
   background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--dim);transition:all .12s}
+.step .u{font-size:11px;font-weight:600;margin-left:2px;opacity:.7}
 .step:hover{border-color:rgba(39,230,180,.45);color:var(--ink)}
 .step.on{background:linear-gradient(160deg,var(--mint),#159c79);border-color:transparent;color:#04210f}
 .pside{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-top:12px}
