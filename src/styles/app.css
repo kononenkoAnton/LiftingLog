@@ -36,6 +36,12 @@
 .finish-pill:hover{background:rgba(39,230,180,.18)}
 .finish-pill.done{background:linear-gradient(160deg,var(--mint),#159c79);border-color:transparent;color:#04210f}
 .back{display:inline-block;font-size:12px;color:var(--mint);margin-bottom:10px;text-decoration:none}
+.daynav{display:flex;align-items:center;justify-content:center;gap:14px;margin:2px 0 12px}
+.daybtn{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:20px;line-height:1;cursor:pointer;
+  background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--ink);transition:all .12s}
+.daybtn:hover:not(:disabled){border-color:rgba(39,230,180,.5);color:var(--mint)}
+.daybtn:disabled{opacity:.3;cursor:default}
+.daylabel{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.05em;min-width:96px;text-align:center}
 .tag{display:inline-block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);
   background:rgba(39,230,180,.1);border:1px solid rgba(39,230,180,.3);padding:3px 8px;border-radius:20px}
 .exname{font-size:20px;font-weight:800;line-height:1.15;letter-spacing:-.01em;margin-top:8px}

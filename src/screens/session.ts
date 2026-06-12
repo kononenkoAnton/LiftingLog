@@ -1,4 +1,4 @@
-import { getSession } from '../data/program'
+import { getSession, program } from '../data/program'
 import type { Exercise, Weight } from '../data/types'
 import { computeBarbellLoad, kgToLb } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
@@ -93,6 +93,11 @@ export function renderSession(el: HTMLElement, n: number) {
           <a class="back" href="#/">‹ Program · ${s.dateLabel}</a>
           <button class="finish-pill ${isFinished(s.num) ? 'done' : ''}" id="finishBtn" type="button">${isFinished(s.num) ? '✓ Finished' : 'Mark finished'}</button>
         </div>
+        <div class="daynav">
+          <button class="daybtn" id="prevDay" type="button" aria-label="Previous day" ${getSession(s.num - 1) ? '' : 'disabled'}>‹</button>
+          <span class="daylabel">Day ${s.num} / ${program.sessions.length}</span>
+          <button class="daybtn" id="nextDay" type="button" aria-label="Next day" ${getSession(s.num + 1) ? '' : 'disabled'}>›</button>
+        </div>
         <span class="tag">⬡ ${e.equipment} · #${e.order}</span>
         <div class="exname">${e.nameEn}</div>
         <div class="exru">${e.nameRu}</div>
@@ -112,6 +117,10 @@ export function renderSession(el: HTMLElement, n: number) {
       finishBtn.classList.toggle('done', done)
       finishBtn.textContent = done ? '✓ Finished' : 'Mark finished'
     })
+
+    const go = (num: number) => { if (getSession(num)) location.hash = `#/session/${num}` }
+    el.querySelector('#prevDay')!.addEventListener('click', () => go(s.num - 1))
+    el.querySelector('#nextDay')!.addEventListener('click', () => go(s.num + 1))
 
     // step chips: tap to load that weight on the bar (no full-screen re-animate)
     el.querySelectorAll<HTMLButtonElement>('.step').forEach((btn) => {
