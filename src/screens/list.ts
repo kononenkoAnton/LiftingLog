@@ -20,17 +20,18 @@ function tagChip(t: string): string {
   return `<span class="ltag" style="color:${c};background:${c}1f;border:1px solid ${c}55">${t}</span>`
 }
 
-function topPullKg(): number {
+// Heaviest barbell load for a lift across the whole program (DB variants excluded).
+function maxKgFor(match: RegExp): number {
   let max = 0
   for (const s of program.sessions)
-    for (const e of s.exercises)
-      if (/deadlift/i.test(e.nameEn)) {
-        const w = e.weight
-        if (w.kind === 'single') max = Math.max(max, w.kg)
-        if (w.kind === 'range') max = Math.max(max, w.maxKg)
-        if (w.kind === 'progression') max = Math.max(max, ...w.kg)
-        if (w.kind === 'perSet') max = Math.max(max, ...w.steps.map((x) => x.kg))
-      }
+    for (const e of s.exercises) {
+      if (e.equipment !== 'barbell' || !match.test(e.nameEn)) continue
+      const w = e.weight
+      if (w.kind === 'single') max = Math.max(max, w.kg)
+      else if (w.kind === 'range') max = Math.max(max, w.maxKg)
+      else if (w.kind === 'progression') max = Math.max(max, ...w.kg)
+      else if (w.kind === 'perSet') max = Math.max(max, ...w.steps.map((x) => x.kg))
+    }
   return max
 }
 
@@ -51,7 +52,11 @@ export function renderList(el: HTMLElement) {
       <div class="stats">
         <div class="chip"><div class="n mono"><span id="donecount">0</span><span style="color:var(--dim)">/${total}</span></div><div class="l">Done</div></div>
         <div class="chip"><div class="n mono" id="upnext">—</div><div class="l">Up next</div></div>
-        <div class="chip"><div class="n mono">${topPullKg()}<span style="font-size:11px">kg</span></div><div class="l">Top pull</div></div>
+      </div>
+      <div class="stats2">
+        <div class="chip2"><div class="n2 mono" style="color:#e3b341">${maxKgFor(/deadlift/i)}<span class="u">kg</span></div><div class="l2">Max Deadlift</div></div>
+        <div class="chip2"><div class="n2 mono" style="color:#e23b3b">${maxKgFor(/squat/i)}<span class="u">kg</span></div><div class="l2">Max Squat</div></div>
+        <div class="chip2"><div class="n2 mono" style="color:#3b74e6">${maxKgFor(/bench/i)}<span class="u">kg</span></div><div class="l2">Max Bench</div></div>
       </div>
       <div id="rows">
         ${[...program.sessions].reverse().map((s) => `

@@ -5,10 +5,15 @@
 .hero-h .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
 .hero-h h1{font-size:26px;margin:2px 0 0;font-weight:800;letter-spacing:-.02em}
 .lang{font-size:9px;color:var(--mint);border:1px solid rgba(39,230,180,.4);border-radius:20px;padding:4px 8px;letter-spacing:.1em}
-.stats{display:flex;gap:10px;margin-bottom:18px}
+.stats{display:flex;gap:10px;margin-bottom:8px}
 .chip{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
 .chip .n{font-size:20px;font-weight:800}
 .chip .l{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.stats2{display:flex;gap:8px;margin-bottom:18px}
+.chip2{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:8px 10px}
+.chip2 .n2{font-size:16px;font-weight:800}
+.chip2 .n2 .u{font-size:9px;color:var(--dim);margin-left:1px;font-weight:700}
+.chip2 .l2{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-top:2px;white-space:nowrap}
 .wrow{display:flex;align-items:center;gap:12px;padding:13px;border-radius:14px;margin-bottom:9px;
   background:var(--card);border:1px solid var(--line);cursor:pointer;text-decoration:none;color:inherit}
 .wrow.next{background:linear-gradient(90deg,rgba(39,230,180,.14),rgba(94,168,255,.05));border-color:rgba(39,230,180,.4)}
