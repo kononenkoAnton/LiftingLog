@@ -46,6 +46,24 @@ function platesText(perSide: { plate: number; count: number }[]): string {
 // `steps` + `stepIdx` drive the per-set loading; selKg is steps[stepIdx] (or the
 // single/range value). Step chips re-load the bar without leaving the screen.
 function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: number | null): string {
+  if (e.equipment === 'barbell' && e.weight.kind === 'range' && selKg !== null) {
+    // A range → a slider; drag to any 2.5 kg step and the bar loads live.
+    const w = e.weight
+    const load = computeBarbellLoad(selKg)
+    return `
+      <div class="hero">
+        <div class="big" id="rangeVal">${selKg} kg</div>
+        <div class="rangerow">
+          <span class="rend">${w.minKg}</span>
+          <input class="rslider" id="rangeSlider" type="range" min="${w.minKg}" max="${w.maxKg}" step="2.5" value="${selKg}" aria-label="Weight within range">
+          <span class="rend">${w.maxKg}</span>
+        </div>
+        <div class="conv mono" id="rangeConv">= ${kgToLb(selKg).toFixed(0)} lb → ${load.totalLb} lb total</div>
+        <div id="bb"></div>
+        <div class="pside"><span style="color:var(--dim)">Per side · lb</span>
+          <span class="mono" id="rangePside"><span class="pl bar">45 bar</span> ${platesText(load.plates)}</span></div>
+      </div>`
+  }
   if (e.equipment === 'barbell' && selKg !== null) {
     const load = computeBarbellLoad(selKg)
     // Multiple per-set loads → the step selector IS the headline (tap to load).
@@ -83,7 +101,10 @@ export function renderSession(el: HTMLElement, n: number) {
     const e = s.exercises[focusIdx]
     const steps = e.equipment === 'barbell' ? stepWeightsOf(e.weight) : null
     if (steps && stepIdx >= steps.length) stepIdx = 0
-    const selKg = steps ? steps[stepIdx] : primaryKg(e.weight)
+    // range lifts default to the lighter end (the slider takes it from there)
+    const selKg = e.equipment === 'barbell' && e.weight.kind === 'range'
+      ? e.weight.minKg
+      : steps ? steps[stepIdx] : primaryKg(e.weight)
     // per-set schemes carry their own reps; otherwise use the exercise reps
     const reps = e.weight.kind === 'perSet' ? e.weight.steps[stepIdx].reps : e.reps
 
@@ -126,6 +147,20 @@ export function renderSession(el: HTMLElement, n: number) {
     el.querySelectorAll<HTMLButtonElement>('.step').forEach((btn) => {
       btn.addEventListener('click', () => { stepIdx = Number(btn.dataset.step); draw(false) })
     })
+
+    // range slider: live-update the bar/conversion/plates without re-rendering
+    const slider = el.querySelector<HTMLInputElement>('#rangeSlider')
+    if (slider) {
+      slider.addEventListener('input', () => {
+        const val = Number(slider.value)
+        const load = computeBarbellLoad(val)
+        el.querySelector('#rangeVal')!.textContent = `${val} kg`
+        el.querySelector('#rangeConv')!.textContent = `= ${kgToLb(val).toFixed(0)} lb → ${load.totalLb} lb total`
+        el.querySelector('#rangePside')!.innerHTML = `<span class="pl bar">45 bar</span> ${platesText(load.plates)}`
+        const bbEl = el.querySelector<HTMLElement>('#bb')
+        if (bbEl) mountBarbell(bbEl, load.plates)
+      })
+    }
 
     const mini = el.querySelector('#mini')!
     s.exercises.forEach((x, i) => {
