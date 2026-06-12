@@ -94,7 +94,8 @@ export function renderSession(el: HTMLElement, n: number) {
       if (i === focusIdx) return
       const row = document.createElement('div')
       row.className = 'exmini'
-      row.innerHTML = `<div class="i">${x.order}</div><div class="t">${x.nameEn}</div>
+      row.innerHTML = `<div class="i">${x.order}</div>
+        <div class="exmini-name"><div class="t">${x.nameEn}</div><div class="tr">${x.nameRu}</div></div>
         <div class="w">${weightLabel(x.weight, x.perImplement)}</div>`
       row.addEventListener('click', () => { focusIdx = i; draw() })
       mini.appendChild(row)
