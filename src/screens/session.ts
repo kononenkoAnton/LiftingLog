@@ -65,7 +65,10 @@ export function renderSession(el: HTMLElement, n: number) {
     const e = s.exercises[focusIdx]
     el.innerHTML = `
       <div class="screen">
-        <a class="back" href="#/">‹ Program · ${s.dateLabel}</a>
+        <div class="shead">
+          <a class="back" href="#/">‹ Program · ${s.dateLabel}</a>
+          <button class="finish-pill ${isFinished(s.num) ? 'done' : ''}" id="finishBtn" type="button">${isFinished(s.num) ? '✓ Finished' : 'Mark finished'}</button>
+        </div>
         <span class="tag">⬡ ${e.equipment} · #${e.order}</span>
         <div class="exname">${e.nameEn}</div>
         <div class="exru">${e.nameRu}</div>
@@ -77,16 +80,13 @@ export function renderSession(el: HTMLElement, n: number) {
         <div class="note">${e.descEn}<br><span style="opacity:.7">${e.descRu}</span>
           ${e.notesEn ? `<br><br>${e.notesEn}<br><span style="opacity:.7">${e.notesRu ?? ''}</span>` : ''}</div>
         <div style="margin-top:14px" id="mini"></div>
-        <button class="finish ${isFinished(s.num) ? 'done' : ''}" id="finishBtn" type="button">
-          ${isFinished(s.num) ? '✓ Day finished' : 'Mark day finished'}
-        </button>
       </div>`
 
     const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
     finishBtn.addEventListener('click', () => {
       const done = toggleFinished(s.num)
       finishBtn.classList.toggle('done', done)
-      finishBtn.textContent = done ? '✓ Day finished' : 'Mark day finished'
+      finishBtn.textContent = done ? '✓ Finished' : 'Mark finished'
     })
 
     const mini = el.querySelector('#mini')!
