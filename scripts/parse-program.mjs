@@ -225,24 +225,47 @@ async function getMarkdown() {
   return res.text()
 }
 
+function readExisting() {
+  try { return JSON.parse(readFileSync(OUT, 'utf8')) } catch { return null }
+}
+
 async function main() {
+  const full = process.argv.includes('--full')
   const md = normalize(await getMarkdown())
-  const sessions = splitSessions(md).map((s) => {
+  const parsed = splitSessions(md).map((s) => {
     const exercises = splitExercises(s.body)
       .flatMap((c) => buildExercise(c.raw, s.num))
       .map((ex, i) => ({ ...ex, order: i + 1 }))
     return { num: s.num, date: s.date, dateLabel: s.dateLabel, focus: '', exercises }
   })
+  if (parsed.length === 0) throw new Error('no sessions parsed — markdown format changed?')
 
-  // sanity
-  if (sessions.length === 0) throw new Error('no sessions parsed — markdown format changed?')
+  // Incremental (default): keep existing sessions verbatim (preserves any
+  // hand-authored descriptions), append only sessions with a new num.
+  // --full: regenerate everything from the Doc.
+  const existing = full ? null : readExisting()
+  let sessions, kept = 0, appended = 0
+  if (existing && Array.isArray(existing.sessions)) {
+    const byNum = new Map(existing.sessions.map((s) => [s.num, s]))
+    kept = byNum.size
+    for (const s of parsed) if (!byNum.has(s.num)) { byNum.set(s.num, s); appended++ }
+    sessions = [...byNum.values()].sort((a, b) => a.num - b.num)
+  } else {
+    sessions = parsed.sort((a, b) => a.num - b.num)
+    appended = sessions.length
+  }
+
   sessions.forEach((s, i) => { if (s.num !== i + 1) warn(s.num, `numbering gap (index ${i + 1})`) })
 
-  const program = { title: 'The Block', sessions }
+  const program = { title: existing?.title || 'The Block', sessions }
   const json = JSON.stringify(program, null, 2) + '\n'
 
   if (process.argv.includes('--stdout')) process.stdout.write(json)
-  else { writeFileSync(OUT, json); console.error(`wrote ${OUT} (${sessions.length} sessions)`) }
+  else {
+    writeFileSync(OUT, json)
+    const mode = full ? 'full rebuild' : `incremental: kept ${kept}, appended ${appended}`
+    console.error(`wrote ${OUT} (${sessions.length} sessions; ${mode})`)
+  }
 
   if (warnings.length) {
     console.error(`\n${warnings.length} warning(s) — review these:`)

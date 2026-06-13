@@ -30,15 +30,26 @@ fetch md → scripts/parse-program.mjs → program.json → review warnings → 
 ### 1. Run the parser
 
 ```bash
-npm run parse                 # fetch the doc and overwrite src/data/program.json
-# or, to inspect first without overwriting:
+npm run parse                 # INCREMENTAL: keep existing sessions, append new ones
+node scripts/parse-program.mjs --full     # full rebuild (overwrites everything)
+# inspect without writing:
 node scripts/parse-program.mjs --stdout > /tmp/parsed.json
-# or parse a saved file:
+# parse a saved file:
 curl -sL "<export-md-url>" -o /tmp/program.md
 node scripts/parse-program.mjs --file /tmp/program.md --stdout > /tmp/parsed.json
 ```
 
-The script:
+**Incremental (default):** reads the current `program.json`, keeps every existing
+session by `num` **verbatim** (preserving hand-authored descriptions), and appends
+only sessions with a new `num`. This is what you want when the trainer adds days.
+It prints `kept N, appended M`.
+
+**`--full`:** regenerate the whole file from the Doc (overwrites). Use for a clean
+rebuild; note it replaces hand-polished descriptions with the parser's plainer ones.
+An edited *existing* session won't be picked up incrementally (by design — it would
+clobber hand-polish); re-author that one session by hand, or run `--full`.
+
+The script otherwise:
 - splits sessions by the `**DD/MM/YYYY №N**` header (first date of a range),
 - classifies each exercise's English name + equipment via an ordered glossary,
 - parses the weight into the typed `Weight` union (single / range / progression /
