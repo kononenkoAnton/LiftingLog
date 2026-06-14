@@ -37,16 +37,24 @@ function writeLocal(): void {
   try { localStorage.setItem(KEY, JSON.stringify({ finished: cache })) } catch { /* ignore */ }
 }
 
+async function currentUserId(): Promise<string | null> {
+  if (!supabase) return null
+  if (userId) return userId
+  const { data: { session } } = await supabase.auth.getSession()
+  userId = session?.user?.id ?? null
+  return userId
+}
+
 /** Hydrate the cache. Call once at startup (after auth) before rendering. */
 export async function loadProgress(): Promise<void> {
   if (!supabase) { cache = readLocal(); return }
-  const { data: { user } } = await supabase.auth.getUser()
-  userId = user?.id ?? null
+  await currentUserId()
   const { data, error } = await supabase
     .from('progress')
     .select('session_num, snapshot, finished_at')
+  if (error) console.error('[progress] load failed', error)
   cache = {}
-  if (!error && data) {
+  if (data) {
     for (const r of data) cache[String(r.session_num)] = { at: r.finished_at, snapshot: r.snapshot }
   }
 }
@@ -66,21 +74,21 @@ export function finishedCount(): number {
 
 export async function finish(num: number, snapshot: Snapshot): Promise<void> {
   cache[String(num)] = { at: new Date().toISOString(), snapshot } // optimistic
-  if (supabase && userId) {
-    await supabase.from('progress').upsert(
-      { user_id: userId, session_num: num, snapshot },
-      { onConflict: 'user_id,session_num' },
-    )
-  } else {
-    writeLocal()
-  }
+  if (!supabase) { writeLocal(); return }
+  const uid = await currentUserId()
+  if (!uid) { console.error('[progress] no session — not signed in?'); return }
+  const { error } = await supabase.from('progress').upsert(
+    { user_id: uid, session_num: num, snapshot },
+    { onConflict: 'user_id,session_num' },
+  )
+  if (error) console.error('[progress] save failed', error)
 }
 
 export async function unfinish(num: number): Promise<void> {
   delete cache[String(num)]
-  if (supabase && userId) {
-    await supabase.from('progress').delete().eq('session_num', num)
-  } else {
-    writeLocal()
-  }
+  if (!supabase) { writeLocal(); return }
+  const uid = await currentUserId()
+  if (!uid) return
+  const { error } = await supabase.from('progress').delete().eq('session_num', num)
+  if (error) console.error('[progress] delete failed', error)
 }
