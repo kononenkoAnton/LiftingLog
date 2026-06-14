@@ -1,6 +1,7 @@
 import { program } from '../data/program'
 import { liftTags } from '../lib/focus'
-import { isFinished, toggleFinished } from '../lib/progress'
+import { getSession } from '../data/program'
+import { isFinished, finish, unfinish } from '../lib/progress'
 import { gsap } from 'gsap'
 
 const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -99,7 +100,10 @@ export function renderList(el: HTMLElement) {
     const num = Number(row.dataset.num)
     const numBtn = target.closest<HTMLButtonElement>('.wnum')
     if (numBtn) {
-      const done = toggleFinished(num) // tap the number to toggle, without navigating
+      // tap the number to toggle finished, without navigating
+      const done = !isFinished(num)
+      if (done) finish(num, getSession(num)?.exercises ?? [])
+      else unfinish(num)
       numBtn.classList.toggle('done', done)
       numBtn.setAttribute('aria-pressed', String(done))
       refreshProgress()

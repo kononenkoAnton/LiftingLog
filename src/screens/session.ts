@@ -3,7 +3,7 @@ import type { Exercise, Weight } from '../data/types'
 import { computeBarbellLoad, kgToLb } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
-import { isFinished, toggleFinished } from '../lib/progress'
+import { isFinished, getSnapshot, finish, unfinish } from '../lib/progress'
 import { gsap } from 'gsap'
 
 // Distinct per-set loads for a barbell lift (progression / per-set scheme), else
@@ -98,7 +98,11 @@ export function renderSession(el: HTMLElement, n: number) {
   let stepIdx = 0 // selected step within a progression/per-set lift
 
   const draw = (animate = true) => {
-    const e = s.exercises[focusIdx]
+    // Finished days render their locked snapshot; unfinished show the latest parse.
+    const snap = isFinished(s.num) ? getSnapshot(s.num) : null
+    const exercises = snap ?? s.exercises
+    const changed = !!snap && JSON.stringify(snap) !== JSON.stringify(s.exercises)
+    const e = exercises[focusIdx]
     const steps = e.equipment === 'barbell' ? stepWeightsOf(e.weight) : null
     if (steps && stepIdx >= steps.length) stepIdx = 0
     // range lifts default to the lighter end (the slider takes it from there)
@@ -122,6 +126,7 @@ export function renderSession(el: HTMLElement, n: number) {
         <span class="tag">⬡ ${e.equipment} · #${e.order}</span>
         <div class="exname">${e.nameEn}</div>
         <div class="exru">${e.nameRu}</div>
+        ${changed ? '<div class="changed-badge">⟳ Trainer updated this day after you finished it</div>' : ''}
         ${heroFor(e, steps, stepIdx, selKg)}
         <div class="reps">
           <div class="b"><div class="n mono">${e.sets ?? '—'}</div><div class="l">Sets</div></div>
@@ -133,10 +138,10 @@ export function renderSession(el: HTMLElement, n: number) {
       </div>`
 
     const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
-    finishBtn.addEventListener('click', () => {
-      const done = toggleFinished(s.num)
-      finishBtn.classList.toggle('done', done)
-      finishBtn.textContent = done ? '✓ Finished' : 'Mark finished'
+    finishBtn.addEventListener('click', async () => {
+      if (isFinished(s.num)) await unfinish(s.num)
+      else await finish(s.num, s.exercises) // snapshot the canonical content now
+      draw(false)
     })
 
     const go = (num: number) => { if (getSession(num)) location.hash = `#/session/${num}` }
@@ -163,7 +168,7 @@ export function renderSession(el: HTMLElement, n: number) {
     }
 
     const mini = el.querySelector('#mini')!
-    s.exercises.forEach((x, i) => {
+    exercises.forEach((x, i) => {
       if (i === focusIdx) return
       const row = document.createElement('div')
       row.className = 'exmini'

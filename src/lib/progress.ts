@@ -1,38 +1,64 @@
-// Local persistence for session progress. Reserved namespace from the spec;
-// stored as { finished: { "<num>": true } } to leave room for future logger
-// data (sets done, timer, notes) under the same key.
+// Per-session progress with a storage SEAM: a sync in-memory cache hydrated by
+// loadProgress() and written through on finish/unfinish. Today the backing store
+// is localStorage; Stage 3 swaps in Supabase behind the same functions without
+// touching the screens.
+//
+// A "finished" session stores a SNAPSHOT of its exercises at finish time, so the
+// app can lock finished days to what was actually done while unfinished days keep
+// showing the latest parse.
+import type { Exercise } from '../data/types'
+
+export type Snapshot = Exercise[]
+interface Entry { at: string; snapshot: Snapshot | null }
+
 const KEY = 'liftinglog:logs'
+let cache: Record<string, Entry> = {}
 
-type Store = { finished: Record<string, boolean> }
-
-function read(): Store {
+function readLocal(): Record<string, Entry> {
   try {
     const raw = localStorage.getItem(KEY)
     const obj = raw ? JSON.parse(raw) : null
-    if (obj && typeof obj === 'object' && obj.finished && typeof obj.finished === 'object') {
-      return { finished: obj.finished }
+    const finished = obj?.finished
+    if (finished && typeof finished === 'object') {
+      const out: Record<string, Entry> = {}
+      for (const [num, v] of Object.entries(finished)) {
+        // migrate old shape ({num: true}) → entry with no snapshot
+        out[num] = v === true ? { at: '', snapshot: null } : (v as Entry)
+      }
+      return out
     }
-  } catch { /* corrupt or unavailable — fall through to empty */ }
-  return { finished: {} }
+  } catch { /* corrupt or unavailable */ }
+  return {}
 }
 
-function write(store: Store): void {
-  try { localStorage.setItem(KEY, JSON.stringify(store)) } catch { /* ignore */ }
+function writeLocal(): void {
+  try { localStorage.setItem(KEY, JSON.stringify({ finished: cache })) } catch { /* ignore */ }
+}
+
+/** Hydrate the cache. Call once at startup before rendering. */
+export async function loadProgress(): Promise<void> {
+  cache = readLocal()
 }
 
 export function isFinished(num: number): boolean {
-  return read().finished[String(num)] === true
+  return cache[String(num)] !== undefined
 }
 
-export function setFinished(num: number, value: boolean): void {
-  const store = read()
-  if (value) store.finished[String(num)] = true
-  else delete store.finished[String(num)]
-  write(store)
+/** The exercises snapshot taken when the day was finished (null if unknown). */
+export function getSnapshot(num: number): Snapshot | null {
+  return cache[String(num)]?.snapshot ?? null
 }
 
-export function toggleFinished(num: number): boolean {
-  const next = !isFinished(num)
-  setFinished(num, next)
-  return next
+export function finishedCount(): number {
+  return Object.keys(cache).length
+}
+
+export async function finish(num: number, snapshot: Snapshot): Promise<void> {
+  cache[String(num)] = { at: new Date().toISOString(), snapshot } // optimistic
+  writeLocal()
+}
+
+export async function unfinish(num: number): Promise<void> {
+  delete cache[String(num)]
+  writeLocal()
 }
