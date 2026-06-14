@@ -5,6 +5,20 @@
 .hero-h .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
 .hero-h h1{font-size:26px;margin:2px 0 0;font-weight:800;letter-spacing:-.02em}
 .lang{font-size:9px;color:var(--mint);border:1px solid rgba(39,230,180,.4);border-radius:20px;padding:4px 8px;letter-spacing:.1em}
+.hero-actions{display:flex;align-items:center;gap:8px}
+.signout{width:30px;height:26px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--dim);font-size:14px;cursor:pointer}
+.signout:hover{border-color:rgba(39,230,180,.45);color:var(--mint)}
+.login{display:flex;align-items:center;justify-content:center}
+.login-card{width:100%;max-width:320px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+.login-card .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.login-card h1{font-size:24px;font-weight:800;margin:2px 0 16px}
+.login-card form{display:flex;flex-direction:column;gap:10px}
+.login-card input{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ink);font-size:15px;font-family:var(--sans)}
+.login-card input:focus{outline:none;border-color:rgba(39,230,180,.5)}
+.login-card button{margin-top:4px;padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14px;
+  background:linear-gradient(160deg,var(--mint),#159c79);color:#04210f}
+.login-card button:disabled{opacity:.6;cursor:default}
+.login-msg{font-size:12px;color:var(--dim);min-height:16px;text-align:center}
 .stats{display:flex;gap:10px;margin-bottom:8px}
 .chip{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
 .chip .n{font-size:20px;font-weight:800}

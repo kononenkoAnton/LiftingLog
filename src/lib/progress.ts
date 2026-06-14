@@ -7,12 +7,14 @@
 // app can lock finished days to what was actually done while unfinished days keep
 // showing the latest parse.
 import type { Exercise } from '../data/types'
+import { supabase } from './supabase'
 
 export type Snapshot = Exercise[]
 interface Entry { at: string; snapshot: Snapshot | null }
 
 const KEY = 'liftinglog:logs'
 let cache: Record<string, Entry> = {}
+let userId: string | null = null
 
 function readLocal(): Record<string, Entry> {
   try {
@@ -35,9 +37,18 @@ function writeLocal(): void {
   try { localStorage.setItem(KEY, JSON.stringify({ finished: cache })) } catch { /* ignore */ }
 }
 
-/** Hydrate the cache. Call once at startup before rendering. */
+/** Hydrate the cache. Call once at startup (after auth) before rendering. */
 export async function loadProgress(): Promise<void> {
-  cache = readLocal()
+  if (!supabase) { cache = readLocal(); return }
+  const { data: { user } } = await supabase.auth.getUser()
+  userId = user?.id ?? null
+  const { data, error } = await supabase
+    .from('progress')
+    .select('session_num, snapshot, finished_at')
+  cache = {}
+  if (!error && data) {
+    for (const r of data) cache[String(r.session_num)] = { at: r.finished_at, snapshot: r.snapshot }
+  }
 }
 
 export function isFinished(num: number): boolean {
@@ -55,10 +66,21 @@ export function finishedCount(): number {
 
 export async function finish(num: number, snapshot: Snapshot): Promise<void> {
   cache[String(num)] = { at: new Date().toISOString(), snapshot } // optimistic
-  writeLocal()
+  if (supabase && userId) {
+    await supabase.from('progress').upsert(
+      { user_id: userId, session_num: num, snapshot },
+      { onConflict: 'user_id,session_num' },
+    )
+  } else {
+    writeLocal()
+  }
 }
 
 export async function unfinish(num: number): Promise<void> {
   delete cache[String(num)]
-  writeLocal()
+  if (supabase && userId) {
+    await supabase.from('progress').delete().eq('session_num', num)
+  } else {
+    writeLocal()
+  }
 }

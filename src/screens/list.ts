@@ -2,6 +2,7 @@ import { program } from '../data/program'
 import { liftTags } from '../lib/focus'
 import { getSession } from '../data/program'
 import { isFinished, finish, unfinish } from '../lib/progress'
+import { supabase } from '../lib/supabase'
 import { gsap } from 'gsap'
 
 const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -48,7 +49,10 @@ export function renderList(el: HTMLElement) {
     <div class="screen">
       <div class="hero-h">
         <div><div class="k">Program · Jan–Jun 2026</div><h1>${program.title}</h1></div>
-        <span class="lang">EN · RU</span>
+        <div class="hero-actions">
+          <span class="lang">EN · RU</span>
+          ${supabase ? '<button class="signout" id="signout" type="button" aria-label="Sign out">⎋</button>' : ''}
+        </div>
       </div>
       <div class="stats">
         <div class="chip"><div class="n mono"><span id="donecount">0</span><span style="color:var(--dim)">/${total}</span></div><div class="l">Done</div></div>
@@ -113,6 +117,11 @@ export function renderList(el: HTMLElement) {
   })
 
   refreshProgress()
+
+  el.querySelector('#signout')?.addEventListener('click', async () => {
+    await supabase?.auth.signOut()
+    location.reload()
+  })
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!reduce) gsap.from('#rows .wrow', { y: 14, opacity: 0, duration: 0.4, stagger: 0.03, ease: 'power2.out' })

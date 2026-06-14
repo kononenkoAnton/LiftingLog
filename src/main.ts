@@ -3,10 +3,29 @@ import './styles/app.css'
 import { route, startRouter } from './router'
 import { renderList } from './screens/list'
 import { renderSession } from './screens/session'
+import { renderLogin } from './screens/login'
 import { loadProgress } from './lib/progress'
+import { supabase } from './lib/supabase'
 
 route('/', (el) => renderList(el))
 route('/session/:n', (el, p) => renderSession(el, Number(p.n)))
 
-// Hydrate progress (finished days + snapshots) before the first render.
-loadProgress().then(() => startRouter(document.querySelector<HTMLElement>('#app')!))
+const app = document.querySelector<HTMLElement>('#app')!
+
+async function boot() {
+  // No backend configured → run locally (localStorage, no auth).
+  if (!supabase) {
+    await loadProgress()
+    startRouter(app)
+    return
+  }
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) {
+    renderLogin(app) // login form; on success it reloads and boot() sees the session
+    return
+  }
+  await loadProgress() // hydrate the user's rows, then render the app
+  startRouter(app)
+}
+
+boot()
