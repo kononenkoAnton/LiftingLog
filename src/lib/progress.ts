@@ -8,6 +8,7 @@
 // showing the latest parse.
 import type { Exercise } from '../data/types'
 import { supabase } from './supabase'
+import { toast } from './toast'
 
 export type Snapshot = Exercise[]
 interface Entry { at: string; snapshot: Snapshot | null }
@@ -76,12 +77,13 @@ export async function finish(num: number, snapshot: Snapshot): Promise<void> {
   cache[String(num)] = { at: new Date().toISOString(), snapshot } // optimistic
   if (!supabase) { writeLocal(); return }
   const uid = await currentUserId()
-  if (!uid) { console.error('[progress] no session — not signed in?'); return }
+  if (!uid) { toast('Not signed in — can’t save', 'error'); return }
   const { error } = await supabase.from('progress').upsert(
     { user_id: uid, session_num: num, snapshot },
     { onConflict: 'user_id,session_num' },
   )
-  if (error) console.error('[progress] save failed', error)
+  if (error) { console.error('[progress] save failed', error); toast(`Save failed: ${error.message}`, 'error') }
+  else toast('Saved ✓')
 }
 
 export async function unfinish(num: number): Promise<void> {
@@ -90,5 +92,5 @@ export async function unfinish(num: number): Promise<void> {
   const uid = await currentUserId()
   if (!uid) return
   const { error } = await supabase.from('progress').delete().eq('session_num', num)
-  if (error) console.error('[progress] delete failed', error)
+  if (error) { console.error('[progress] delete failed', error); toast(`Delete failed: ${error.message}`, 'error') }
 }
