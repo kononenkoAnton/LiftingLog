@@ -228,8 +228,17 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
     el.querySelector('#lgFinish')!.addEventListener('click', async () => {
       const cur = getActiveWorkout(); if (!cur) return
+      const hasUnfinished = cur.exercises.some((ex) => ex.sets.some((s) => !s.done))
+      if (hasUnfinished && !confirm("Some sets aren't marked done. Finish anyway? Unfinished sets won't be saved.")) return
+      // keep only completed sets; drop exercises left with none
+      const finished = {
+        ...cur,
+        exercises: cur.exercises
+          .map((ex) => ({ ...ex, sets: ex.sets.filter((s) => s.done) }))
+          .filter((ex) => ex.sets.length > 0),
+      }
       clearAll()
-      await finishWorkout(cur, cur.coachMessage, new Date().toISOString())
+      await finishWorkout(finished, cur.coachMessage, new Date().toISOString())
       const s = getSession(sessionNum)
       if (s) await markDayFinished(sessionNum, s.exercises)
       onExit()
