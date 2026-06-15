@@ -31,6 +31,7 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
       let list = searchCatalog(all, query)
       list = filterCatalog(list, {
         bodyPart: fBody || undefined,
+        // select values come from the catalog's own equipment set, so this cast is safe
         equipment: (fEquip || undefined) as Equipment | undefined,
       })
       const groups = groupAlphabetical(list, lang)
@@ -63,7 +64,14 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
       root.querySelector('#pkAdd')!.addEventListener('click', () =>
         close(all.filter((e) => picked.has(e.id))))
       const search = root.querySelector<HTMLInputElement>('#pkSearch')!
-      search.addEventListener('input', () => { query = search.value; const c = search.selectionStart; render(); const s2 = root.querySelector<HTMLInputElement>('#pkSearch')!; s2.focus(); s2.setSelectionRange(c, c) })
+      search.addEventListener('input', () => {
+        query = search.value
+        const caret = search.selectionStart ?? query.length
+        render() // full re-render; restore focus + caret on the fresh input node
+        const next = root.querySelector<HTMLInputElement>('#pkSearch')!
+        next.focus()
+        next.setSelectionRange(caret, caret)
+      })
       root.querySelector<HTMLSelectElement>('#pkBody')!.addEventListener('change', (ev) => { fBody = (ev.target as HTMLSelectElement).value; render() })
       root.querySelector<HTMLSelectElement>('#pkEquip')!.addEventListener('change', (ev) => { fEquip = (ev.target as HTMLSelectElement).value; render() })
       root.querySelectorAll<HTMLElement>('.picker-row').forEach((row) => {
