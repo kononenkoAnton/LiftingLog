@@ -49,6 +49,11 @@ ____  (separator; ignore)
 ```
 
 Export adds `![][imageN]` refs and backslash-escapes (`\)`, `\_`) — strip both.
+It also appends **link reference definitions at end of file**, including inlined
+**base64 images**: `[image1]: <data:image/png;base64,…>`. The LAST session's body
+runs to EOF, so these would bloat its final exercise — `normalize()` strips
+reference-definition lines (`^\[…\]:`) and any `data:` URIs. (This bug once made
+one session 664 KB.)
 **Gotcha:** JS `\w` and `\b` do NOT match Cyrillic. Use `[а-яё]` classes and
 whitespace anchors instead.
 

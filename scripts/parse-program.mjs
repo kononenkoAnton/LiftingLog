@@ -62,10 +62,12 @@ const GLOSSARY = [
 // ── Normalisation: strip markdown escapes, image refs, separators.
 function normalize(md) {
   return md
-    .replace(/!\[\]\[[^\]]*\]/g, ' ') // image refs ![][image1]
-    .replace(/\\([_()\-.])/g, '$1') // \) \_ \( \- \.
-    .replace(/_{4,}/g, '\n') // ____ separators -> line break
     .replace(/\r/g, '')
+    .replace(/^\[[^\]]+\]:.*$/gm, '') // link reference definitions, incl. base64 images: "[image1]: <data:...>"
+    .replace(/!\[\]?\[[^\]]*\]/g, ' ') // inline image refs ![][image1]
+    .replace(/<?data:[^\s)>]+>?/gi, '') // any stray data: URIs (e.g. base64 blobs)
+    .replace(/\\([_()\-.])/g, '$1') // unescape \) \_ \( \- \.
+    .replace(/_{4,}/g, '\n') // ____ separators -> line break
 }
 
 // ── Split into sessions by the **DD/MM/YYYY №N** header (first date if a range).
