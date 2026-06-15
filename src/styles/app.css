@@ -1,11 +1,12 @@
 /* Bottom padding clears the iOS Safari toolbar + home indicator so the last
    rows are reachable. svh keeps the screen within the always-visible area. */
 .screen{padding:18px 18px calc(56px + env(safe-area-inset-bottom));min-height:100vh;min-height:100svh}
-.hero-h{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 18px}
-.hero-h .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
-.hero-h h1{font-size:26px;margin:2px 0 0;font-weight:800;letter-spacing:-.02em}
-.lang{font-size:9px;color:var(--mint);border:1px solid rgba(39,230,180,.4);border-radius:20px;padding:4px 8px;letter-spacing:.1em}
-.hero-actions{display:flex;align-items:center;gap:8px}
+.hero-h{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:8px 0 18px}
+.hero-h>div{min-width:0;overflow:hidden}
+.hero-h .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero-h h1{font-size:26px;margin:2px 0 0;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lang{font-size:9px;color:var(--mint);border:1px solid rgba(39,230,180,.4);border-radius:20px;padding:4px 8px;letter-spacing:.1em;white-space:nowrap}
+.hero-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .signout{width:30px;height:26px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--dim);font-size:14px;cursor:pointer}
 .signout:hover{border-color:rgba(39,230,180,.45);color:var(--mint)}
 .login{display:flex;align-items:center;justify-content:center}

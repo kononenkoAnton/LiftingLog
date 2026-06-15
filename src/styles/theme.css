@@ -21,6 +21,6 @@ body{
      toolbar-shown state on iOS Safari without forcing extra scroll). */
   min-height:100vh; min-height:100svh;
 }
-#app{width:100%;max-width:480px;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#app{width:100%;max-width:480px;margin:0 auto;overflow-x:hidden;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 .mono{font-family:var(--mono)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
