@@ -2,6 +2,8 @@ import { program } from '../data/program'
 import { liftTags } from '../lib/focus'
 import { getSession } from '../data/program'
 import { isFinished, finish, unfinish } from '../lib/progress'
+import { listWorkouts } from '../lib/workouts'
+import { KG_TO_LB } from '../lib/load'
 import { supabase } from '../lib/supabase'
 import { gsap } from 'gsap'
 
@@ -22,8 +24,8 @@ function tagChip(t: string): string {
   return `<span class="ltag" style="color:${c};background:${c}1f;border:1px solid ${c}55">${t}</span>`
 }
 
-// Heaviest barbell load for a lift across the whole program (DB variants excluded).
-function maxKgFor(match: RegExp): number {
+// Heaviest barbell load the COACH prescribes for a lift across the whole program.
+function maxCoachKgFor(match: RegExp): number {
   let max = 0
   for (const s of program.sessions)
     for (const e of s.exercises) {
@@ -35,6 +37,24 @@ function maxKgFor(match: RegExp): number {
       else if (w.kind === 'perSet') max = Math.max(max, ...w.steps.map((x) => x.kg))
     }
   return max
+}
+
+// Heaviest barbell weight the user has actually LOGGED for a lift (lb → kg).
+function maxLoggedKgFor(match: RegExp): number {
+  let maxLb = 0
+  for (const w of listWorkouts()) {
+    if (w.status !== 'finished') continue
+    for (const ex of w.exercises) {
+      if (ex.equipment !== 'barbell' || !match.test(ex.nameEn)) continue
+      for (const s of ex.sets) if (s.done && s.weightLb !== null) maxLb = Math.max(maxLb, s.weightLb)
+    }
+  }
+  return maxLb > 0 ? Math.round(maxLb / KG_TO_LB) : 0
+}
+
+// Best of the coach's prescription and the user's logged actuals.
+function maxKgFor(match: RegExp): number {
+  return Math.max(maxCoachKgFor(match), maxLoggedKgFor(match))
 }
 
 // The earliest chronological session not yet finished; null if all are done.
