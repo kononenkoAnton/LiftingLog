@@ -5,6 +5,7 @@ import { renderList } from './screens/list'
 import { renderSession } from './screens/session'
 import { renderLogin } from './screens/login'
 import { renderExercises } from './screens/exercises'
+import { renderHistory } from './screens/history'
 import { loadProgress } from './lib/progress'
 import { loadWorkouts } from './lib/workouts'
 import { supabase } from './lib/supabase'
@@ -12,6 +13,7 @@ import { supabase } from './lib/supabase'
 route('/', (el) => renderList(el))
 route('/session/:n', (el, p) => renderSession(el, Number(p.n)))
 route('/exercises', (el) => renderExercises(el))
+route('/history', (el) => renderHistory(el))
 
 const app = document.querySelector<HTMLElement>('#app')!
 

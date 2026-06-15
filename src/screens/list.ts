@@ -50,6 +50,7 @@ export function renderList(el: HTMLElement) {
       <div class="hero-h">
         <div><div class="k">Program · Jan–Jun 2026</div><h1>${program.title}</h1></div>
         <div class="hero-actions">
+          <a class="hist-link" href="#/history" aria-label="History">History</a>
           <span class="lang">EN · RU</span>
           ${supabase ? '<button class="signout" id="signout" type="button" aria-label="Sign out">⎋</button>' : ''}
         </div>
