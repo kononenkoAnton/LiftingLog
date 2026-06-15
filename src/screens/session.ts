@@ -97,7 +97,7 @@ export function renderSession(el: HTMLElement, n: number) {
   if (!s) { el.innerHTML = '<div class="screen">Session not found · <a href="#/">back</a></div>'; return }
 
   const active = getActiveWorkout()
-  if (active && active.sessionNum === n) { renderLogging(el, n); return }
+  if (active && active.sessionNum === n) { renderLogging(el, n, () => renderSession(el, n)); return }
   const otherActive = active && active.sessionNum !== n ? active : null
 
   let focusIdx = s.exercises.findIndex((e) => e.equipment === 'barbell')
@@ -155,7 +155,7 @@ export function renderSession(el: HTMLElement, n: number) {
     })
 
     const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
-    if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n) })
+    if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n, () => renderSession(el, n)) })
 
     const go = (num: number) => { if (getSession(num)) location.hash = `#/session/${num}` }
     el.querySelector('#prevDay')!.addEventListener('click', () => go(s.num - 1))

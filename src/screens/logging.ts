@@ -32,10 +32,10 @@ function exerciseHtml(ex: WorkoutExercise, i: number): string {
     </div>`
 }
 
-export function renderLogging(el: HTMLElement, sessionNum: number) {
+export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () => void) {
   const draw = () => {
     const w = getActiveWorkout()
-    if (!w) { clearTimer(); location.hash = `#/session/${sessionNum}`; return }
+    if (!w) { clearTimer(); onExit(); return }
 
     el.innerHTML = `
       <div class="screen lg">
@@ -119,14 +119,14 @@ export function renderLogging(el: HTMLElement, sessionNum: number) {
       await finishWorkout(cur, cur.coachMessage, new Date().toISOString())
       const s = getSession(sessionNum)
       if (s) await markDayFinished(sessionNum, s.exercises)
-      location.hash = `#/session/${sessionNum}`
+      onExit()
     })
 
     el.querySelector('#lgCancel')!.addEventListener('click', async () => {
       if (!confirm('Cancel this workout? All progress will be lost.')) return
       clearTimer()
       await cancelWorkout()
-      location.hash = `#/session/${sessionNum}`
+      onExit()
     })
   }
   draw()
