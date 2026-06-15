@@ -19,7 +19,17 @@ const EQUIP = {
   'Cable': 'cable',
   'Machine (weights)': 'machine', 'Machine': 'machine',
 }
-const mapEquip = (names) => names.map((n) => EQUIP[n]).find(Boolean) || 'bodyweight'
+// Classify into our Equipment enum. The exercise NAME is the strongest signal
+// (wger has no machine/cable concept), then wger's equipment field, else bodyweight.
+function classifyEquip(nameEn, wgerNames) {
+  const n = nameEn.toLowerCase()
+  if (n.includes('smith') || n.includes('machine') || n.includes('lever') || n.includes('hack ')) return 'machine'
+  if (n.includes('cable') || n.includes('pulldown') || n.includes('pushdown')) return 'cable'
+  if (n.includes('barbell') || n.includes('ez-bar') || n.includes('ez bar') || n.includes('sz-bar')) return 'barbell'
+  if (n.includes('dumbbell') || n.includes('kettlebell')) return 'dumbbell'
+  const fromWger = wgerNames.map((w) => EQUIP[w]).find(Boolean)
+  return fromWger || 'bodyweight'
+}
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const aliasList = (arr) => (arr || []).map((a) => a.alias || a).filter((s) => typeof s === 'string')
 
@@ -56,7 +66,7 @@ function build(raw) {
     const id = slug(en.name)
     if (!id || seen.has(id)) continue
     seen.add(id)
-    const equip = mapEquip((ex.equipment || []).map((e) => e.name))
+    const equip = classifyEquip(en.name, (ex.equipment || []).map((e) => e.name))
     const ru = ex.translations.find((t) => t.language === RU && t.name)
     if (!ru) ruFallback.push(id)
     items.push({
