@@ -184,3 +184,4 @@
 .lg-actions{display:flex;align-items:center;gap:8px}
 .lg-cancel-x{width:34px;height:34px;border-radius:9px;border:1px solid rgba(226,59,59,.4);
   background:rgba(226,59,59,.12);color:#ff7a7a;font-size:14px;cursor:pointer;display:grid;place-items:center;padding:0}
+.picker-ru{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

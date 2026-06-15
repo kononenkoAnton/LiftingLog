@@ -36,6 +36,7 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
       })
       const groups = groupAlphabetical(list, lang)
       const nameOf = (e: CatalogExercise) => (lang === 'ru' ? e.nameRu : e.nameEn)
+      const altOf = (e: CatalogExercise) => { const alt = lang === 'ru' ? e.nameEn : e.nameRu; return alt && alt !== nameOf(e) ? alt : '' }
 
       root.innerHTML = `
         <div class="picker-head">
@@ -54,7 +55,7 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
             ${g.items.map((e) => `
               <div class="picker-row ${picked.has(e.id) ? 'on' : ''}" data-id="${e.id}">
                 <div class="picker-av">${nameOf(e).charAt(0)}</div>
-                <div class="picker-meta"><div class="t">${nameOf(e)}</div><div class="s">${e.bodyPart} · ${e.equipment}</div></div>
+                <div class="picker-meta"><div class="t">${nameOf(e)}</div>${altOf(e) ? `<div class="picker-ru">${altOf(e)}</div>` : ''}<div class="s">${e.bodyPart} · ${e.equipment}</div></div>
                 <div class="picker-check">${picked.has(e.id) ? '✓' : ''}</div>
               </div>`).join('')}
           `).join('') || '<div class="picker-empty">No matches</div>'}
