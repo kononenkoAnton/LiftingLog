@@ -43,7 +43,7 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
           <span class="picker-title">Add exercise</span>
           <button class="picker-add" id="pkAdd" type="button">${picked.size ? `Add ${picked.size}` : 'Add'}</button>
         </div>
-        <input class="picker-search" id="pkSearch" placeholder="Search…" value="${query}">
+        <input class="picker-search" id="pkSearch" placeholder="Search…">
         <div class="picker-filters">
           <select id="pkBody"><option value="">Any body part</option>${bodyParts.map((b) => `<option ${b === fBody ? 'selected' : ''}>${b}</option>`).join('')}</select>
           <select id="pkEquip"><option value="">Any equipment</option>${equipment.map((q) => `<option ${q === fEquip ? 'selected' : ''}>${q}</option>`).join('')}</select>
@@ -64,6 +64,7 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
       root.querySelector('#pkAdd')!.addEventListener('click', () =>
         close(all.filter((e) => picked.has(e.id))))
       const search = root.querySelector<HTMLInputElement>('#pkSearch')!
+      search.value = query // set via property (never HTML-parsed) — avoids the innerHTML XSS sink
       search.addEventListener('input', () => {
         query = search.value
         const caret = search.selectionStart ?? query.length
