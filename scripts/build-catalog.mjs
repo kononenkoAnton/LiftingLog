@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path'
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'src/data/exercises.json')
 const EXTRAS = join(ROOT, 'scripts/catalog-extras.json')
+const RU_OVERLAY = join(ROOT, 'scripts/catalog-ru.json')
 const EN = 2, RU = 5
 const API = 'https://wger.de/api/v2/exerciseinfo/?format=json&limit=100'
 
@@ -87,6 +88,16 @@ function build(raw) {
 
 const raw = await fetchAll()
 let { items, ruFallback } = build(raw)
+
+// Apply the Russian-name overlay (id → nameRu) so the catalog is bilingual.
+if (existsSync(RU_OVERLAY)) {
+  const ru = JSON.parse(readFileSync(RU_OVERLAY, 'utf8'))
+  let applied = 0
+  for (const it of items) {
+    if (ru[it.id] && it.ruIsFallback) { it.nameRu = ru[it.id]; it.ruIsFallback = false; applied++ }
+  }
+  console.log(`RU overlay applied to ${applied} exercises`)
+}
 
 if (existsSync(EXTRAS)) {
   const extras = JSON.parse(readFileSync(EXTRAS, 'utf8'))
