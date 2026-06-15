@@ -1,10 +1,15 @@
 name: Parse program
 
 # Regenerate src/data/program.json from the trainer's Google Doc (incremental:
-# keeps existing sessions, appends new ones). Runs daily and on demand.
+# keeps existing sessions, appends new ones). Runs 4×/day and on demand.
 on:
   schedule:
-    - cron: '0 6 * * *' # 06:00 UTC daily
+    # GitHub cron is UTC and does NOT observe daylight saving. Times target Miami
+    # EDT (UTC-4, summer); in winter (EST, UTC-5) they land ~1h earlier locally.
+    - cron: '0 11 * * *' # 07:00 Miami
+    - cron: '0 17 * * *' # 13:00 Miami
+    - cron: '0 22 * * *' # 18:00 Miami
+    - cron: '0 4 * * *'  # 00:00 Miami (midnight)
   workflow_dispatch: {}
 
 jobs:
