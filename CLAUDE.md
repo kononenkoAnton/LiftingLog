@@ -37,9 +37,12 @@ still produces 0 unknowns and type-checks.
   was removed — do not reintroduce it without reason.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as
   `{ finished: {...} }`. Leave room for future logger keys (sets, timer, notes).
-- **Rendering uses `innerHTML` with trusted static data.** When the logger adds
-  user-entered text, escape it / use `textContent` — `innerHTML` would become a
-  stored-XSS sink.
+- **Rendering uses `innerHTML` with trusted static data.** User-entered text is a
+  stored-XSS sink and must use `textContent` / an input's `.value` property — NEVER
+  an `innerHTML` template. Live sinks handled this way: per-set **notes** and the
+  **coach message** in `logging.ts` (notes via `textContent`, message via textarea
+  `.value`) and the whole `history.ts` screen (built with `createElement` +
+  `textContent`). Verified with an `<img onerror>` probe.
 - **Cyrillic gotcha:** JS `\w`/`\b` do NOT match Cyrillic. Use `[а-яё]` classes
   and whitespace anchors in any Russian-text regex.
 
@@ -71,5 +74,6 @@ still produces 0 unknowns and type-checks.
 - `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; tested)
 - `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
 - `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
-- `src/screens/logging.ts` — logging-mode screen (set table, add/remove, finish/cancel)
+- `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel)
+- `src/screens/history.ts` — past finished workouts (#/history)
 - `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)
