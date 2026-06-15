@@ -1,9 +1,11 @@
-// Logging mode for an active workout. Owns set-editing, the session pause/resume
-// clock, and a transient per-set rest-timer countdown. Names/numbers rendered here
-// are trusted; per-set NOTES (user text) are still NOT rendered (B4 → textContent).
-import type { WorkoutExercise } from '../lib/logger-types'
-import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise } from '../lib/logger-model'
+// Logging mode for an active workout. Owns set-editing, pause/resume clock, rest
+// timer, per-set notes, and a coach message.
+// SECURITY: catalog/coach names + numbers go through innerHTML (trusted). USER TEXT
+// (set notes, coach message) is NEVER put in innerHTML — notes render via textContent
+// after the template is set; the coach message uses the textarea .value property.
+import type { WorkoutExercise, LoggedSet } from '../lib/logger-types'
+import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts } from '../lib/workouts'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
@@ -17,21 +19,27 @@ const clearRest = () => { if (restTimer) { clearInterval(restTimer); restTimer =
 const clearAll = () => { clearElapsed(); clearRest(); rest = null }
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
 
-function exerciseHtml(ex: WorkoutExercise, i: number): string {
+function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null): string {
+  const topLast = last && last[0] ? ` · Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}` : ''
   return `
     <div class="lg-ex">
       <div class="lg-exname">${ex.nameEn}</div>
       <div class="lg-exru">${ex.nameRu}</div>
-      ${ex.coachTarget ? `<div class="lg-coach">Coach · ${ex.coachTarget}</div>` : ''}
-      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span></div>
-      ${ex.sets.map((st, si) => `
+      ${ex.coachTarget || topLast ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${topLast}</div>` : ''}
+      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span><span></span></div>
+      ${ex.sets.map((st, si) => {
+        const lp = last && last[si] ? last[si] : null
+        return `
         <div class="lg-row ${st.done ? 'done' : ''}">
           <span class="lg-setno">${si + 1}</span>
-          <input class="lg-inp" type="text" inputmode="decimal" data-ex="${i}" data-set="${si}" data-field="weightLb" value="${st.weightLb ?? ''}" placeholder="lb">
-          <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="–">
+          <input class="lg-inp" type="text" inputmode="decimal" data-ex="${i}" data-set="${si}" data-field="weightLb" value="${st.weightLb ?? ''}" placeholder="${lp && lp.weightLb !== null ? lp.weightLb : 'lb'}">
+          <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : '–'}">
           <button class="lg-chk ${st.done ? 'on' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
+          <button class="lg-note-btn ${st.note ? 'has' : ''}" data-ex="${i}" data-set="${si}" type="button" aria-label="Note">🗒</button>
           <button class="lg-del" data-ex="${i}" data-set="${si}" type="button" aria-label="Delete set">−</button>
-        </div>`).join('')}
+        </div>
+        <div class="lg-note" data-ex="${i}" data-set="${si}"></div>`
+      }).join('')}
       <button class="lg-addset" data-ex="${i}" type="button">+ Add set</button>
     </div>`
 }
@@ -53,6 +61,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     const w = getActiveWorkout()
     if (!w) { clearAll(); onExit(); return }
     const paused = !!w.pausedAt
+    const history = listWorkouts()
 
     el.innerHTML = `
       <div class="screen lg">
@@ -66,10 +75,25 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         <a class="back" id="lgBack" href="#/">‹ Program</a>
         <div class="lg-day">Day ${w.sessionNum} · logging</div>
         ${restBannerHtml()}
-        <div id="lgEx">${w.exercises.map((ex, i) => exerciseHtml(ex, i)).join('') || '<div class="note">No exercises — add one below.</div>'}</div>
+        <div id="lgEx">${w.exercises.map((ex, i) => exerciseHtml(ex, i, lastActualFor(history, ex.exerciseRef))).join('') || '<div class="note">No exercises — add one below.</div>'}</div>
         <button class="btn-add" id="lgAddEx" type="button">+ Add Exercise</button>
+        <label class="lg-msg-l">Message to coach (optional)</label>
+        <textarea class="lg-msg" id="lgMsg" rows="2" placeholder="e.g. left knee tight on set 2"></textarea>
         <button class="btn-cancel" id="lgCancel" type="button">Cancel Workout</button>
       </div>`
+
+    el.querySelectorAll<HTMLElement>('.lg-note').forEach((d) => {
+      const cur = getActiveWorkout(); if (!cur) return
+      const note = cur.exercises[Number(d.dataset.ex)]?.sets[Number(d.dataset.set)]?.note ?? ''
+      d.textContent = note ? `🗒 ${note}` : ''
+    })
+    const msg = el.querySelector<HTMLTextAreaElement>('#lgMsg')!
+    msg.value = w.coachMessage
+    msg.addEventListener('input', () => {
+      const cur = getActiveWorkout(); if (!cur) return
+      cur.coachMessage = msg.value
+      void saveActiveWorkout(cur)
+    })
 
     clearElapsed()
     if (!paused) {
@@ -85,14 +109,14 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     if (rest) {
       restTimer = setInterval(() => {
         const e = el.querySelector('#lgRestTime')
-        if (!rest || !e) { rest = null; clearRest(); return } // navigated away → drop stale rest
+        if (!rest || !e) { rest = null; clearRest(); return }
         const remain = Math.max(0, Math.round((rest.endMs - Date.now()) / 1000))
         e.textContent = fmt(remain)
         if (remain <= 0) {
           navigator.vibrate?.(200)
           rest = null
           const af = document.activeElement
-          if (af instanceof HTMLInputElement && af.closest('[data-ex]')) af.blur() // flush typed value before re-render
+          if (af instanceof HTMLInputElement && af.closest('[data-ex]')) af.blur()
           draw()
         }
       }, 1000)
@@ -101,7 +125,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     el.querySelector('#lgPause')!.addEventListener('click', () => {
       const cur = getActiveWorkout(); if (!cur) return
       const next = togglePause(cur, Date.now())
-      if (next.pausedAt) { rest = null; clearRest() } // pausing abandons the between-set rest
+      if (next.pausedAt) { rest = null; clearRest() }
       void saveActiveWorkout(next)
       draw()
     })
@@ -139,6 +163,19 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       })
     })
 
+    el.querySelectorAll<HTMLButtonElement>('.lg-note-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const cur = getActiveWorkout(); if (!cur) return
+        const exi = Number(btn.dataset.ex), si = Number(btn.dataset.set)
+        const st = cur.exercises[exi].sets[si]
+        const next = prompt('Note for this set:', st.note)
+        if (next === null) return
+        st.note = next.trim()
+        void saveActiveWorkout(cur)
+        draw()
+      })
+    })
+
     el.querySelectorAll<HTMLButtonElement>('.lg-del').forEach((btn) => {
       btn.addEventListener('click', () => {
         const cur = getActiveWorkout(); if (!cur) return
@@ -147,8 +184,8 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const removedExercise = cur.exercises[exi].sets.length === 0
         if (removedExercise) cur.exercises.splice(exi, 1)
         if (rest) {
-          if (rest.exIdx === exi) rest = null                       // resting exercise touched → cancel
-          else if (removedExercise && rest.exIdx > exi) rest.exIdx-- // earlier exercise removed → reindex
+          if (rest.exIdx === exi) rest = null
+          else if (removedExercise && rest.exIdx > exi) rest.exIdx--
         }
         void saveActiveWorkout(cur)
         draw()
