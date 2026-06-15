@@ -106,7 +106,7 @@ export async function saveActiveWorkout(w: Workout): Promise<void> {
 
 /** Finish: mark finished, stamp endedAt, move from active → history. */
 export async function finishWorkout(w: Workout, coachMessage: string, nowIso: string): Promise<void> {
-  const finished: Workout = { ...w, status: 'finished', endedAt: nowIso, coachMessage }
+  const finished: Workout = { ...w, status: 'finished', endedAt: nowIso, coachMessage, pausedAt: null }
   await saveActiveWorkout(finished) // upserts the finished row
   history = [finished, ...history.filter((h) => h.id !== finished.id)]
   active = null

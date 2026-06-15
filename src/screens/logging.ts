@@ -85,16 +85,23 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     if (rest) {
       restTimer = setInterval(() => {
         const e = el.querySelector('#lgRestTime')
-        if (!rest || !e) { clearRest(); return }
+        if (!rest || !e) { rest = null; clearRest(); return } // navigated away → drop stale rest
         const remain = Math.max(0, Math.round((rest.endMs - Date.now()) / 1000))
         e.textContent = fmt(remain)
-        if (remain <= 0) { navigator.vibrate?.(200); rest = null; draw() }
+        if (remain <= 0) {
+          navigator.vibrate?.(200)
+          rest = null
+          const af = document.activeElement
+          if (af instanceof HTMLInputElement && af.closest('[data-ex]')) af.blur() // flush typed value before re-render
+          draw()
+        }
       }, 1000)
     }
 
     el.querySelector('#lgPause')!.addEventListener('click', () => {
       const cur = getActiveWorkout(); if (!cur) return
       const next = togglePause(cur, Date.now())
+      if (next.pausedAt) { rest = null; clearRest() } // pausing abandons the between-set rest
       void saveActiveWorkout(next)
       draw()
     })
@@ -137,8 +144,12 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const cur = getActiveWorkout(); if (!cur) return
         const exi = Number(btn.dataset.ex), si = Number(btn.dataset.set)
         cur.exercises[exi].sets.splice(si, 1)
-        if (cur.exercises[exi].sets.length === 0) cur.exercises.splice(exi, 1)
-        if (rest && rest.exIdx === exi) rest = null
+        const removedExercise = cur.exercises[exi].sets.length === 0
+        if (removedExercise) cur.exercises.splice(exi, 1)
+        if (rest) {
+          if (rest.exIdx === exi) rest = null                       // resting exercise touched → cancel
+          else if (removedExercise && rest.exIdx > exi) rest.exIdx-- // earlier exercise removed → reindex
+        }
         void saveActiveWorkout(cur)
         draw()
       })

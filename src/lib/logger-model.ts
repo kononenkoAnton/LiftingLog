@@ -97,7 +97,7 @@ export function workoutDurationSec(
 /** Toggle pause: pausing stamps pausedAt; resuming folds the gap into pausedMs. */
 export function togglePause(w: Workout, nowMs: number): Workout {
   if (w.pausedAt) {
-    return { ...w, pausedMs: w.pausedMs + (nowMs - Date.parse(w.pausedAt)), pausedAt: null }
+    return { ...w, pausedMs: w.pausedMs + Math.max(0, nowMs - Date.parse(w.pausedAt)), pausedAt: null }
   }
   return { ...w, pausedAt: new Date(nowMs).toISOString() }
 }
