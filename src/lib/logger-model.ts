@@ -2,7 +2,7 @@
 // pass `now` in so these stay deterministic and unit-testable.
 import type { Equipment, Exercise, Session, Weight } from '../data/types'
 import { kgToLb } from './load'
-import type { LoggedSet, WorkoutExercise } from './logger-types'
+import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
 // Per-lift rest defaults. MUST stay in sync with scripts/build-catalog.mjs `restFor`
 // (that bakes defaultRestSec into the catalog; this resolves it for coach lifts).
@@ -88,4 +88,19 @@ export function workoutDurationSec(
 ): number {
   const end = w.endedAt ? Date.parse(w.endedAt) : nowMs
   return Math.max(0, Math.round((end - Date.parse(w.startedAt) - w.pausedMs) / 1000))
+}
+
+/** Done sets for `exerciseRef` from the most recent FINISHED workout, or null. */
+export function lastActualFor(history: Workout[], exerciseRef: string): LoggedSet[] | null {
+  const finished = history
+    .filter((w) => w.status === 'finished')
+    .sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt))
+  for (const w of finished) {
+    const ex = w.exercises.find((x) => x.exerciseRef === exerciseRef)
+    if (ex) {
+      const done = ex.sets.filter((s) => s.done)
+      if (done.length) return done
+    }
+  }
+  return null
 }

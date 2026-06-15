@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor } from './logger-model'
 import type { Session, Exercise } from '../data/types'
+import type { Workout } from './logger-types'
 
 const mkSession = (exercises: Exercise[]): Session => ({
   num: 7, date: '2026-06-16', dateLabel: 'Tue Jun 16', focus: 'Squat', exercises,
@@ -87,5 +88,31 @@ describe('buildWorkoutExercises', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: null, weight: { kind: 'perSet', steps: [{ kg: 130, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }] } })]))
     expect(we.sets).toHaveLength(4)
     expect(we.sets[3].weightLb).toBe(320)
+  })
+})
+
+const wk = (over: Partial<Workout>): Workout => ({
+  id: 'x', sessionNum: 1, startedAt: '2026-06-01T00:00:00.000Z', endedAt: null,
+  pausedMs: 0, status: 'finished', coachMessage: '', exercises: [], ...over,
+})
+const doneSet = (lb: number, reps: number) => ({ weightLb: lb, reps, done: true, restSec: 90, note: '' })
+
+describe('lastActualFor', () => {
+  it('returns null when no finished workout has the exercise', () => {
+    expect(lastActualFor([], 'coach:1')).toBeNull()
+  })
+  it('returns the done sets from the most recent finished workout with that exercise', () => {
+    const older = wk({ startedAt: '2026-06-01T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:1', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(200, 5)] }] })
+    const newer = wk({ startedAt: '2026-06-08T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:1', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 5)] }] })
+    expect(lastActualFor([older, newer], 'coach:1')![0].weightLb).toBe(225)
+  })
+  it('ignores active/cancelled workouts', () => {
+    const active = wk({ status: 'active', startedAt: '2026-06-09T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:1', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(999, 1)] }] })
+    const finished = wk({ status: 'finished', startedAt: '2026-06-08T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:1', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 5)] }] })
+    expect(lastActualFor([active, finished], 'coach:1')![0].weightLb).toBe(225)
+  })
+  it('skips exercises with no done sets', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'coach:1', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [{ weightLb: 200, reps: 5, done: false, restSec: 90, note: '' }] }] })
+    expect(lastActualFor([w], 'coach:1')).toBeNull()
   })
 })
