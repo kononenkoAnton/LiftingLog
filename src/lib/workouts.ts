@@ -124,6 +124,20 @@ export async function finishWorkout(w: Workout, coachMessage: string, nowIso: st
   writeLocalHistory()
 }
 
+/** Persist edits to an already-finished workout (updates history, not the active slot). */
+export async function updateFinishedWorkout(w: Workout): Promise<void> {
+  history = history.map((h) => (h.id === w.id ? w : h))
+  writeLocalHistory()
+  if (!supabase) return
+  const uid = await currentUserId()
+  if (!uid) return
+  const { error } = await supabase.from('workouts').upsert({
+    id: w.id, session_num: w.sessionNum, started_at: w.startedAt,
+    ended_at: w.endedAt, status: w.status, data: w,
+  }, { onConflict: 'id' })
+  if (error) { console.error('[workouts] update failed', error); toast(`Save failed: ${error.message}`, 'error') }
+}
+
 /** Cancel: drop the active workout (mark cancelled in the store, clear active). */
 export async function cancelWorkout(): Promise<void> {
   const w = active

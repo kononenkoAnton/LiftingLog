@@ -147,7 +147,9 @@ export function renderSession(el: HTMLElement, n: number) {
         <div style="margin-top:14px" id="mini"></div>
         ${otherActive
           ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
-          : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
+          : logged
+            ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
+            : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
         ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Скопировать для тренера</button>` : ''}
       </div>`
 
@@ -160,6 +162,9 @@ export function renderSession(el: HTMLElement, n: number) {
 
     const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
     if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n, () => renderSession(el, n)) })
+
+    const editBtn = el.querySelector<HTMLButtonElement>('#editBtn')
+    if (editBtn && logged) editBtn.addEventListener('click', () => renderLogging(el, n, () => renderSession(el, n), logged))
 
     const trainerBtn = el.querySelector<HTMLButtonElement>('#trainerBtn')
     if (trainerBtn && logged) trainerBtn.addEventListener('click', async () => {
