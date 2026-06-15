@@ -9,6 +9,8 @@ import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, la
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
+import { platesForLb } from '../lib/load'
+import { PLATE_COLOR } from '../components/barbell-svg'
 
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
 let restTimer: ReturnType<typeof setInterval> | null = null
@@ -18,6 +20,16 @@ const clearElapsed = () => { if (elapsedTimer) { clearInterval(elapsedTimer); el
 const clearRest = () => { if (restTimer) { clearInterval(restTimer); restTimer = null } }
 const clearAll = () => { clearElapsed(); clearRest(); rest = null }
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
+
+function plateChips(perSide: { plate: number; count: number }[]): string {
+  if (!perSide.length) return '<span class="lg-plates-empty">bar only</span>'
+  return perSide
+    .map((p) => {
+      const c = PLATE_COLOR[p.plate] ?? '#9aa7b8'
+      return `<span class="pl" style="background:${c}22;color:${c};border:1px solid ${c}66">${p.count > 1 ? p.count + '×' : ''}${p.plate}</span>`
+    })
+    .join('')
+}
 
 function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null): string {
   const lastStr = last && last[0] ? `Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}` : ''
@@ -31,6 +43,8 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
       <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span></div>
       ${ex.sets.map((st, si) => {
         const lp = last && last[si] ? last[si] : null
+        const showPlates = ex.equipment === 'barbell' && st.weightLb !== null && (si === 0 || st.weightLb !== ex.sets[si - 1].weightLb)
+        const plateLine = showPlates ? `<div class="lg-plates">${plateChips(platesForLb(st.weightLb as number))}<span class="lg-plates-side">/ side · lb</span></div>` : ''
         return `
         <div class="lg-row ${st.done ? 'done' : ''}">
           <span class="lg-setno">${si + 1}</span>
@@ -38,7 +52,7 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
           <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : '–'}">
           <button class="lg-chk ${st.done ? 'on' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
           <button class="lg-del" data-ex="${i}" data-set="${si}" type="button" aria-label="Delete set">−</button>
-        </div>`
+        </div>${plateLine}`
       }).join('')}
       <button class="lg-addset" data-ex="${i}" type="button">+ Add set</button>
     </div>`
