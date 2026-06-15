@@ -27,6 +27,7 @@ export interface Workout {
   startedAt: string          // ISO timestamp
   endedAt: string | null
   pausedMs: number           // accumulated paused time, excluded from duration
+  pausedAt: string | null    // ISO when currently paused; null while running
   status: WorkoutStatus
   coachMessage: string
   exercises: WorkoutExercise[]

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -94,7 +94,7 @@ describe('buildWorkoutExercises', () => {
 
 const wk = (over: Partial<Workout>): Workout => ({
   id: 'x', sessionNum: 1, startedAt: '2026-06-01T00:00:00.000Z', endedAt: null,
-  pausedMs: 0, status: 'finished', coachMessage: '', exercises: [], ...over,
+  pausedMs: 0, pausedAt: null, status: 'finished', coachMessage: '', exercises: [], ...over,
 })
 const doneSet = (lb: number, reps: number) => ({ weightLb: lb, reps, done: true, restSec: 90, note: '' })
 
@@ -152,5 +152,29 @@ describe('catalogToWorkoutExercise', () => {
     expect(we.nameRu).toBe('Жим ногами')
     expect(we.sets).toHaveLength(1)
     expect(we.sets[0]).toEqual({ weightLb: null, reps: null, done: false, restSec: 90, note: '' })
+  })
+})
+
+describe('workoutDurationSec while paused', () => {
+  it('freezes at the pause moment', () => {
+    const w = { startedAt: '2026-06-15T12:00:00.000Z', endedAt: null, pausedMs: 0, pausedAt: '2026-06-15T12:00:40.000Z' }
+    expect(workoutDurationSec(w, Date.parse('2026-06-15T12:05:00.000Z'))).toBe(40)
+  })
+})
+
+describe('togglePause', () => {
+  it('pausing stamps pausedAt', () => {
+    const w = wk({ pausedAt: null, status: 'active' })
+    const now = Date.parse('2026-06-15T12:00:40.000Z')
+    const p = togglePause(w, now)
+    expect(p.pausedAt).toBe('2026-06-15T12:00:40.000Z')
+    expect(p.pausedMs).toBe(0)
+  })
+  it('resuming clears pausedAt and accrues paused time', () => {
+    const w = wk({ pausedAt: '2026-06-15T12:00:40.000Z', pausedMs: 5000, status: 'active' })
+    const now = Date.parse('2026-06-15T12:01:10.000Z')
+    const r = togglePause(w, now)
+    expect(r.pausedAt).toBeNull()
+    expect(r.pausedMs).toBe(35000)
   })
 })

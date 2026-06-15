@@ -85,13 +85,21 @@ export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
   })
 }
 
-/** Elapsed seconds, excluding paused time. Pass `nowMs` (Date.now()) from the caller. */
+/** Elapsed seconds, excluding paused time; frozen while paused. Pass `nowMs`. */
 export function workoutDurationSec(
-  w: { startedAt: string; endedAt: string | null; pausedMs: number },
+  w: { startedAt: string; endedAt: string | null; pausedMs: number; pausedAt?: string | null },
   nowMs: number,
 ): number {
-  const end = w.endedAt ? Date.parse(w.endedAt) : nowMs
+  const end = w.endedAt ? Date.parse(w.endedAt) : w.pausedAt ? Date.parse(w.pausedAt) : nowMs
   return Math.max(0, Math.round((end - Date.parse(w.startedAt) - w.pausedMs) / 1000))
+}
+
+/** Toggle pause: pausing stamps pausedAt; resuming folds the gap into pausedMs. */
+export function togglePause(w: Workout, nowMs: number): Workout {
+  if (w.pausedAt) {
+    return { ...w, pausedMs: w.pausedMs + (nowMs - Date.parse(w.pausedAt)), pausedAt: null }
+  }
+  return { ...w, pausedAt: new Date(nowMs).toISOString() }
 }
 
 /**

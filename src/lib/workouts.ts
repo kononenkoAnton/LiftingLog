@@ -76,6 +76,7 @@ export function startWorkout(session: Session): Workout {
     startedAt: new Date().toISOString(),
     endedAt: null,
     pausedMs: 0,
+    pausedAt: null,
     status: 'active',
     coachMessage: '',
     exercises: buildWorkoutExercises(session),
