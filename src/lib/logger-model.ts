@@ -4,6 +4,9 @@ import type { Equipment, Exercise, Session, Weight } from '../data/types'
 import { kgToLb } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
+// Stable per-exercise identity for matching the same movement across workouts.
+const slugify = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
 // Per-lift rest defaults. MUST stay in sync with scripts/build-catalog.mjs `restFor`
 // (that bakes defaultRestSec into the catalog; this resolves it for coach lifts).
 export function restDefaultFor(nameEn: string, equipment: Equipment): number {
@@ -70,7 +73,7 @@ export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
       }
     })
     return {
-      exerciseRef: `coach:${e.order}`,
+      exerciseRef: `coach:${slugify(e.nameEn)}`,
       nameEn: e.nameEn,
       nameRu: e.nameRu,
       equipment: e.equipment,
@@ -90,7 +93,11 @@ export function workoutDurationSec(
   return Math.max(0, Math.round((end - Date.parse(w.startedAt) - w.pausedMs) / 1000))
 }
 
-/** Done sets for `exerciseRef` from the most recent FINISHED workout, or null. */
+/**
+ * Done sets for `exerciseRef` from the most recent FINISHED workout that has at
+ * least one done set for it — skipping newer finished workouts that logged none —
+ * or null. Matches by exercise identity (the ref must be stable across sessions).
+ */
 export function lastActualFor(history: Workout[], exerciseRef: string): LoggedSet[] | null {
   const finished = history
     .filter((w) => w.status === 'finished')

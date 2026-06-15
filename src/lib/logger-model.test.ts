@@ -50,10 +50,10 @@ describe('buildWorkoutExercises', () => {
     order: 1, nameEn: 'Squat', nameRu: 'Присед', descEn: '', descRu: '',
     equipment: 'barbell', weight: { kind: 'single', kg: 100 }, sets: 3, reps: '5', ...over,
   })
-  it('makes one WorkoutExercise per coach exercise, ref by order', () => {
-    const out = buildWorkoutExercises(mkSession([ex({ order: 2 })]))
+  it('makes one WorkoutExercise per coach exercise, ref by name slug', () => {
+    const out = buildWorkoutExercises(mkSession([ex({ nameEn: 'Squat (Barbell)' })]))
     expect(out).toHaveLength(1)
-    expect(out[0].exerciseRef).toBe('coach:2')
+    expect(out[0].exerciseRef).toBe('coach:squat-barbell')
     expect(out[0].isCoachPrescribed).toBe(true)
   })
   it('pre-fills set count from coach sets, lb from kg, reps from reps', () => {
@@ -114,5 +114,14 @@ describe('lastActualFor', () => {
   it('skips exercises with no done sets', () => {
     const w = wk({ exercises: [{ exerciseRef: 'coach:1', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [{ weightLb: 200, reps: 5, done: false, restSec: 90, note: '' }] }] })
     expect(lastActualFor([w], 'coach:1')).toBeNull()
+  })
+  it('falls through to an older workout when the newest has no done sets for it', () => {
+    const newer = wk({ startedAt: '2026-06-08T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:s', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [{ weightLb: 999, reps: 1, done: false, restSec: 90, note: '' }] }] })
+    const older = wk({ startedAt: '2026-06-01T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:s', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(205, 5)] }] })
+    expect(lastActualFor([newer, older], 'coach:s')![0].weightLb).toBe(205)
+  })
+  it('returns null when finished workouts exist but none contain the exercise', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'coach:other', nameEn: 'O', nameRu: 'O', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(100, 5)] }] })
+    expect(lastActualFor([w], 'coach:s')).toBeNull()
   })
 })
