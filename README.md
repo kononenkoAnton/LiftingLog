@@ -21,6 +21,16 @@ Bar = 45 lb. Plates per side = 45, 35, 25, 10, 5, 2.5 lb. Targets round UP to th
 nearest achievable load (never under the trainer's number). Logic in
 `src/lib/load.ts` (`computeBarbellLoad`), covered by unit tests.
 
+## Exercise catalog
+
+The exercise database (`src/data/exercises.json`) is generated from the
+[wger](https://wger.de) open exercise database (© wger contributors, licensed
+**CC-BY-SA 4.0**) by `npm run build:catalog` (`scripts/build-catalog.mjs`).
+Equipment is inferred from each exercise's English name; Russian names are used
+where wger provides them, otherwise they fall back to English (flagged
+`ruIsFallback`). Hand-authored entries/overrides live in
+`scripts/catalog-extras.json` and are merged on top during the build.
+
 ## Updating the program (re-parse)
 Source: the trainer's Google Doc. The app reads `src/data/program.json`. When the
 trainer adds sessions, regenerate that file by re-parsing the Doc — translate +

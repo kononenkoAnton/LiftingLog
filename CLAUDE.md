@@ -19,6 +19,7 @@ matching skill file:
 | Plate set, bar weight, or rounding (`src/lib/load.ts`) | `parsing-rules.md` notes + `README.md` "Plates & bar" |
 | How the doc is fetched/exported, or its markdown shape | `update-program/SKILL.md` |
 | Added a new skill or workflow | give it a `SKILL.md` and note it here |
+| Added/renamed catalog data, the wger equipment/rest mapping, or RU↔EN entries | `scripts/build-catalog.mjs` (`classifyEquip`/`restFor`) + the `scripts/catalog-extras.json` overrides + `README.md` "Exercise catalog" |
 
 The glossary lives in two places on purpose (code + docs) — change both or they
 drift. When in doubt, re-run `npm run parse` against the live doc and confirm it
@@ -56,6 +57,11 @@ still produces 0 unknowns and type-checks.
 - `src/lib/focus.ts` — session focus label + main-lift tags
 - `src/lib/progress.ts` — finished-day persistence
 - `src/data/{types,program.json,program}.ts` — schema, data, loader
+- `src/data/exercises.json` — bilingual exercise catalog (GENERATED; never hand-edit — use `scripts/catalog-extras.json` + `npm run build:catalog`)
+- `src/data/catalog-types.ts` — `CatalogExercise` schema
+- `src/lib/catalog.ts` — catalog search/filter (Cyrillic-aware, tested)
+- `src/components/exercise-picker.ts` — the add-exercise picker sheet
+- `scripts/build-catalog.mjs` — wger → exercises.json importer (run `npm run build:catalog`)
 - `src/screens/{list,session}.ts` — program list, session detail
 - `src/components/barbell-svg.ts` — 2D barbell renderer (+ `barbell.ts` wrapper)
 - `scripts/parse-program.mjs` — deterministic doc → program.json parser
