@@ -151,3 +151,13 @@
   border:none;background:rgba(94,168,255,.14);color:var(--blue);cursor:pointer}
 .btn-cancel{margin-top:9px;width:100%;text-align:center;font-weight:700;font-size:13px;padding:12px;border-radius:11px;
   border:none;background:rgba(226,59,59,.12);color:#ff7a7a;cursor:pointer}
+.lg-clock{display:flex;align-items:center;gap:10px}
+.lg-pause{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.06);
+  color:var(--ink);font-size:13px;cursor:pointer;display:grid;place-items:center;padding:0}
+.lg-elapsed.paused{color:var(--dim)}
+.lg-rest{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;justify-content:center;
+  background:rgba(94,168,255,.16);border:1px solid rgba(94,168,255,.45);border-radius:12px;padding:9px 12px;margin:0 0 12px}
+.lg-rest-time{font-size:18px;font-weight:800;color:var(--blue);min-width:54px;text-align:center}
+.lg-rest-adj{border:1px solid rgba(94,168,255,.4);background:rgba(255,255,255,.05);color:var(--blue);
+  border-radius:8px;padding:6px 10px;font-weight:700;font-size:12px;cursor:pointer}
+.lg-rest-skip{margin-left:auto;border:none;background:none;color:var(--dim);font-weight:700;font-size:12px;cursor:pointer}
