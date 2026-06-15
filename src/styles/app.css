@@ -129,7 +129,7 @@
 .lg-ex{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:12px}
 .lg-exname{font-size:16px;font-weight:800;color:var(--blue)}
 .lg-exru{font-size:11px;color:var(--dim);margin-top:1px}
-.lg-coach{font-size:11px;color:var(--dim);margin-top:6px}
+.lg-coach{font-size:11px;color:var(--mint);margin-top:6px}
 .lg-thead,.lg-row{display:grid;grid-template-columns:26px 1fr 1fr 30px 26px;gap:8px;align-items:center}
 .lg-thead{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:10px 2px 4px}
 .lg-thead .r{text-align:center}
