@@ -13,7 +13,10 @@ export function loadCatalog(): CatalogExercise[] {
   return catalog as CatalogExercise[]
 }
 
-/** Lowercase, fold Russian ё→е (common spelling drift), trim. */
+/**
+ * Lowercase, fold Russian ё→е (common spelling drift), trim.
+ * toLowerCase() runs first, so an uppercase Ё becomes ё then е — both cases covered.
+ */
 export function normalizeForSearch(s: string): string {
   return s.toLowerCase().replace(/ё/g, 'е').trim()
 }

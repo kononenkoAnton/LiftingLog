@@ -42,6 +42,9 @@ describe('filterCatalog', () => {
   it('combines filters', () => {
     expect(filterCatalog(FX, { bodyPart: 'Legs', equipment: 'barbell' }).map(e => e.id)).toEqual(['squat-barbell'])
   })
+  it('returns everything when no filter is given', () => {
+    expect(filterCatalog(FX, {}).length).toBe(3)
+  })
 })
 
 describe('groupAlphabetical', () => {
@@ -50,5 +53,8 @@ describe('groupAlphabetical', () => {
   })
   it('groups Russian names with Cyrillic letters', () => {
     expect(groupAlphabetical(FX, 'ru').map(g => g.letter)).toEqual(['Ж', 'П'])
+  })
+  it('returns an empty array for an empty list', () => {
+    expect(groupAlphabetical([], 'en')).toEqual([])
   })
 })
