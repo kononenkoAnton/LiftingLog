@@ -224,4 +224,8 @@ describe('trainerLog', () => {
     const w = wk({ exercises: [{ exerciseRef: 'p', nameEn: 'Pushup', nameRu: 'Отжимания', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [{ weightLb: null, reps: 20, done: true, restSec: 90 }] }] })
     expect(trainerLog(w)).toBe('Отжимания\nб/в × 20 — 1')
   })
+  it('appends the coach message when present', () => {
+    const w = wk({ coachMessage: 'Колено побаливало', exercises: [{ exerciseRef: 'b', nameEn: 'Bench', nameRu: 'Жим лёжа', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 2)] }] })
+    expect(trainerLog(w)).toBe('Жим лёжа\n102 × 2 — 1\n\nКолено побаливало')
+  })
 })

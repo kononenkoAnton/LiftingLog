@@ -160,7 +160,7 @@ export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
 /** Russian-only log of a finished workout for sending to the coach (weights in kg). */
 export function trainerLog(w: Workout): string {
   const wt = (lb: number | null) => (lb === null ? 'б/в' : String(Math.round(lb / KG_TO_LB)))
-  return w.exercises
+  const body = w.exercises
     .map((ex) => {
       const lines: string[] = []
       let i = 0
@@ -174,4 +174,6 @@ export function trainerLog(w: Workout): string {
       return [ex.nameRu, ...lines].join('\n')
     })
     .join('\n\n')
+  const msg = (w.coachMessage ?? '').trim()
+  return msg ? `${body}\n\n${msg}` : body
 }
