@@ -118,7 +118,7 @@
   place-items:center;font-weight:800;color:var(--dim);text-transform:uppercase}
 .picker-meta{flex:1;min-width:0}
 .picker-meta .t{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.picker-meta .s{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-top:1px}
+.picker-meta .s{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--mint);margin-top:1px}
 .picker-check{flex:0 0 auto;width:24px;text-align:center;color:var(--mint);font-weight:800}
 .picker-empty{text-align:center;color:var(--dim);padding:40px 0}
 .lg-top{display:flex;align-items:center;justify-content:space-between;margin:4px 0 10px}
