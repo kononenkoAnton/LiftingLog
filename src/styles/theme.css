@@ -6,7 +6,10 @@
   --sans:'Inter',-apple-system,system-ui,sans-serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0}
+/* Stop iOS Safari from auto-inflating text (which overflows no-wrap labels on
+   device even though desktop is fine), and never allow horizontal scroll. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;overflow-x:hidden;max-width:100%}
 body{
   background:
     radial-gradient(120% 50% at 90% -5%,rgba(39,230,180,.14),transparent),
@@ -18,6 +21,6 @@ body{
      toolbar-shown state on iOS Safari without forcing extra scroll). */
   min-height:100vh; min-height:100svh;
 }
-#app{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#app{width:100%;max-width:480px;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 .mono{font-family:var(--mono)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
