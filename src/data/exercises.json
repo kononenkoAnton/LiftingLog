@@ -1,0 +1,9 @@
+[
+  { "id": "squat-barbell", "nameEn": "Squat (Barbell)", "nameRu": "Приседания со штангой", "ruIsFallback": false, "equipment": "barbell", "bodyPart": "Legs", "aliasesEn": ["back squat"], "aliasesRu": ["присед"], "defaultRestSec": 90 },
+  { "id": "bench-press-barbell", "nameEn": "Bench Press (Barbell)", "nameRu": "Жим лёжа", "ruIsFallback": false, "equipment": "barbell", "bodyPart": "Chest", "aliasesEn": ["bench"], "aliasesRu": ["жим штанги лёжа"], "defaultRestSec": 150 },
+  { "id": "deadlift-barbell", "nameEn": "Deadlift (Barbell)", "nameRu": "Становая тяга", "ruIsFallback": false, "equipment": "barbell", "bodyPart": "Back", "aliasesEn": ["conventional deadlift"], "aliasesRu": ["становая"], "defaultRestSec": 300 },
+  { "id": "leg-press", "nameEn": "Leg Press", "nameRu": "Жим ногами", "ruIsFallback": false, "equipment": "machine", "bodyPart": "Legs", "aliasesEn": [], "aliasesRu": [], "defaultRestSec": 90 },
+  { "id": "lat-pulldown-cable", "nameEn": "Lat Pulldown (Cable)", "nameRu": "Тяга верхнего блока", "ruIsFallback": false, "equipment": "cable", "bodyPart": "Back", "aliasesEn": [], "aliasesRu": [], "defaultRestSec": 90 },
+  { "id": "dumbbell-curl", "nameEn": "Dumbbell Curl", "nameRu": "Сгибание рук с гантелями", "ruIsFallback": false, "equipment": "dumbbell", "bodyPart": "Arms", "aliasesEn": ["biceps curl"], "aliasesRu": ["бицепс"], "defaultRestSec": 90 },
+  { "id": "plank", "nameEn": "Plank", "nameRu": "Планка", "ruIsFallback": false, "equipment": "bodyweight", "bodyPart": "Abs", "aliasesEn": [], "aliasesRu": [], "defaultRestSec": 60 }
+]
