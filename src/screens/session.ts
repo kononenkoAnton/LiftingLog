@@ -5,6 +5,8 @@ import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
 import { isFinished, getSnapshot, finish, unfinish } from '../lib/progress'
 import { gsap } from 'gsap'
+import { getActiveWorkout, startWorkout } from '../lib/workouts'
+import { renderLogging } from './logging'
 
 // Distinct per-set loads for a barbell lift (progression / per-set scheme), else
 // null. Each entry is a weight the bar is loaded to for one (or more) sets.
@@ -93,6 +95,11 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
 export function renderSession(el: HTMLElement, n: number) {
   const s = getSession(n)
   if (!s) { el.innerHTML = '<div class="screen">Session not found · <a href="#/">back</a></div>'; return }
+
+  const active = getActiveWorkout()
+  if (active && active.sessionNum === n) { renderLogging(el, n); return }
+  const otherActive = active && active.sessionNum !== n ? active : null
+
   let focusIdx = s.exercises.findIndex((e) => e.equipment === 'barbell')
   if (focusIdx < 0) focusIdx = 0
   let stepIdx = 0 // selected step within a progression/per-set lift
@@ -135,6 +142,9 @@ export function renderSession(el: HTMLElement, n: number) {
         <div class="note">${e.descEn}<br><span style="opacity:.7">${e.descRu}</span>
           ${e.notesEn ? `<br><br>${e.notesEn}<br><span style="opacity:.7">${e.notesRu ?? ''}</span>` : ''}</div>
         <div style="margin-top:14px" id="mini"></div>
+        ${otherActive
+          ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
+          : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
       </div>`
 
     const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
@@ -143,6 +153,9 @@ export function renderSession(el: HTMLElement, n: number) {
       else await finish(s.num, s.exercises) // snapshot the canonical content now
       draw(false)
     })
+
+    const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
+    if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n) })
 
     const go = (num: number) => { if (getSession(num)) location.hash = `#/session/${num}` }
     el.querySelector('#prevDay')!.addEventListener('click', () => go(s.num - 1))
