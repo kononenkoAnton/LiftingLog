@@ -1,6 +1,7 @@
 // Pure model for the workout logger. No DOM, no storage, no Date.now() — callers
 // pass `now` in so these stay deterministic and unit-testable.
 import type { Equipment, Exercise, Session, Weight } from '../data/types'
+import type { CatalogExercise } from '../data/catalog-types'
 import { kgToLb } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
@@ -110,4 +111,22 @@ export function lastActualFor(history: Workout[], exerciseRef: string): LoggedSe
     }
   }
   return null
+}
+
+/** A fresh empty (not-done) set carrying the given rest default. */
+export function blankSet(restSec: number): LoggedSet {
+  return { weightLb: null, reps: null, done: false, restSec, note: '' }
+}
+
+/** Turn a catalog pick into a non-coach WorkoutExercise with one blank set. */
+export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
+  return {
+    exerciseRef: c.id,
+    nameEn: c.nameEn,
+    nameRu: c.nameRu,
+    equipment: c.equipment,
+    isCoachPrescribed: false,
+    coachTarget: '',
+    sets: [blankSet(c.defaultRestSec)],
+  }
 }

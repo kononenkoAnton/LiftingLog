@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout } from './logger-types'
+import type { CatalogExercise } from '../data/catalog-types'
 
 const mkSession = (exercises: Exercise[]): Session => ({
   num: 7, date: '2026-06-16', dateLabel: 'Tue Jun 16', focus: 'Squat', exercises,
@@ -123,5 +124,27 @@ describe('lastActualFor', () => {
   it('returns null when finished workouts exist but none contain the exercise', () => {
     const w = wk({ exercises: [{ exerciseRef: 'coach:other', nameEn: 'O', nameRu: 'O', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(100, 5)] }] })
     expect(lastActualFor([w], 'coach:s')).toBeNull()
+  })
+})
+
+describe('blankSet', () => {
+  it('is an empty, not-done set carrying the given rest', () => {
+    expect(blankSet(120)).toEqual({ weightLb: null, reps: null, done: false, restSec: 120, note: '' })
+  })
+})
+
+describe('catalogToWorkoutExercise', () => {
+  const c: CatalogExercise = {
+    id: 'leg-press', nameEn: 'Leg Press', nameRu: 'Жим ногами', ruIsFallback: false,
+    equipment: 'machine', bodyPart: 'Legs', aliasesEn: [], aliasesRu: [], defaultRestSec: 90,
+  }
+  it('maps a catalog entry to a non-coach WorkoutExercise with one blank set', () => {
+    const we = catalogToWorkoutExercise(c)
+    expect(we.exerciseRef).toBe('leg-press')
+    expect(we.isCoachPrescribed).toBe(false)
+    expect(we.coachTarget).toBe('')
+    expect(we.nameRu).toBe('Жим ногами')
+    expect(we.sets).toHaveLength(1)
+    expect(we.sets[0]).toEqual({ weightLb: null, reps: null, done: false, restSec: 90, note: '' })
   })
 })

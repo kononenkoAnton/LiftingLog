@@ -3,6 +3,8 @@
 // Supabase when configured. A workout is stored as one JSONB row (see plan B1).
 import { supabase } from './supabase'
 import { toast } from './toast'
+import { buildWorkoutExercises } from './logger-model'
+import type { Session } from '../data/types'
 import type { Workout } from './logger-types'
 
 const ACTIVE_KEY = 'liftinglog:activeWorkout'
@@ -53,6 +55,24 @@ export async function loadWorkouts(): Promise<void> {
   const all = (data ?? []).map(rowToWorkout)
   active = all.find((w) => w.status === 'active') ?? null
   history = all.filter((w) => w.status !== 'active')
+}
+
+/** Create a fresh active workout from a session's coach prescription and persist it. */
+export function startWorkout(session: Session): Workout {
+  const w: Workout = {
+    id: crypto.randomUUID(),
+    sessionNum: session.num,
+    startedAt: new Date().toISOString(),
+    endedAt: null,
+    pausedMs: 0,
+    status: 'active',
+    coachMessage: '',
+    exercises: buildWorkoutExercises(session),
+  }
+  active = w
+  writeLocalActive()
+  void saveActiveWorkout(w)
+  return w
 }
 
 export function getActiveWorkout(): Workout | null { return active }
