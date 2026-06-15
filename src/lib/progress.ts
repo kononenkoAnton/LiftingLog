@@ -84,19 +84,8 @@ export async function finish(num: number, snapshot: Snapshot): Promise<void> {
     { session_num: num, snapshot },
     { onConflict: 'user_id,session_num' },
   )
-  if (error) {
-    // diagnostic: what does our access token actually contain?
-    let info = 'no-token'
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const c = JSON.parse(atob(session!.access_token.split('.')[1]))
-      info = `sub=${String(c.sub).slice(0, 8)} role=${c.role}`
-    } catch { /* ignore */ }
-    let server = ''
-    try { const w = await supabase.rpc('whoami'); server = JSON.stringify(w.data ?? w.error?.message) } catch { /* rpc may not exist yet */ }
-    console.error('[progress] save failed', error, info, server)
-    toast(`Fail: ${error.message} — token ${info} — server ${server}`, 'error')
-  } else toast('Saved ✓')
+  if (error) { console.error('[progress] save failed', error); toast(`Save failed: ${error.message}`, 'error') }
+  else toast('Saved ✓')
 }
 
 export async function unfinish(num: number): Promise<void> {

@@ -46,24 +46,35 @@ explicit, with no diff engine.
 ## Supabase schema (single user)
 
 ```sql
--- one row per finished session for the signed-in user
-create table progress (
-  user_id     uuid not null references auth.users(id) default auth.uid(),
+create table public.progress (
+  user_id     uuid not null references auth.users(id)
+                default (auth.jwt() ->> 'sub')::uuid,   -- see note
   session_num int  not null,
   finished_at timestamptz not null default now(),
   snapshot    jsonb not null,            -- the session's exercises at finish time
   primary key (user_id, session_num)
 );
-alter table progress enable row level security;
-create policy "own rows" on progress
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+alter table public.progress enable row level security;
+grant select, insert, update, delete on public.progress to authenticated;
+create policy "own rows" on public.progress
+  for all
+  using  (user_id = (auth.jwt() ->> 'sub')::uuid)
+  with check (user_id = (auth.jwt() ->> 'sub')::uuid);
 
 -- reserved for the logger (Phase 2+)
 -- create table set_logs ( user_id uuid, session_num int, ex_order int,
 --   set_index int, weight_kg numeric, reps_done int, note text, logged_at timestamptz );
 ```
 
-Auth: Supabase email magic-link, one account. RLS scopes every row to `auth.uid()`.
+**IMPORTANT (learned the hard way):** use `(auth.jwt() ->> 'sub')::uuid`, NOT
+`auth.uid()`, in the default and the policy. On projects using Supabase's newer
+JWT signing keys, `auth.uid()` can return NULL even for a valid `authenticated`
+request — which makes every insert fail the RLS `with check`. Reading `sub`
+straight from the JWT claims avoids that. The client also omits `user_id` on
+insert and lets this default fill it, so the row can never mismatch the check.
+
+Auth: Supabase email + password, one account (created in the dashboard with Auto
+Confirm). RLS scopes every row to the JWT's `sub`.
 
 ## Client integration
 
