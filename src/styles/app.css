@@ -181,3 +181,6 @@
 .hist-set{font-family:var(--mono);font-size:12px;color:var(--ink);padding:2px 0}
 .hist-note{color:var(--blue);font-family:var(--sans)}
 .hist-msg{margin-top:10px;font-size:12px;color:var(--dim);border-left:2px solid var(--mint);padding-left:9px}
+.lg-actions{display:flex;align-items:center;gap:8px}
+.lg-cancel-x{width:34px;height:34px;border-radius:9px;border:1px solid rgba(226,59,59,.4);
+  background:rgba(226,59,59,.12);color:#ff7a7a;font-size:14px;cursor:pointer;display:grid;place-items:center;padding:0}

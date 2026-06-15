@@ -70,7 +70,10 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
             <button class="lg-pause" id="lgPause" type="button">${paused ? '▶' : '⏸'}</button>
             <span class="lg-elapsed mono ${paused ? 'paused' : ''}" id="lgElapsed">${fmt(workoutDurationSec(w, Date.now()))}</span>
           </div>
-          <button class="lg-finish" id="lgFinish" type="button">Finish</button>
+          <div class="lg-actions">
+            <button class="lg-cancel-x" id="lgCancel" type="button" aria-label="Cancel workout">✕</button>
+            <button class="lg-finish" id="lgFinish" type="button">Finish</button>
+          </div>
         </div>
         <a class="back" id="lgBack" href="#/">‹ Program</a>
         <div class="lg-day">Day ${w.sessionNum} · logging</div>
@@ -79,7 +82,6 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         <button class="btn-add" id="lgAddEx" type="button">+ Add Exercise</button>
         <label class="lg-msg-l">Message to coach (optional)</label>
         <textarea class="lg-msg" id="lgMsg" rows="2" placeholder="e.g. left knee tight on set 2"></textarea>
-        <button class="btn-cancel" id="lgCancel" type="button">Cancel Workout</button>
       </div>`
 
     el.querySelectorAll<HTMLElement>('.lg-note').forEach((d) => {
