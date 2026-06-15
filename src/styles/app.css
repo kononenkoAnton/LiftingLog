@@ -191,3 +191,4 @@
 .lg-plates{display:flex;align-items:center;flex-wrap:wrap;gap:0;padding:1px 0 7px 34px}
 .lg-plates-side{font-size:9px;color:var(--dim);margin-left:6px}
 .lg-plates-empty{font-size:10px;color:var(--dim)}
+.lg-plates:empty{display:none}

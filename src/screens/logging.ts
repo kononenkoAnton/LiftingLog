@@ -31,6 +31,11 @@ function plateChips(perSide: { plate: number; count: number }[]): string {
     .join('')
 }
 
+/** Inner HTML of a per-set plate line for a given lb total (recomputed live on edit). */
+function plateLineInner(lb: number): string {
+  return `${plateChips(platesForLb(lb))}<span class="lg-plates-side">/ side · lb</span>`
+}
+
 function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null): string {
   const lastStr = last && last[0] ? `Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}` : ''
   return `
@@ -43,8 +48,10 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
       <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span></div>
       ${ex.sets.map((st, si) => {
         const lp = last && last[si] ? last[si] : null
-        const showPlates = ex.equipment === 'barbell' && st.weightLb !== null && (si === 0 || st.weightLb !== ex.sets[si - 1].weightLb)
-        const plateLine = showPlates ? `<div class="lg-plates">${plateChips(platesForLb(st.weightLb as number))}<span class="lg-plates-side">/ side · lb</span></div>` : ''
+        // per-set plate line for barbell lifts; recomputed live by the input handler
+        const plateBox = ex.equipment === 'barbell'
+          ? `<div class="lg-plates" data-ex="${i}" data-set="${si}">${st.weightLb !== null ? plateLineInner(st.weightLb) : ''}</div>`
+          : ''
         return `
         <div class="lg-row ${st.done ? 'done' : ''}">
           <span class="lg-setno">${si + 1}</span>
@@ -52,7 +59,7 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
           <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : '–'}">
           <button class="lg-chk ${st.done ? 'on' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
           <button class="lg-del" data-ex="${i}" data-set="${si}" type="button" aria-label="Delete set">−</button>
-        </div>${plateLine}`
+        </div>${plateBox}`
       }).join('')}
       <button class="lg-addset" data-ex="${i}" type="button">+ Add set</button>
     </div>`
@@ -167,6 +174,11 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const num = raw === '' ? null : Number(raw)
         cur.exercises[exi].sets[si][field] = num !== null && Number.isFinite(num) ? num : null
         persist(cur)
+        if (field === 'weightLb') {
+          const box = el.querySelector(`.lg-plates[data-ex="${exi}"][data-set="${si}"]`)
+          const lb = cur.exercises[exi].sets[si].weightLb
+          if (box) box.innerHTML = lb !== null ? plateLineInner(lb) : ''
+        }
       })
     })
 
