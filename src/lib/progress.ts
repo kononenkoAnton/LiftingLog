@@ -84,8 +84,17 @@ export async function finish(num: number, snapshot: Snapshot): Promise<void> {
     { session_num: num, snapshot },
     { onConflict: 'user_id,session_num' },
   )
-  if (error) { console.error('[progress] save failed', error); toast(`Save failed: ${error.message}`, 'error') }
-  else toast('Saved ✓')
+  if (error) {
+    // diagnostic: what does our access token actually contain?
+    let info = 'no-token'
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const c = JSON.parse(atob(session!.access_token.split('.')[1]))
+      info = `sub=${String(c.sub).slice(0, 8)} role=${c.role}`
+    } catch { /* ignore */ }
+    console.error('[progress] save failed', error, info)
+    toast(`Fail: ${error.message} — ${info}`, 'error')
+  } else toast('Saved ✓')
 }
 
 export async function unfinish(num: number): Promise<void> {
