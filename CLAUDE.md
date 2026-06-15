@@ -71,4 +71,5 @@ still produces 0 unknowns and type-checks.
 - `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; tested)
 - `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
 - `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
+- `src/screens/logging.ts` — logging-mode screen (set table, add/remove, finish/cancel)
 - `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)
