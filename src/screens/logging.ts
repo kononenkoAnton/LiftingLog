@@ -23,8 +23,10 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
   const lastStr = last && last[0] ? `Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}` : ''
   return `
     <div class="lg-ex">
-      <div class="lg-exname">${ex.nameEn}</div>
-      <div class="lg-exru">${ex.nameRu}</div>
+      <div class="lg-exh">
+        <div><div class="lg-exname">${ex.nameEn}</div><div class="lg-exru">${ex.nameRu}</div></div>
+        <button class="lg-ex-del" data-ex="${i}" type="button" aria-label="Remove exercise">✕</button>
+      </div>
       ${ex.coachTarget || lastStr ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${ex.coachTarget && lastStr ? ' · ' : ''}${lastStr}</div>` : ''}
       <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span><span></span></div>
       ${ex.sets.map((st, si) => {
@@ -202,6 +204,19 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         ex.sets.push(prev
           ? { weightLb: prev.weightLb, reps: prev.reps, done: false, restSec: prev.restSec, note: '' }
           : blankSet(90))
+        void saveActiveWorkout(cur)
+        draw()
+      })
+    })
+
+    el.querySelectorAll<HTMLButtonElement>('.lg-ex-del').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const cur = getActiveWorkout(); if (!cur) return
+        const exi = Number(btn.dataset.ex)
+        const name = cur.exercises[exi]?.nameEn ?? 'this exercise'
+        if (!confirm(`Remove ${name} and all its logged sets?`)) return
+        cur.exercises.splice(exi, 1)
+        if (rest) { if (rest.exIdx === exi) rest = null; else if (rest.exIdx > exi) rest.exIdx-- }
         void saveActiveWorkout(cur)
         draw()
       })
