@@ -71,7 +71,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       <div class="screen lg">
         <div class="lg-top">
           <div class="lg-clock">
-            ${edit ? '<span class="lg-elapsed mono">Изменение</span>'
+            ${edit ? '<span class="lg-elapsed mono">Editing</span>'
               : `<button class="lg-pause" id="lgPause" type="button">${paused ? '▶' : '⏸'}</button>
             <span class="lg-elapsed mono ${paused ? 'paused' : ''}" id="lgElapsed">${fmt(workoutDurationSec(w, Date.now()))}</span>`}
           </div>

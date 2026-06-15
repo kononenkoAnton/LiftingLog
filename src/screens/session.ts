@@ -150,7 +150,7 @@ export function renderSession(el: HTMLElement, n: number) {
           : logged
             ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
             : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
-        ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Скопировать для тренера</button>` : ''}
+        ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Copy for trainer</button>` : ''}
       </div>`
 
     const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
@@ -169,7 +169,7 @@ export function renderSession(el: HTMLElement, n: number) {
     const trainerBtn = el.querySelector<HTMLButtonElement>('#trainerBtn')
     if (trainerBtn && logged) trainerBtn.addEventListener('click', async () => {
       const text = trainerLog(logged)
-      try { await navigator.clipboard.writeText(text); toast('Скопировано для тренера ✓', 'info') }
+      try { await navigator.clipboard.writeText(text); toast('Copied for trainer ✓', 'info') }
       catch { toast(text, 'info') }
     })
 
