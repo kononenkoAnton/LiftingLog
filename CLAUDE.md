@@ -20,6 +20,7 @@ matching skill file:
 | How the doc is fetched/exported, or its markdown shape | `update-program/SKILL.md` |
 | Added a new skill or workflow | give it a `SKILL.md` and note it here |
 | Added/renamed catalog data, the wger equipment/rest mapping, or RU↔EN entries | `scripts/build-catalog.mjs` (`classifyEquip`/`restFor`) + the `scripts/catalog-extras.json` overrides + `README.md` "Exercise catalog" |
+| The rest-timer default heuristic (`restDefaultFor` in `src/lib/logger-model.ts`) | keep it identical to `scripts/build-catalog.mjs` `restFor` — the catalog bakes it in, the logger resolves it for coach lifts |
 
 The glossary lives in two places on purpose (code + docs) — change both or they
 drift. When in doubt, re-run `npm run parse` against the live doc and confirm it
@@ -67,3 +68,7 @@ still produces 0 unknowns and type-checks.
 - `scripts/parse-program.mjs` — deterministic doc → program.json parser
 - `.claude/skills/update-program/` — the re-parse skill + rules
 - `docs/superpowers/` — original spec and plan
+- `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; tested)
+- `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
+- `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
+- `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)
