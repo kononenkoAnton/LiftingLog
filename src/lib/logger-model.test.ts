@@ -79,4 +79,13 @@ describe('buildWorkoutExercises', () => {
     expect(we.sets[0].weightLb).toBeNull()
     expect(we.sets[0].reps).toBeNull()
   })
+  it('uses per-index kg for a progression scheme, clamping extra sets', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ weight: { kind: 'progression', kg: [80, 90, 100] }, sets: 5 })]))
+    expect(we.sets.map((s) => s.weightLb)).toEqual([176, 198, 220, 220, 220])
+  })
+  it('keeps every perSet step when coach sets is null', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ sets: null, weight: { kind: 'perSet', steps: [{ kg: 130, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }] } })]))
+    expect(we.sets).toHaveLength(4)
+    expect(we.sets[3].weightLb).toBe(320)
+  })
 })

@@ -18,18 +18,28 @@ export function restDefaultFor(nameEn: string, equipment: Equipment): number {
 function coachKgForSet(w: Weight, i: number): number | null {
   if (w.kind === 'single') return w.kg
   if (w.kind === 'range') return w.maxKg
-  if (w.kind === 'progression') return w.kg[Math.min(i, w.kg.length - 1)]
-  if (w.kind === 'perSet') return w.steps[Math.min(i, w.steps.length - 1)].kg
+  if (w.kind === 'progression') return w.kg.length ? w.kg[Math.min(i, w.kg.length - 1)] : null
+  if (w.kind === 'perSet') return w.steps.length ? w.steps[Math.min(i, w.steps.length - 1)].kg : null
   return null // qualitative | bodyweight
 }
 
 // reps the coach prescribes for set index i (null if non-numeric like "8–12").
 function coachRepsForSet(e: Exercise, i: number): number | null {
   if (e.weight.kind === 'perSet') {
-    return e.weight.steps[Math.min(i, e.weight.steps.length - 1)].reps
+    const steps = e.weight.steps
+    return steps.length ? steps[Math.min(i, steps.length - 1)].reps : null
   }
   const n = parseInt(e.reps, 10)
   return Number.isFinite(n) && String(n) === e.reps.trim() ? n : null
+}
+
+// How many set rows to pre-fill. Coach `sets` wins; when it's null, derive from the
+// weight scheme (perSet/progression carry their own per-set values) so we don't drop sets.
+function defaultSetCount(e: Exercise): number {
+  if (e.sets && e.sets > 0) return e.sets
+  if (e.weight.kind === 'perSet') return e.weight.steps.length || 1
+  if (e.weight.kind === 'progression') return e.weight.kg.length || 1
+  return 1
 }
 
 /** Short human label of the coach's prescription, used as the reference column. */
@@ -47,7 +57,7 @@ export function coachTargetText(e: Exercise): string {
 /** Seed the logger from a session's coach prescription (one WorkoutExercise each). */
 export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
   return session.exercises.map((e) => {
-    const count = e.sets && e.sets > 0 ? e.sets : 1
+    const count = defaultSetCount(e)
     const rest = restDefaultFor(e.nameEn, e.equipment)
     const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
       const kg = coachKgForSet(e.weight, i)
