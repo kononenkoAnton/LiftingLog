@@ -120,6 +120,25 @@ export function lastActualFor(history: Workout[], exerciseRef: string): LoggedSe
   return null
 }
 
+/**
+ * Pre-fill a WorkoutExercise from the user's last actual sets for it.
+ * Added (non-coach) exercises adopt last session's full sets; coach exercises only
+ * fill in weights the coach left unspecified (keeping the prescribed reps/set count).
+ */
+export function withLastActual(we: WorkoutExercise, last: LoggedSet[] | null): WorkoutExercise {
+  if (!last || !last.length) return we
+  const restSec = we.sets[0]?.restSec ?? 90
+  if (!we.isCoachPrescribed) {
+    return { ...we, sets: last.map((s) => ({ weightLb: s.weightLb, reps: s.reps, done: false, restSec })) }
+  }
+  return {
+    ...we,
+    sets: we.sets.map((s, i) =>
+      s.weightLb === null ? { ...s, weightLb: last[Math.min(i, last.length - 1)].weightLb } : s,
+    ),
+  }
+}
+
 /** A fresh empty (not-done) set carrying the given rest default. */
 export function blankSet(restSec: number): LoggedSet {
   return { weightLb: null, reps: null, done: false, restSec }

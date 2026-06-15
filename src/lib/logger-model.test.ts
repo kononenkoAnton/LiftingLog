@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -175,5 +175,39 @@ describe('togglePause', () => {
     const r = togglePause(w, now)
     expect(r.pausedAt).toBeNull()
     expect(r.pausedMs).toBe(35000)
+  })
+})
+
+describe('withLastActual', () => {
+  const we = (over: Partial<import('./logger-types').WorkoutExercise> = {}) => ({
+    exerciseRef: 'back-extension', nameEn: 'Back Extension', nameRu: 'Гиперэкстензия',
+    equipment: 'machine' as const, isCoachPrescribed: false, coachTarget: '',
+    sets: [{ weightLb: null, reps: null, done: false, restSec: 90 }], ...over,
+  })
+  it('returns the exercise unchanged when there is no history', () => {
+    const x = we()
+    expect(withLastActual(x, null)).toBe(x)
+    expect(withLastActual(x, [])).toBe(x)
+  })
+  it('an added exercise adopts last session full sets (weight, reps, count), not done', () => {
+    const last = [doneSet(44, 10), doneSet(44, 10), doneSet(44, 10)]
+    const out = withLastActual(we(), last)
+    expect(out.sets).toHaveLength(3)
+    expect(out.sets[0]).toEqual({ weightLb: 44, reps: 10, done: false, restSec: 90 })
+    expect(out.sets.every((s) => !s.done)).toBe(true)
+  })
+  it('a coach exercise fills only missing weights, keeps reps/count', () => {
+    const coach = we({ isCoachPrescribed: true, sets: [
+      { weightLb: null, reps: 10, done: false, restSec: 150 },
+      { weightLb: null, reps: 10, done: false, restSec: 150 },
+    ] })
+    const out = withLastActual(coach, [doneSet(80, 12)])
+    expect(out.sets).toHaveLength(2)        // keeps coach set count
+    expect(out.sets[0].weightLb).toBe(80)   // filled from last
+    expect(out.sets[0].reps).toBe(10)       // keeps coach reps
+  })
+  it('a coach exercise does NOT override a weight the coach already set', () => {
+    const coach = we({ isCoachPrescribed: true, sets: [{ weightLb: 220, reps: 5, done: false, restSec: 90 }] })
+    expect(withLastActual(coach, [doneSet(999, 1)]).sets[0].weightLb).toBe(220)
   })
 })

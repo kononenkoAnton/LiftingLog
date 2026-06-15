@@ -3,7 +3,7 @@
 // Supabase when configured. A workout is stored as one JSONB row (see plan B1).
 import { supabase } from './supabase'
 import { toast } from './toast'
-import { buildWorkoutExercises } from './logger-model'
+import { buildWorkoutExercises, withLastActual, lastActualFor } from './logger-model'
 import type { Session } from '../data/types'
 import type { Workout } from './logger-types'
 
@@ -70,6 +70,9 @@ function uuid(): string {
 export function startWorkout(session: Session): Workout {
   // Guard double-tap: reuse the existing active workout for this session.
   if (active && active.status === 'active' && active.sessionNum === session.num) return active
+  const exercises = buildWorkoutExercises(session).map(
+    (we) => withLastActual(we, lastActualFor(history, we.exerciseRef)),
+  )
   const w: Workout = {
     id: uuid(),
     sessionNum: session.num,
@@ -79,7 +82,7 @@ export function startWorkout(session: Session): Workout {
     pausedAt: null,
     status: 'active',
     coachMessage: '',
-    exercises: buildWorkoutExercises(session),
+    exercises,
   }
   active = w
   writeLocalActive()

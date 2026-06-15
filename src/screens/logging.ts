@@ -5,7 +5,7 @@
 // .value property.
 import type { WorkoutExercise, LoggedSet } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
@@ -220,7 +220,8 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       const chosen = await openExercisePicker({ lang: 'en', multi: true })
       const cur = getActiveWorkout()
       if (!cur || !chosen.length) return
-      cur.exercises.push(...chosen.map(catalogToWorkoutExercise))
+      const history = listWorkouts()
+      cur.exercises.push(...chosen.map((c) => withLastActual(catalogToWorkoutExercise(c), lastActualFor(history, c.id))))
       void saveActiveWorkout(cur)
       draw()
     })
