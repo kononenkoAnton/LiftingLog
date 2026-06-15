@@ -1,8 +1,8 @@
 // Logging mode for an active workout. Owns set-editing, pause/resume clock, rest
-// timer, per-set notes, and a coach message.
+// timer, and a coach message.
 // SECURITY: catalog/coach names + numbers go through innerHTML (trusted). USER TEXT
-// (set notes, coach message) is NEVER put in innerHTML — notes render via textContent
-// after the template is set; the coach message uses the textarea .value property.
+// (coach message) is NEVER put in innerHTML — the coach message uses the textarea
+// .value property.
 import type { WorkoutExercise, LoggedSet } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts } from '../lib/workouts'
 import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor } from '../lib/logger-model'
@@ -28,7 +28,7 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
         <button class="lg-ex-del" data-ex="${i}" type="button" aria-label="Remove exercise">✕</button>
       </div>
       ${ex.coachTarget || lastStr ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${ex.coachTarget && lastStr ? ' · ' : ''}${lastStr}</div>` : ''}
-      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span><span></span></div>
+      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span></div>
       ${ex.sets.map((st, si) => {
         const lp = last && last[si] ? last[si] : null
         return `
@@ -37,10 +37,8 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
           <input class="lg-inp" type="text" inputmode="decimal" data-ex="${i}" data-set="${si}" data-field="weightLb" value="${st.weightLb ?? ''}" placeholder="${lp && lp.weightLb !== null ? lp.weightLb : 'lb'}">
           <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : '–'}">
           <button class="lg-chk ${st.done ? 'on' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
-          <button class="lg-note-btn ${st.note ? 'has' : ''}" data-ex="${i}" data-set="${si}" type="button" aria-label="Note">🗒</button>
           <button class="lg-del" data-ex="${i}" data-set="${si}" type="button" aria-label="Delete set">−</button>
-        </div>
-        <div class="lg-note" data-ex="${i}" data-set="${si}"></div>`
+        </div>`
       }).join('')}
       <button class="lg-addset" data-ex="${i}" type="button">+ Add set</button>
     </div>`
@@ -86,10 +84,6 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         <textarea class="lg-msg" id="lgMsg" rows="2" placeholder="e.g. left knee tight on set 2"></textarea>
       </div>`
 
-    el.querySelectorAll<HTMLElement>('.lg-note').forEach((d) => {
-      const note = w.exercises[Number(d.dataset.ex)]?.sets[Number(d.dataset.set)]?.note ?? ''
-      d.textContent = note ? `🗒 ${note}` : ''
-    })
     const msg = el.querySelector<HTMLTextAreaElement>('#lgMsg')!
     msg.value = w.coachMessage ?? ''
     msg.addEventListener('input', () => {
@@ -166,19 +160,6 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       })
     })
 
-    el.querySelectorAll<HTMLButtonElement>('.lg-note-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const cur = getActiveWorkout(); if (!cur) return
-        const exi = Number(btn.dataset.ex), si = Number(btn.dataset.set)
-        const st = cur.exercises[exi].sets[si]
-        const next = prompt('Note for this set:', st.note)
-        if (next === null) return
-        st.note = next.trim()
-        void saveActiveWorkout(cur)
-        draw()
-      })
-    })
-
     el.querySelectorAll<HTMLButtonElement>('.lg-del').forEach((btn) => {
       btn.addEventListener('click', () => {
         const cur = getActiveWorkout(); if (!cur) return
@@ -202,7 +183,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const ex = cur.exercises[exi]
         const prev = ex.sets[ex.sets.length - 1]
         ex.sets.push(prev
-          ? { weightLb: prev.weightLb, reps: prev.reps, done: false, restSec: prev.restSec, note: '' }
+          ? { weightLb: prev.weightLb, reps: prev.reps, done: false, restSec: prev.restSec }
           : blankSet(90))
         void saveActiveWorkout(cur)
         draw()

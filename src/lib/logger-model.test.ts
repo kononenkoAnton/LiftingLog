@@ -95,7 +95,7 @@ const wk = (over: Partial<Workout>): Workout => ({
   id: 'x', sessionNum: 1, startedAt: '2026-06-01T00:00:00.000Z', endedAt: null,
   pausedMs: 0, pausedAt: null, status: 'finished', coachMessage: '', exercises: [], ...over,
 })
-const doneSet = (lb: number, reps: number) => ({ weightLb: lb, reps, done: true, restSec: 90, note: '' })
+const doneSet = (lb: number, reps: number) => ({ weightLb: lb, reps, done: true, restSec: 90 })
 
 describe('lastActualFor', () => {
   it('returns null when no finished workout has the exercise', () => {
@@ -112,11 +112,11 @@ describe('lastActualFor', () => {
     expect(lastActualFor([active, finished], 'coach:1')![0].weightLb).toBe(225)
   })
   it('skips exercises with no done sets', () => {
-    const w = wk({ exercises: [{ exerciseRef: 'coach:1', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [{ weightLb: 200, reps: 5, done: false, restSec: 90, note: '' }] }] })
+    const w = wk({ exercises: [{ exerciseRef: 'coach:1', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [{ weightLb: 200, reps: 5, done: false, restSec: 90 }] }] })
     expect(lastActualFor([w], 'coach:1')).toBeNull()
   })
   it('falls through to an older workout when the newest has no done sets for it', () => {
-    const newer = wk({ startedAt: '2026-06-08T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:s', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [{ weightLb: 999, reps: 1, done: false, restSec: 90, note: '' }] }] })
+    const newer = wk({ startedAt: '2026-06-08T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:s', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [{ weightLb: 999, reps: 1, done: false, restSec: 90 }] }] })
     const older = wk({ startedAt: '2026-06-01T00:00:00.000Z', exercises: [{ exerciseRef: 'coach:s', nameEn: 'S', nameRu: 'S', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(205, 5)] }] })
     expect(lastActualFor([newer, older], 'coach:s')![0].weightLb).toBe(205)
   })
@@ -127,14 +127,14 @@ describe('lastActualFor', () => {
   it('matches the ref that buildWorkoutExercises produces (round-trip)', () => {
     const session = mkSession([{ order: 1, nameEn: 'Squat (Barbell)', nameRu: 'Присед', descEn: '', descRu: '', equipment: 'barbell', weight: { kind: 'single', kg: 100 }, sets: 1, reps: '5' }])
     const [we] = buildWorkoutExercises(session)
-    const finished = wk({ status: 'finished', exercises: [{ ...we, sets: [{ weightLb: 225, reps: 5, done: true, restSec: 90, note: '' }] }] })
+    const finished = wk({ status: 'finished', exercises: [{ ...we, sets: [{ weightLb: 225, reps: 5, done: true, restSec: 90 }] }] })
     expect(lastActualFor([finished], we.exerciseRef)![0].weightLb).toBe(225)
   })
 })
 
 describe('blankSet', () => {
   it('is an empty, not-done set carrying the given rest', () => {
-    expect(blankSet(120)).toEqual({ weightLb: null, reps: null, done: false, restSec: 120, note: '' })
+    expect(blankSet(120)).toEqual({ weightLb: null, reps: null, done: false, restSec: 120 })
   })
 })
 
@@ -150,7 +150,7 @@ describe('catalogToWorkoutExercise', () => {
     expect(we.coachTarget).toBe('')
     expect(we.nameRu).toBe('Жим ногами')
     expect(we.sets).toHaveLength(1)
-    expect(we.sets[0]).toEqual({ weightLb: null, reps: null, done: false, restSec: 90, note: '' })
+    expect(we.sets[0]).toEqual({ weightLb: null, reps: null, done: false, restSec: 90 })
   })
 })
 

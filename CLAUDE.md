@@ -39,10 +39,9 @@ still produces 0 unknowns and type-checks.
   `{ finished: {...} }`. Leave room for future logger keys (sets, timer, notes).
 - **Rendering uses `innerHTML` with trusted static data.** User-entered text is a
   stored-XSS sink and must use `textContent` / an input's `.value` property — NEVER
-  an `innerHTML` template. Live sinks handled this way: per-set **notes** and the
-  **coach message** in `logging.ts` (notes via `textContent`, message via textarea
-  `.value`) and the whole `history.ts` screen (built with `createElement` +
-  `textContent`). Verified with an `<img onerror>` probe.
+  an `innerHTML` template. Live sinks: the **coach message** in `logging.ts`
+  (textarea `.value`) and `history.ts` (built with `createElement` + `textContent`).
+  Verified with an `<img onerror>` probe.
 - **Cyrillic gotcha:** JS `\w`/`\b` do NOT match Cyrillic. Use `[а-яё]` classes
   and whitespace anchors in any Russian-text regex.
 

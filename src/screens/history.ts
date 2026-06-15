@@ -1,5 +1,5 @@
-// Past finished workouts. SECURITY: workout/exercise names are trusted, but per-set
-// NOTES and the coach message are USER TEXT — rendered via textContent only.
+// Past finished workouts. SECURITY: workout/exercise names are trusted, but the
+// coach message is USER TEXT — rendered via textContent only.
 import { listWorkouts } from '../lib/workouts'
 import { workoutDurationSec } from '../lib/logger-model'
 import type { Workout } from '../lib/logger-types'
@@ -52,7 +52,6 @@ export function renderHistory(el: HTMLElement) {
           row.className = 'hist-set'
           const done = s.done ? '✓' : '·'
           row.textContent = `${done} ${s.weightLb ?? '–'} lb × ${s.reps ?? '–'}`
-          if (s.note) { const n = document.createElement('span'); n.className = 'hist-note'; n.textContent = ` 🗒 ${s.note}`; row.appendChild(n) }
           exEl.appendChild(row)
         }
         body.appendChild(exEl)

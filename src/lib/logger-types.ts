@@ -8,7 +8,6 @@ export interface LoggedSet {
   reps: number | null
   done: boolean
   restSec: number
-  note: string
 }
 
 export interface WorkoutExercise {

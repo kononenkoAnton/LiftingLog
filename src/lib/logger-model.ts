@@ -70,7 +70,6 @@ export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
         reps: coachRepsForSet(e, i),
         done: false,
         restSec: rest,
-        note: '',
       }
     })
     return {
@@ -123,7 +122,7 @@ export function lastActualFor(history: Workout[], exerciseRef: string): LoggedSe
 
 /** A fresh empty (not-done) set carrying the given rest default. */
 export function blankSet(restSec: number): LoggedSet {
-  return { weightLb: null, reps: null, done: false, restSec, note: '' }
+  return { weightLb: null, reps: null, done: false, restSec }
 }
 
 /** Turn a catalog pick into a non-coach WorkoutExercise with one blank set. */

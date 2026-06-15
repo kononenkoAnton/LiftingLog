@@ -163,12 +163,6 @@
 .lg-rest-adj{border:1px solid rgba(94,168,255,.4);background:rgba(255,255,255,.05);color:var(--blue);
   border-radius:8px;padding:6px 10px;font-weight:700;font-size:12px;cursor:pointer}
 .lg-rest-skip{margin-left:auto;border:none;background:none;color:var(--dim);font-weight:700;font-size:12px;cursor:pointer}
-.lg-thead,.lg-row{grid-template-columns:24px 1fr 1fr 28px 26px 22px}
-.lg-note-btn{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.05);
-  color:var(--dim);font-size:12px;cursor:pointer;padding:0}
-.lg-note-btn.has{border-color:rgba(94,168,255,.5);color:var(--blue)}
-.lg-note{font-size:11px;color:var(--blue);padding:0 2px 4px 32px;word-break:break-word}
-.lg-note:empty{display:none}
 .lg-msg-l{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:14px 0 6px}
 .lg-msg{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
   color:var(--ink);font-size:14px;font-family:var(--sans);resize:vertical;margin-bottom:10px}
