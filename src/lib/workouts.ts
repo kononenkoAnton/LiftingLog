@@ -93,6 +93,13 @@ export function startWorkout(session: Session): Workout {
 export function getActiveWorkout(): Workout | null { return active }
 export function listWorkouts(): Workout[] { return history }
 
+/** Most recent finished workout logged for a given program day, or null. */
+export function getFinishedForSession(sessionNum: number): Workout | null {
+  return history
+    .filter((w) => w.status === 'finished' && w.sessionNum === sessionNum)
+    .sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt))[0] ?? null
+}
+
 /** Persist the active workout (write-through). Safe to call on every edit. */
 export async function saveActiveWorkout(w: Workout): Promise<void> {
   active = w

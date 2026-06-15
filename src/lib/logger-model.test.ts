@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -209,5 +209,19 @@ describe('withLastActual', () => {
   it('a coach exercise does NOT override a weight the coach already set', () => {
     const coach = we({ isCoachPrescribed: true, sets: [{ weightLb: 220, reps: 5, done: false, restSec: 90 }] })
     expect(withLastActual(coach, [doneSet(999, 1)]).sets[0].weightLb).toBe(220)
+  })
+})
+
+describe('trainerLog', () => {
+  it('formats a Russian log with kg and grouped consecutive sets', () => {
+    const w = wk({ exercises: [
+      { exerciseRef: 'b', nameEn: 'Bench', nameRu: 'Жим лёжа', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 2), doneSet(225, 2), doneSet(225, 2), doneSet(225, 2)] },
+      { exerciseRef: 'd', nameEn: 'DL', nameRu: 'Становая', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(295, 3), doneSet(315, 3), doneSet(315, 3), doneSet(315, 3)] },
+    ] })
+    expect(trainerLog(w)).toBe('Жим лёжа\n102 × 2 — 4\n\nСтановая\n134 × 3 — 1\n143 × 3 — 3')
+  })
+  it('uses б/в for bodyweight sets', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'p', nameEn: 'Pushup', nameRu: 'Отжимания', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [{ weightLb: null, reps: 20, done: true, restSec: 90 }] }] })
+    expect(trainerLog(w)).toBe('Отжимания\nб/в × 20 — 1')
   })
 })

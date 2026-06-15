@@ -5,8 +5,10 @@ import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
 import { isFinished, getSnapshot, finish, unfinish } from '../lib/progress'
 import { gsap } from 'gsap'
-import { getActiveWorkout, startWorkout } from '../lib/workouts'
+import { getActiveWorkout, startWorkout, getFinishedForSession } from '../lib/workouts'
 import { renderLogging } from './logging'
+import { trainerLog } from '../lib/logger-model'
+import { toast } from '../lib/toast'
 
 // Distinct per-set loads for a barbell lift (progression / per-set scheme), else
 // null. Each entry is a weight the bar is loaded to for one (or more) sets.
@@ -105,6 +107,7 @@ export function renderSession(el: HTMLElement, n: number) {
   let stepIdx = 0 // selected step within a progression/per-set lift
 
   const draw = (animate = true) => {
+    const logged = getFinishedForSession(s.num)
     // Finished days render their locked snapshot; unfinished show the latest parse.
     const snap = isFinished(s.num) ? getSnapshot(s.num) : null
     const exercises = snap ?? s.exercises
@@ -145,6 +148,7 @@ export function renderSession(el: HTMLElement, n: number) {
         ${otherActive
           ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
           : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
+        ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Скопировать для тренера</button>` : ''}
       </div>`
 
     const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
@@ -156,6 +160,13 @@ export function renderSession(el: HTMLElement, n: number) {
 
     const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
     if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n, () => renderSession(el, n)) })
+
+    const trainerBtn = el.querySelector<HTMLButtonElement>('#trainerBtn')
+    if (trainerBtn && logged) trainerBtn.addEventListener('click', async () => {
+      const text = trainerLog(logged)
+      try { await navigator.clipboard.writeText(text); toast('Скопировано для тренера ✓', 'info') }
+      catch { toast(text, 'info') }
+    })
 
     const go = (num: number) => { if (getSession(num)) location.hash = `#/session/${num}` }
     el.querySelector('#prevDay')!.addEventListener('click', () => go(s.num - 1))

@@ -2,7 +2,7 @@
 // pass `now` in so these stay deterministic and unit-testable.
 import type { Exercise, Session, Weight } from '../data/types'
 import type { CatalogExercise } from '../data/catalog-types'
-import { kgToLb } from './load'
+import { kgToLb, KG_TO_LB } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
 // Stable per-exercise identity for matching the same movement across workouts.
@@ -155,4 +155,23 @@ export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
     coachTarget: '',
     sets: [blankSet(c.defaultRestSec)],
   }
+}
+
+/** Russian-only log of a finished workout for sending to the coach (weights in kg). */
+export function trainerLog(w: Workout): string {
+  const wt = (lb: number | null) => (lb === null ? 'б/в' : String(Math.round(lb / KG_TO_LB)))
+  return w.exercises
+    .map((ex) => {
+      const lines: string[] = []
+      let i = 0
+      while (i < ex.sets.length) {
+        const s = ex.sets[i]
+        let n = 1
+        while (i + n < ex.sets.length && ex.sets[i + n].weightLb === s.weightLb && ex.sets[i + n].reps === s.reps) n++
+        lines.push(`${wt(s.weightLb)} × ${s.reps ?? '?'} — ${n}`)
+        i += n
+      }
+      return [ex.nameRu, ...lines].join('\n')
+    })
+    .join('\n\n')
 }
