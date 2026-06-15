@@ -1,16 +1,20 @@
-// Logging mode for an active workout. Owns all set-editing interactions; mutates the
-// active Workout and writes through workouts.ts. Names/numbers rendered here are
-// trusted (catalog/coach data + numeric inputs) so innerHTML is safe. Per-set NOTES
-// (user text) are NOT rendered yet — they arrive in B4 and MUST use textContent.
+// Logging mode for an active workout. Owns set-editing, the session pause/resume
+// clock, and a transient per-set rest-timer countdown. Names/numbers rendered here
+// are trusted; per-set NOTES (user text) are still NOT rendered (B4 → textContent).
 import type { WorkoutExercise } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout } from '../lib/workouts'
-import { workoutDurationSec, blankSet, catalogToWorkoutExercise } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
 
-let timer: ReturnType<typeof setInterval> | null = null
-const clearTimer = () => { if (timer) { clearInterval(timer); timer = null } }
+let elapsedTimer: ReturnType<typeof setInterval> | null = null
+let restTimer: ReturnType<typeof setInterval> | null = null
+let rest: { exIdx: number; setIdx: number; endMs: number } | null = null
+
+const clearElapsed = () => { if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null } }
+const clearRest = () => { if (restTimer) { clearInterval(restTimer); restTimer = null } }
+const clearAll = () => { clearElapsed(); clearRest(); rest = null }
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
 
 function exerciseHtml(ex: WorkoutExercise, i: number): string {
@@ -32,31 +36,76 @@ function exerciseHtml(ex: WorkoutExercise, i: number): string {
     </div>`
 }
 
+function restBannerHtml(): string {
+  if (!rest) return ''
+  const remain = Math.max(0, Math.round((rest.endMs - Date.now()) / 1000))
+  return `
+    <div class="lg-rest" id="lgRest">
+      <button class="lg-rest-adj" id="lgRestMinus" type="button">−15</button>
+      <span class="lg-rest-time mono" id="lgRestTime">${fmt(remain)}</span>
+      <button class="lg-rest-adj" id="lgRestPlus" type="button">+15</button>
+      <button class="lg-rest-skip" id="lgRestSkip" type="button">Skip</button>
+    </div>`
+}
+
 export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () => void) {
   const draw = () => {
     const w = getActiveWorkout()
-    if (!w) { clearTimer(); onExit(); return }
+    if (!w) { clearAll(); onExit(); return }
+    const paused = !!w.pausedAt
 
     el.innerHTML = `
       <div class="screen lg">
         <div class="lg-top">
-          <span class="lg-elapsed mono" id="lgElapsed">${fmt(workoutDurationSec(w, Date.now()))}</span>
+          <div class="lg-clock">
+            <button class="lg-pause" id="lgPause" type="button">${paused ? '▶' : '⏸'}</button>
+            <span class="lg-elapsed mono ${paused ? 'paused' : ''}" id="lgElapsed">${fmt(workoutDurationSec(w, Date.now()))}</span>
+          </div>
           <button class="lg-finish" id="lgFinish" type="button">Finish</button>
         </div>
-        <a class="back" href="#/">‹ Program</a>
+        <a class="back" id="lgBack" href="#/">‹ Program</a>
         <div class="lg-day">Day ${w.sessionNum} · logging</div>
+        ${restBannerHtml()}
         <div id="lgEx">${w.exercises.map((ex, i) => exerciseHtml(ex, i)).join('') || '<div class="note">No exercises — add one below.</div>'}</div>
         <button class="btn-add" id="lgAddEx" type="button">+ Add Exercise</button>
         <button class="btn-cancel" id="lgCancel" type="button">Cancel Workout</button>
       </div>`
 
-    clearTimer()
-    timer = setInterval(() => {
-      const cur = getActiveWorkout()
-      const e = el.querySelector('#lgElapsed')
-      if (!cur || !e) { clearTimer(); return }
-      e.textContent = fmt(workoutDurationSec(cur, Date.now()))
-    }, 1000)
+    clearElapsed()
+    if (!paused) {
+      elapsedTimer = setInterval(() => {
+        const cur = getActiveWorkout()
+        const e = el.querySelector('#lgElapsed')
+        if (!cur || !e) { clearElapsed(); return }
+        e.textContent = fmt(workoutDurationSec(cur, Date.now()))
+      }, 1000)
+    }
+
+    clearRest()
+    if (rest) {
+      restTimer = setInterval(() => {
+        const e = el.querySelector('#lgRestTime')
+        if (!rest || !e) { clearRest(); return }
+        const remain = Math.max(0, Math.round((rest.endMs - Date.now()) / 1000))
+        e.textContent = fmt(remain)
+        if (remain <= 0) { navigator.vibrate?.(200); rest = null; draw() }
+      }, 1000)
+    }
+
+    el.querySelector('#lgPause')!.addEventListener('click', () => {
+      const cur = getActiveWorkout(); if (!cur) return
+      const next = togglePause(cur, Date.now())
+      void saveActiveWorkout(next)
+      draw()
+    })
+
+    el.querySelector('#lgBack')!.addEventListener('click', (ev) => {
+      ev.preventDefault()
+      if (confirm('Leave this workout? It stays active — resume it from this day.')) {
+        clearAll()
+        location.hash = '#/'
+      }
+    })
 
     el.querySelectorAll<HTMLInputElement>('.lg-inp').forEach((inp) => {
       inp.addEventListener('change', () => {
@@ -76,6 +125,8 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const exi = Number(btn.dataset.ex), si = Number(btn.dataset.set)
         const st = cur.exercises[exi].sets[si]
         st.done = !st.done
+        if (st.done) rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }
+        else if (rest && rest.exIdx === exi && rest.setIdx === si) rest = null
         void saveActiveWorkout(cur)
         draw()
       })
@@ -87,6 +138,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const exi = Number(btn.dataset.ex), si = Number(btn.dataset.set)
         cur.exercises[exi].sets.splice(si, 1)
         if (cur.exercises[exi].sets.length === 0) cur.exercises.splice(exi, 1)
+        if (rest && rest.exIdx === exi) rest = null
         void saveActiveWorkout(cur)
         draw()
       })
@@ -97,12 +149,25 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const cur = getActiveWorkout(); if (!cur) return
         const exi = Number(btn.dataset.ex)
         const ex = cur.exercises[exi]
-        const rest = ex.sets.length ? ex.sets[ex.sets.length - 1].restSec : 90
-        ex.sets.push(blankSet(rest))
+        const restSec = ex.sets.length ? ex.sets[ex.sets.length - 1].restSec : 90
+        ex.sets.push(blankSet(restSec))
         void saveActiveWorkout(cur)
         draw()
       })
     })
+
+    const adjustRest = (delta: number) => {
+      const cur = getActiveWorkout()
+      if (!cur || !rest) return
+      const st = cur.exercises[rest.exIdx]?.sets[rest.setIdx]
+      if (st) { st.restSec = Math.max(0, st.restSec + delta); void saveActiveWorkout(cur) }
+      rest.endMs = Math.max(Date.now(), rest.endMs + delta * 1000)
+      const e = el.querySelector('#lgRestTime')
+      if (e) e.textContent = fmt(Math.max(0, Math.round((rest.endMs - Date.now()) / 1000)))
+    }
+    el.querySelector('#lgRestMinus')?.addEventListener('click', () => adjustRest(-15))
+    el.querySelector('#lgRestPlus')?.addEventListener('click', () => adjustRest(15))
+    el.querySelector('#lgRestSkip')?.addEventListener('click', () => { rest = null; draw() })
 
     el.querySelector('#lgAddEx')!.addEventListener('click', async () => {
       const chosen = await openExercisePicker({ lang: 'en', multi: true })
@@ -115,7 +180,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
     el.querySelector('#lgFinish')!.addEventListener('click', async () => {
       const cur = getActiveWorkout(); if (!cur) return
-      clearTimer()
+      clearAll()
       await finishWorkout(cur, cur.coachMessage, new Date().toISOString())
       const s = getSession(sessionNum)
       if (s) await markDayFinished(sessionNum, s.exercises)
@@ -124,7 +189,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
     el.querySelector('#lgCancel')!.addEventListener('click', async () => {
       if (!confirm('Cancel this workout? All progress will be lost.')) return
-      clearTimer()
+      clearAll()
       await cancelWorkout()
       onExit()
     })
