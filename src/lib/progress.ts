@@ -78,8 +78,10 @@ export async function finish(num: number, snapshot: Snapshot): Promise<void> {
   if (!supabase) { writeLocal(); return }
   const uid = await currentUserId()
   if (!uid) { toast('Not signed in — can’t save', 'error'); return }
+  // Omit user_id — the column defaults to auth.uid() server-side, so it always
+  // matches the RLS "with check (auth.uid() = user_id)" for the signed-in user.
   const { error } = await supabase.from('progress').upsert(
-    { user_id: uid, session_num: num, snapshot },
+    { session_num: num, snapshot },
     { onConflict: 'user_id,session_num' },
   )
   if (error) { console.error('[progress] save failed', error); toast(`Save failed: ${error.message}`, 'error') }
