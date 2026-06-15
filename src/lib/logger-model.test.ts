@@ -125,6 +125,12 @@ describe('lastActualFor', () => {
     const w = wk({ exercises: [{ exerciseRef: 'coach:other', nameEn: 'O', nameRu: 'O', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(100, 5)] }] })
     expect(lastActualFor([w], 'coach:s')).toBeNull()
   })
+  it('matches the ref that buildWorkoutExercises produces (round-trip)', () => {
+    const session = mkSession([{ order: 1, nameEn: 'Squat (Barbell)', nameRu: 'Присед', descEn: '', descRu: '', equipment: 'barbell', weight: { kind: 'single', kg: 100 }, sets: 1, reps: '5' }])
+    const [we] = buildWorkoutExercises(session)
+    const finished = wk({ status: 'finished', exercises: [{ ...we, sets: [{ weightLb: 225, reps: 5, done: true, restSec: 90, note: '' }] }] })
+    expect(lastActualFor([finished], we.exerciseRef)![0].weightLb).toBe(225)
+  })
 })
 
 describe('blankSet', () => {

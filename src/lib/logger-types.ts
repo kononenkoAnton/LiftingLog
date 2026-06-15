@@ -12,7 +12,7 @@ export interface LoggedSet {
 }
 
 export interface WorkoutExercise {
-  exerciseRef: string        // catalog id, or `coach:<order>` for prescribed lifts
+  exerciseRef: string        // catalog id, or `coach:<slug(nameEn)>` for prescribed lifts
   nameEn: string
   nameRu: string
   equipment: Equipment
