@@ -186,3 +186,5 @@
   background:rgba(226,59,59,.12);color:#ff7a7a;font-size:12px;cursor:pointer;padding:0}
 .trainer-btn{display:block;width:100%;text-align:center;margin-top:10px;padding:13px;border-radius:13px;border:none;
   cursor:pointer;font-weight:700;font-size:14px;background:rgba(94,168,255,.14);color:var(--blue)}
+.exmini-pl{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin-top:6px}
+.exmini-side{font-size:9px;color:var(--dim);margin-left:6px}

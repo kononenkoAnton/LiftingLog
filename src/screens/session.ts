@@ -196,8 +196,14 @@ export function renderSession(el: HTMLElement, n: number) {
       if (i === focusIdx) return
       const row = document.createElement('div')
       row.className = 'exmini'
+      // per-side plate breakdown for barbell lifts, so loading is visible without
+      // opening each exercise (uses the top/working weight)
+      const miniKg = x.equipment === 'barbell' ? primaryKg(x.weight) : null
+      const miniPlates = miniKg !== null
+        ? `<div class="exmini-pl">${platesText(computeBarbellLoad(miniKg).plates)}<span class="exmini-side">/ side · lb</span></div>`
+        : ''
       row.innerHTML = `<div class="i">${x.order}</div>
-        <div class="exmini-name"><div class="t">${x.nameEn}</div><div class="tr">${x.nameRu}</div></div>
+        <div class="exmini-name"><div class="t">${x.nameEn}</div><div class="tr">${x.nameRu}</div>${miniPlates}</div>
         <div class="w">${weightLabel(x.weight, x.perImplement)}</div>`
       row.addEventListener('click', () => { focusIdx = i; stepIdx = 0; draw() })
       mini.appendChild(row)
