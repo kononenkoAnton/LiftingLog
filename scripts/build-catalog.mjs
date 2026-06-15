@@ -23,8 +23,9 @@ const EQUIP = {
 // (wger has no machine/cable concept), then wger's equipment field, else bodyweight.
 function classifyEquip(nameEn, wgerNames) {
   const n = nameEn.toLowerCase()
-  if (n.includes('smith') || n.includes('machine') || n.includes('lever') || n.includes('hack ')) return 'machine'
-  if (n.includes('cable') || n.includes('pulldown') || n.includes('pushdown')) return 'cable'
+  // 'hack ' keeps the trailing space so it matches "Hack Squat" but not unrelated words.
+  if (n.includes('smith') || n.includes('machine') || n.includes('hack ')) return 'machine'
+  if (n.includes('cable') || n.includes('pulldown') || n.includes('pull down') || n.includes('pushdown') || n.includes('push down')) return 'cable'
   if (n.includes('barbell') || n.includes('ez-bar') || n.includes('ez bar') || n.includes('sz-bar')) return 'barbell'
   if (n.includes('dumbbell') || n.includes('kettlebell')) return 'dumbbell'
   const fromWger = wgerNames.map((w) => EQUIP[w]).find(Boolean)
@@ -37,7 +38,7 @@ function restFor(nameEn, equip) {
   const n = nameEn.toLowerCase()
   if (n.includes('squat')) return 90
   if (n.includes('bench')) return 150
-  if (n.includes('deadlift')) return 300
+  if (n.includes('deadlift')) return equip === 'barbell' ? 300 : 90
   return equip === 'barbell' ? 180 : 90
 }
 
@@ -90,7 +91,10 @@ let { items, ruFallback } = build(raw)
 if (existsSync(EXTRAS)) {
   const extras = JSON.parse(readFileSync(EXTRAS, 'utf8'))
   const byId = new Map(items.map((i) => [i.id, i]))
-  for (const e of extras) byId.set(e.id, e)
+  for (const e of extras) {
+    if (!e.id) throw new Error(`catalog-extras.json: entry missing 'id': ${JSON.stringify(e)}`)
+    byId.set(e.id, e)
+  }
   items = [...byId.values()]
 }
 

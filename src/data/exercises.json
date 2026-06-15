@@ -363,7 +363,7 @@
     "nameEn": "Back Lever",
     "nameRu": "Back Lever",
     "ruIsFallback": true,
-    "equipment": "machine",
+    "equipment": "bodyweight",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -897,7 +897,7 @@
     "nameEn": "Biceps Close Grip Pull Down",
     "nameRu": "Biceps Close Grip Pull Down",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -1811,7 +1811,7 @@
     "nameEn": "Close-grip Lat Pull Down",
     "nameRu": "Close-grip Lat Pull Down",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -2481,7 +2481,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "dumbbell-drag-curls",
@@ -2668,7 +2668,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "dumbbell-scaption",
@@ -2767,7 +2767,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "dumbbell-thruster",
@@ -3319,7 +3319,7 @@
     "nameEn": "Front Lever",
     "nameRu": "Front Lever",
     "ruIsFallback": true,
-    "equipment": "machine",
+    "equipment": "bodyweight",
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -3330,7 +3330,7 @@
     "nameEn": "Front lever pull-up",
     "nameRu": "Front lever pull-up",
     "ruIsFallback": true,
-    "equipment": "machine",
+    "equipment": "bodyweight",
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -3341,7 +3341,7 @@
     "nameEn": "Front lever tuck",
     "nameRu": "Front lever tuck",
     "ruIsFallback": true,
-    "equipment": "machine",
+    "equipment": "bodyweight",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -4223,7 +4223,7 @@
     "nameEn": "Inverted Lat Pull Down",
     "nameRu": "Inverted Lat Pull Down",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -4449,7 +4449,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "kettlebell-one-legged-deadlift",
@@ -4460,7 +4460,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "kettlebell-sumo-deadlift",
@@ -4471,7 +4471,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "kettlebell-sumo-high-pull",
@@ -4720,7 +4720,7 @@
     "nameEn": "Lat Pull Down",
     "nameRu": "Lat Pull Down",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Back",
     "aliasesEn": [
       "lat Pulldown",
@@ -4734,7 +4734,7 @@
     "nameEn": "Lat Pull Down (Leaning Back)",
     "nameRu": "Lat Pull Down (Leaning Back)",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -4745,7 +4745,7 @@
     "nameEn": "Lat Pull Down (Straight Back)",
     "nameRu": "Lat Pull Down (Straight Back)",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -6395,7 +6395,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "reach-ups",
@@ -7775,7 +7775,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "single-leg-lunge-with-kettlebell",
@@ -8093,7 +8093,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "sphinx",
@@ -8437,7 +8437,7 @@
     "nameEn": "Straight-arm Pull Down (bar Attachment)",
     "nameRu": "Straight-arm Pull Down (bar Attachment)",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -8448,7 +8448,7 @@
     "nameEn": "Straight-arm Pull Down (rope Attachment)",
     "nameRu": "Straight-arm Pull Down (rope Attachment)",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
@@ -8485,7 +8485,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 90
   },
   {
     "id": "sumo-squats",
@@ -9017,7 +9017,7 @@
     "nameEn": "Underhand Lat Pull Down",
     "nameRu": "Underhand Lat Pull Down",
     "ruIsFallback": true,
-    "equipment": "bodyweight",
+    "equipment": "cable",
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
