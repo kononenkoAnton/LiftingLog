@@ -20,12 +20,12 @@ const clearAll = () => { clearElapsed(); clearRest(); rest = null }
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
 
 function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null): string {
-  const topLast = last && last[0] ? ` · Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}` : ''
+  const lastStr = last && last[0] ? `Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}` : ''
   return `
     <div class="lg-ex">
       <div class="lg-exname">${ex.nameEn}</div>
       <div class="lg-exru">${ex.nameRu}</div>
-      ${ex.coachTarget || topLast ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${topLast}</div>` : ''}
+      ${ex.coachTarget || lastStr ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${ex.coachTarget && lastStr ? ' · ' : ''}${lastStr}</div>` : ''}
       <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span><span></span></div>
       ${ex.sets.map((st, si) => {
         const lp = last && last[si] ? last[si] : null
@@ -83,12 +83,11 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       </div>`
 
     el.querySelectorAll<HTMLElement>('.lg-note').forEach((d) => {
-      const cur = getActiveWorkout(); if (!cur) return
-      const note = cur.exercises[Number(d.dataset.ex)]?.sets[Number(d.dataset.set)]?.note ?? ''
+      const note = w.exercises[Number(d.dataset.ex)]?.sets[Number(d.dataset.set)]?.note ?? ''
       d.textContent = note ? `🗒 ${note}` : ''
     })
     const msg = el.querySelector<HTMLTextAreaElement>('#lgMsg')!
-    msg.value = w.coachMessage
+    msg.value = w.coachMessage ?? ''
     msg.addEventListener('input', () => {
       const cur = getActiveWorkout(); if (!cur) return
       cur.coachMessage = msg.value
