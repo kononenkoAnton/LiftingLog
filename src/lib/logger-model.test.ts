@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText } from './logger-model'
+import type { Session, Exercise } from '../data/types'
+
+const mkSession = (exercises: Exercise[]): Session => ({
+  num: 7, date: '2026-06-16', dateLabel: 'Tue Jun 16', focus: 'Squat', exercises,
+})
 
 describe('restDefaultFor', () => {
   it('gives squats 90s', () => { expect(restDefaultFor('Back Squat', 'barbell')).toBe(90) })
@@ -26,5 +31,52 @@ describe('workoutDurationSec', () => {
   })
   it('never goes negative', () => {
     expect(workoutDurationSec({ ...base, pausedMs: 999_999 }, Date.parse(base.startedAt))).toBe(0)
+  })
+})
+
+describe('coachTargetText', () => {
+  const ex = (over: Partial<Exercise>): Exercise => ({
+    order: 1, nameEn: 'Squat', nameRu: 'Присед', descEn: '', descRu: '',
+    equipment: 'barbell', weight: { kind: 'single', kg: 100 }, sets: 3, reps: '5', ...over,
+  })
+  it('single weight', () => { expect(coachTargetText(ex({}))).toBe('100 kg × 5') })
+  it('range weight', () => { expect(coachTargetText(ex({ weight: { kind: 'range', minKg: 90, maxKg: 100 } }))).toBe('90–100 kg × 5') })
+  it('bodyweight', () => { expect(coachTargetText(ex({ weight: { kind: 'bodyweight' }, reps: '12' }))).toBe('Bodyweight × 12') })
+})
+
+describe('buildWorkoutExercises', () => {
+  const ex = (over: Partial<Exercise>): Exercise => ({
+    order: 1, nameEn: 'Squat', nameRu: 'Присед', descEn: '', descRu: '',
+    equipment: 'barbell', weight: { kind: 'single', kg: 100 }, sets: 3, reps: '5', ...over,
+  })
+  it('makes one WorkoutExercise per coach exercise, ref by order', () => {
+    const out = buildWorkoutExercises(mkSession([ex({ order: 2 })]))
+    expect(out).toHaveLength(1)
+    expect(out[0].exerciseRef).toBe('coach:2')
+    expect(out[0].isCoachPrescribed).toBe(true)
+  })
+  it('pre-fills set count from coach sets, lb from kg, reps from reps', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ sets: 3, weight: { kind: 'single', kg: 100 }, reps: '5' })]))
+    expect(we.sets).toHaveLength(3)
+    expect(we.sets[0].weightLb).toBe(220)
+    expect(we.sets[0].reps).toBe(5)
+    expect(we.sets[0].done).toBe(false)
+    expect(we.sets[0].restSec).toBe(90)
+  })
+  it('defaults to one set when coach sets is null', () => {
+    expect(buildWorkoutExercises(mkSession([ex({ sets: null })]))[0].sets).toHaveLength(1)
+  })
+  it('uses per-set kg/reps for a perSet scheme', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({
+      weight: { kind: 'perSet', steps: [{ kg: 100, reps: 5 }, { kg: 90, reps: 8 }] }, sets: 2,
+    })]))
+    expect(we.sets[0].weightLb).toBe(220)
+    expect(we.sets[1].weightLb).toBe(198)
+    expect(we.sets[1].reps).toBe(8)
+  })
+  it('leaves weightLb null for bodyweight and non-numeric reps null', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ weight: { kind: 'bodyweight' }, reps: '8–12' })]))
+    expect(we.sets[0].weightLb).toBeNull()
+    expect(we.sets[0].reps).toBeNull()
   })
 })
