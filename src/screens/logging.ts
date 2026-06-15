@@ -196,8 +196,10 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const cur = getActiveWorkout(); if (!cur) return
         const exi = Number(btn.dataset.ex)
         const ex = cur.exercises[exi]
-        const restSec = ex.sets.length ? ex.sets[ex.sets.length - 1].restSec : 90
-        ex.sets.push(blankSet(restSec))
+        const prev = ex.sets[ex.sets.length - 1]
+        ex.sets.push(prev
+          ? { weightLb: prev.weightLb, reps: prev.reps, done: false, restSec: prev.restSec, note: '' }
+          : blankSet(90))
         void saveActiveWorkout(cur)
         draw()
       })

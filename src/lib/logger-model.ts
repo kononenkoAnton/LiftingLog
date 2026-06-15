@@ -1,6 +1,6 @@
 // Pure model for the workout logger. No DOM, no storage, no Date.now() — callers
 // pass `now` in so these stay deterministic and unit-testable.
-import type { Equipment, Exercise, Session, Weight } from '../data/types'
+import type { Exercise, Session, Weight } from '../data/types'
 import type { CatalogExercise } from '../data/catalog-types'
 import { kgToLb } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
@@ -10,12 +10,12 @@ const slugify = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-
 
 // Per-lift rest defaults. MUST stay in sync with scripts/build-catalog.mjs `restFor`
 // (that bakes defaultRestSec into the catalog; this resolves it for coach lifts).
-export function restDefaultFor(nameEn: string, equipment: Equipment): number {
+export function restDefaultFor(nameEn: string): number {
   const n = nameEn.toLowerCase()
-  if (n.includes('squat')) return 90
+  if (n.includes('squat')) return 300
+  if (n.includes('deadlift')) return 300
   if (n.includes('bench')) return 150
-  if (n.includes('deadlift')) return equipment === 'barbell' ? 300 : 90
-  return equipment === 'barbell' ? 180 : 90
+  return 90
 }
 
 // kg the coach prescribes for set index i (null if not a concrete number).
@@ -62,7 +62,7 @@ export function coachTargetText(e: Exercise): string {
 export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
   return session.exercises.map((e) => {
     const count = defaultSetCount(e)
-    const rest = restDefaultFor(e.nameEn, e.equipment)
+    const rest = restDefaultFor(e.nameEn)
     const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
       const kg = coachKgForSet(e.weight, i)
       return {

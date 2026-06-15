@@ -9,12 +9,11 @@ const mkSession = (exercises: Exercise[]): Session => ({
 })
 
 describe('restDefaultFor', () => {
-  it('gives squats 90s', () => { expect(restDefaultFor('Back Squat', 'barbell')).toBe(90) })
-  it('gives bench 150s', () => { expect(restDefaultFor('Bench Press', 'barbell')).toBe(150) })
-  it('gives barbell deadlift 300s', () => { expect(restDefaultFor('Deadlift', 'barbell')).toBe(300) })
-  it('does not give a dumbbell deadlift 300s', () => { expect(restDefaultFor('Single-Leg Deadlift', 'dumbbell')).toBe(90) })
-  it('gives other barbell work 180s', () => { expect(restDefaultFor('Barbell Row', 'barbell')).toBe(180) })
-  it('gives other non-barbell work 90s', () => { expect(restDefaultFor('Lat Pulldown', 'cable')).toBe(90) })
+  it('gives squats 5:00', () => { expect(restDefaultFor('Back Squat')).toBe(300) })
+  it('gives deadlifts 5:00', () => { expect(restDefaultFor('Conventional Deadlift')).toBe(300) })
+  it('gives bench 2:30', () => { expect(restDefaultFor('Bench Press')).toBe(150) })
+  it('gives barbell accessory work 1:30', () => { expect(restDefaultFor('Barbell Row')).toBe(90) })
+  it('gives other accessory work 1:30', () => { expect(restDefaultFor('Lat Pulldown')).toBe(90) })
 })
 
 describe('workoutDurationSec', () => {
@@ -63,7 +62,7 @@ describe('buildWorkoutExercises', () => {
     expect(we.sets[0].weightLb).toBe(220)
     expect(we.sets[0].reps).toBe(5)
     expect(we.sets[0].done).toBe(false)
-    expect(we.sets[0].restSec).toBe(90)
+    expect(we.sets[0].restSec).toBe(300)
   })
   it('defaults to one set when coach sets is null', () => {
     expect(buildWorkoutExercises(mkSession([ex({ sets: null })]))[0].sets).toHaveLength(1)

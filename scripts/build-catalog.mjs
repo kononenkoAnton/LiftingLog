@@ -34,12 +34,12 @@ function classifyEquip(nameEn, wgerNames) {
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const aliasList = (arr) => (arr || []).map((a) => a.alias || a).filter((s) => typeof s === 'string')
 
-function restFor(nameEn, equip) {
+function restFor(nameEn) {
   const n = nameEn.toLowerCase()
-  if (n.includes('squat')) return 90
+  if (n.includes('squat')) return 300
+  if (n.includes('deadlift')) return 300
   if (n.includes('bench')) return 150
-  if (n.includes('deadlift')) return equip === 'barbell' ? 300 : 90
-  return equip === 'barbell' ? 180 : 90
+  return 90
 }
 
 async function fetchAll() {
@@ -79,7 +79,7 @@ function build(raw) {
       bodyPart: ex.category?.name || 'Other',
       aliasesEn: aliasList(en.aliases),
       aliasesRu: aliasList(ru?.aliases),
-      defaultRestSec: restFor(en.name, equip),
+      defaultRestSec: restFor(en.name),
     })
   }
   return { items, ruFallback }

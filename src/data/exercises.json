@@ -8,7 +8,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "1-arm-half-kneeling-lat-pulldown",
@@ -510,7 +510,7 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-clean-and-press",
@@ -521,7 +521,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-full-squat",
@@ -532,7 +532,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "barbell-hack-squats",
@@ -543,7 +543,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "barbell-hip-thrust",
@@ -554,7 +554,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-lunges-standing",
@@ -565,7 +565,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-lunges-walking",
@@ -576,7 +576,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-reverse-wrist-curl",
@@ -587,7 +587,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-romanian-deadlift-rdl",
@@ -609,7 +609,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-row-underhand",
@@ -620,7 +620,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-silverback-shrug",
@@ -631,7 +631,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-step-back-lunge",
@@ -644,7 +644,7 @@
       "Barbell Reverse Lunge"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-triceps-extension",
@@ -655,7 +655,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "barbell-wrist-curl",
@@ -668,7 +668,7 @@
       "Forearm Curls"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "battle-ropes",
@@ -734,7 +734,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "bench-dips-on-floor-hd",
@@ -835,7 +835,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "bent-over-rowing-reverse",
@@ -846,7 +846,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "bent-knee-iron-cross",
@@ -934,7 +934,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "biceps-curls-with-dumbbell",
@@ -956,7 +956,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "biceps-with-trx",
@@ -1079,7 +1079,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "box-jumps",
@@ -1101,7 +1101,7 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "braced-squat",
@@ -1112,7 +1112,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "bretzel-stretch",
@@ -1145,7 +1145,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "bulgarian-split-squats-right",
@@ -1156,7 +1156,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "bulgarian-squat-with-dumbbells",
@@ -1167,7 +1167,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "burpees",
@@ -1530,7 +1530,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "calf-raises-on-hackenschmitt-machine",
@@ -1745,7 +1745,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "clean-and-jerk-ol",
@@ -1756,7 +1756,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "clean-and-press",
@@ -1771,7 +1771,7 @@
       "Olympic Clean and Press"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "climbmill",
@@ -1881,7 +1881,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "counterclockwise-neck-circles",
@@ -2316,7 +2316,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "double-leg-calf-raise",
@@ -2360,7 +2360,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "dragon-flag",
@@ -2481,7 +2481,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "dumbbell-drag-curls",
@@ -2536,7 +2536,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "dumbbell-goblet-squat",
@@ -2547,7 +2547,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "dumbbell-hang-power-cleans",
@@ -2668,7 +2668,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "dumbbell-scaption",
@@ -2723,7 +2723,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "dumbbell-single-leg-hip-thrust",
@@ -2756,7 +2756,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "dumbbell-sumo-deadlift",
@@ -2767,7 +2767,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "dumbbell-thruster",
@@ -2989,7 +2989,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "extreme-lat-stretch",
@@ -3136,7 +3136,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "flutter-kicks",
@@ -3389,7 +3389,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "front-pull-wide",
@@ -3400,7 +3400,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "front-raise-cable",
@@ -3425,7 +3425,7 @@
       "DB Front Raises"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "front-raises-with-plates",
@@ -3447,7 +3447,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "front-wood-chop",
@@ -3548,7 +3548,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "hammer-curls",
@@ -3851,7 +3851,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "hip-bridge",
@@ -3906,7 +3906,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "hip-raise-lying",
@@ -3928,7 +3928,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "hollow-hold",
@@ -4273,7 +4273,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "isometric-wipers",
@@ -4383,7 +4383,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "jm-press",
@@ -4394,7 +4394,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "jogging",
@@ -4449,7 +4449,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "kettlebell-one-legged-deadlift",
@@ -4460,7 +4460,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "kettlebell-sumo-deadlift",
@@ -4471,7 +4471,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "kettlebell-sumo-high-pull",
@@ -4515,7 +4515,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "knee-push-ups",
@@ -4669,7 +4669,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "landmine-rotation",
@@ -4680,7 +4680,7 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "landmine-squat-to-press",
@@ -4691,7 +4691,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "larsen-press",
@@ -4702,7 +4702,7 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "lat-pull-db",
@@ -5141,7 +5141,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "low-pulley-cable-fly",
@@ -5284,7 +5284,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "lying-triceps-kickback",
@@ -5397,7 +5397,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "medicine-ball-booklet-crunch",
@@ -5452,7 +5452,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "modified-pulldown",
@@ -5507,7 +5507,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "neck-half-circles",
@@ -5699,7 +5699,7 @@
       "Military Press"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "overhead-cable-tricep-extension",
@@ -5721,7 +5721,7 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "overhead-squat",
@@ -5732,7 +5732,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "overhead-triceps-extension",
@@ -5743,7 +5743,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "pallof-press",
@@ -5809,7 +5809,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "pec-deck",
@@ -5842,7 +5842,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "pendular-hack",
@@ -5864,7 +5864,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "perpendicular-unilateral-landmine-row",
@@ -5875,7 +5875,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "pigeon-stretch",
@@ -5919,7 +5919,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "pin-squat",
@@ -5930,7 +5930,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "pistol-squat",
@@ -5941,7 +5941,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "pistol-squats-right",
@@ -5952,7 +5952,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "planche-de-cote-dynamique",
@@ -6062,7 +6062,7 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "preacher-curl-externally-rotated",
@@ -6095,7 +6095,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "prisoner-squat",
@@ -6106,7 +6106,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "prone-scapular-retraction-arms-at-side",
@@ -6260,7 +6260,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "push-press",
@@ -6395,7 +6395,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "reach-ups",
@@ -6483,7 +6483,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "remo-maquina-agarre-estrecho",
@@ -6549,7 +6549,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "reverse-cable-flye",
@@ -6582,7 +6582,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "reverse-ez-bar-cable-curls",
@@ -6615,7 +6615,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "reverse-grip-bench-press",
@@ -6681,7 +6681,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "reverse-snow-angel",
@@ -6837,7 +6837,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "rowing-machine",
@@ -7336,7 +7336,7 @@
       "Military Press with Barbell"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "shoulder-press-dumbbells",
@@ -7450,7 +7450,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "shrugs-dumbbells",
@@ -7573,7 +7573,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "side-split-squats-left",
@@ -7584,7 +7584,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "side-split-squats-right",
@@ -7595,7 +7595,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "side-straight-arm-pulldown-cable",
@@ -7639,7 +7639,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "side-lying-external-rotation",
@@ -7775,7 +7775,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "single-leg-lunge-with-kettlebell",
@@ -7903,7 +7903,7 @@
       "French Press SZ-bar"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "skydiver-with-arms-in-t-position",
@@ -7947,7 +7947,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "sloper-hanging",
@@ -7972,7 +7972,7 @@
       "​3-1-1 Squat"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "smith-machine-close-grip-bench-press",
@@ -8005,7 +8005,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "smith-machine-squat",
@@ -8016,7 +8016,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "smith-press",
@@ -8049,7 +8049,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "snap-down",
@@ -8071,7 +8071,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "solo-hip-flexor-stretch",
@@ -8093,7 +8093,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "sphinx",
@@ -8137,7 +8137,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "split-squats-right",
@@ -8148,7 +8148,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "squat-jumps",
@@ -8159,7 +8159,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "squat-thrust",
@@ -8170,7 +8170,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "squats",
@@ -8181,7 +8181,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "squats-on-multipress",
@@ -8192,7 +8192,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "stair-master",
@@ -8280,7 +8280,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "standing-it-band-stretch",
@@ -8485,7 +8485,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "sumo-squats",
@@ -8496,7 +8496,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "superman",
@@ -8529,7 +8529,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "supino-inclinado",
@@ -8588,7 +8588,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "talons-fesses",
@@ -8612,7 +8612,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "tibialis-raises",
@@ -8702,7 +8702,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "trap-press",
@@ -8713,7 +8713,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "trap-3-raise",
@@ -9120,7 +9120,7 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 180
+    "defaultRestSec": 90
   },
   {
     "id": "v-bar-pulldown",
@@ -9271,7 +9271,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 300
   },
   {
     "id": "wall-sit",
