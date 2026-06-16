@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant } from './logger-model'
 import type { Session, Exercise } from '../data/types'
-import type { Workout } from './logger-types'
+import type { Workout, LoggedSet } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
 
 const mkSession = (exercises: Exercise[]): Session => ({
@@ -56,23 +56,27 @@ describe('buildWorkoutExercises', () => {
     expect(out[0].exerciseRef).toBe('coach:squat-barbell')
     expect(out[0].isCoachPrescribed).toBe(true)
   })
-  it('pre-fills set count from coach sets, lb from kg, reps from reps', () => {
+  it('pre-fills barbell lb as PLATE weight (coach total − 45 bar), reps from reps', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: 3, weight: { kind: 'single', kg: 100 }, reps: '5' })]))
     expect(we.sets).toHaveLength(3)
-    expect(we.sets[0].weightLb).toBe(220)
+    expect(we.sets[0].weightLb).toBe(175) // 100kg = 220 lb total − 45 bar
     expect(we.sets[0].reps).toBe(5)
     expect(we.sets[0].done).toBe(false)
     expect(we.sets[0].restSec).toBe(300)
   })
+  it('does NOT subtract the bar for non-barbell equipment', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ equipment: 'dumbbell', weight: { kind: 'single', kg: 30 } })]))
+    expect(we.sets[0].weightLb).toBe(66) // round(kgToLb(30)), no bar
+  })
   it('defaults to one set when coach sets is null', () => {
     expect(buildWorkoutExercises(mkSession([ex({ sets: null })]))[0].sets).toHaveLength(1)
   })
-  it('uses per-set kg/reps for a perSet scheme', () => {
+  it('uses per-set kg/reps for a perSet scheme (barbell plate weight)', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({
       weight: { kind: 'perSet', steps: [{ kg: 100, reps: 5 }, { kg: 90, reps: 8 }] }, sets: 2,
     })]))
-    expect(we.sets[0].weightLb).toBe(220)
-    expect(we.sets[1].weightLb).toBe(198)
+    expect(we.sets[0].weightLb).toBe(175) // 220 − 45
+    expect(we.sets[1].weightLb).toBe(153) // 198 − 45
     expect(we.sets[1].reps).toBe(8)
   })
   it('leaves weightLb null for bodyweight and non-numeric reps null', () => {
@@ -80,14 +84,82 @@ describe('buildWorkoutExercises', () => {
     expect(we.sets[0].weightLb).toBeNull()
     expect(we.sets[0].reps).toBeNull()
   })
-  it('uses per-index kg for a progression scheme, clamping extra sets', () => {
+  it('uses per-index kg for a progression scheme, clamping extra sets (barbell plate weight)', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ weight: { kind: 'progression', kg: [80, 90, 100] }, sets: 5 })]))
-    expect(we.sets.map((s) => s.weightLb)).toEqual([176, 198, 220, 220, 220])
+    expect(we.sets.map((s) => s.weightLb)).toEqual([131, 153, 175, 175, 175]) // each − 45 bar
   })
   it('keeps every perSet step when coach sets is null', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: null, weight: { kind: 'perSet', steps: [{ kg: 130, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }] } })]))
     expect(we.sets).toHaveLength(4)
-    expect(we.sets[3].weightLb).toBe(320)
+    expect(we.sets[3].weightLb).toBe(275) // 145kg = 320 lb total − 45 bar
+  })
+  it('flags timed holds and pre-fills reps with the duration in seconds', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ nameEn: 'Plank', equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 4, reps: '45s' })]))
+    expect(we.isTimed).toBe(true)
+    expect(we.sets).toHaveLength(4)
+    expect(we.sets[0].weightLb).toBeNull()
+    expect(we.sets[0].reps).toBe(45)
+  })
+  it('uses the upper bound for a duration range; rep schemes are not timed', () => {
+    const [hold] = buildWorkoutExercises(mkSession([ex({ equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 3, reps: '35-40s' })]))
+    expect(hold.isTimed).toBe(true)
+    expect(hold.sets[0].reps).toBe(40)
+    expect(buildWorkoutExercises(mkSession([ex({ reps: '5' })]))[0].isTimed).toBe(false)
+  })
+  it('attaches a populated alternative when the note has a recognised swap', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ nameEn: 'Plank', equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 4, reps: '45s', notesEn: 'Or hanging leg raises (4×8)' })]))
+    expect(we.isTimed).toBe(true)              // primary: timed plank
+    expect(we.alt?.nameEn).toBe('Hanging Leg Raises')
+    expect(we.alt?.isTimed).toBe(false)        // alt: rep-based
+    expect(we.alt?.sets).toHaveLength(4)
+    expect(we.alt?.sets[0].reps).toBe(8)
+    expect(we.alt?.sets[0].weightLb).toBeNull()
+  })
+})
+
+describe('altFromNotes', () => {
+  it('parses recognised swaps with their sets/reps', () => {
+    expect(altFromNotes('Or hanging leg raises 3x8')).toEqual({ nameEn: 'Hanging Leg Raises', nameRu: 'Подъём ног к перекладине', equipment: 'bodyweight', sets: 3, reps: '8' })
+    expect(altFromNotes('Or hanging leg raises (4×8)')).toMatchObject({ sets: 4, reps: '8' })
+    expect(altFromNotes('Or hanging leg raises 3x8-12')).toMatchObject({ sets: 3, reps: '8-12' })
+    expect(altFromNotes('Or plank: 3x45s')).toMatchObject({ nameEn: 'Plank', sets: 3, reps: '45s' })
+  })
+  it('handles a swap with no sets/reps', () => {
+    expect(altFromNotes('Or hanging leg raises.')).toMatchObject({ nameEn: 'Hanging Leg Raises', sets: null, reps: '' })
+  })
+  it('ignores non-swap "or" notes and empty notes', () => {
+    expect(altFromNotes('Light knee wraps or sleeves allowed.')).toBeNull()
+    expect(altFromNotes('Medium or heavy load.')).toBeNull()
+    expect(altFromNotes(undefined)).toBeNull()
+    expect(altFromNotes('')).toBeNull()
+  })
+})
+
+describe('swapVariant', () => {
+  const swapSession = mkSession([{ order: 1, nameEn: 'Plank', nameRu: 'Планка', descEn: '', descRu: '', equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 4, reps: '45s', notesEn: 'Or hanging leg raises (4×8)' }])
+  it('toggles to the alternative and back, keeping each variant', () => {
+    const [plank] = buildWorkoutExercises(swapSession)
+    const legRaises = swapVariant(plank)
+    expect(legRaises.nameEn).toBe('Hanging Leg Raises')
+    expect(legRaises.alt?.nameEn).toBe('Plank')
+    const back = swapVariant(legRaises)
+    expect(back.nameEn).toBe('Plank')
+    expect(back.alt?.nameEn).toBe('Hanging Leg Raises')
+  })
+  it('is a no-op without an alternative', () => {
+    const [squat] = buildWorkoutExercises(mkSession([{ order: 1, nameEn: 'Squat', nameRu: 'Присед', descEn: '', descRu: '', equipment: 'barbell', weight: { kind: 'single', kg: 100 }, sets: 3, reps: '5' }]))
+    expect(swapVariant(squat)).toBe(squat)
+  })
+})
+
+describe('timedSeconds', () => {
+  it('parses durations (upper bound for ranges), null otherwise', () => {
+    expect(timedSeconds('45s')).toBe(45)
+    expect(timedSeconds('35-40s')).toBe(40)
+    expect(timedSeconds('70-80s')).toBe(80)
+    expect(timedSeconds('5')).toBeNull()
+    expect(timedSeconds('6-8')).toBeNull()
+    expect(timedSeconds('8–12')).toBeNull()
   })
 })
 
@@ -213,12 +285,17 @@ describe('withLastActual', () => {
 })
 
 describe('trainerLog', () => {
-  it('formats a Russian log with kg and grouped consecutive sets', () => {
+  it('adds the 45 lb bar to barbell sets, then kg, grouping consecutive sets', () => {
     const w = wk({ exercises: [
       { exerciseRef: 'b', nameEn: 'Bench', nameRu: 'Жим лёжа', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 2), doneSet(225, 2), doneSet(225, 2), doneSet(225, 2)] },
       { exerciseRef: 'd', nameEn: 'DL', nameRu: 'Становая', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(295, 3), doneSet(315, 3), doneSet(315, 3), doneSet(315, 3)] },
     ] })
-    expect(trainerLog(w)).toBe('Жим лёжа\n102 × 2 — 4\n\nСтановая\n134 × 3 — 1\n143 × 3 — 3')
+    // 225+45=270→122, 295+45=340→154, 315+45=360→163
+    expect(trainerLog(w)).toBe('Жим лёжа\n122 × 2 — 4\n\nСтановая\n154 × 3 — 1\n163 × 3 — 3')
+  })
+  it('does NOT add the bar for non-barbell equipment', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'i', nameEn: 'Incline DB', nameRu: 'Жим гантелей', equipment: 'dumbbell', isCoachPrescribed: false, coachTarget: '', sets: [doneSet(44, 3)] }] })
+    expect(trainerLog(w)).toBe('Жим гантелей\n20 × 3 — 1') // 44/2.20462 → 20
   })
   it('uses б/в for bodyweight sets', () => {
     const w = wk({ exercises: [{ exerciseRef: 'p', nameEn: 'Pushup', nameRu: 'Отжимания', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [{ weightLb: null, reps: 20, done: true, restSec: 90 }] }] })
@@ -226,6 +303,67 @@ describe('trainerLog', () => {
   })
   it('appends the coach message when present', () => {
     const w = wk({ coachMessage: 'Колено побаливало', exercises: [{ exerciseRef: 'b', nameEn: 'Bench', nameRu: 'Жим лёжа', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 2)] }] })
-    expect(trainerLog(w)).toBe('Жим лёжа\n102 × 2 — 1\n\nКолено побаливало')
+    expect(trainerLog(w)).toBe('Жим лёжа\n122 × 2 — 1\n\nКолено побаливало')
+  })
+  it('appends с (seconds) for timed holds', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'pl', nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isCoachPrescribed: true, coachTarget: '', isTimed: true, sets: [doneSet(0, 45), doneSet(0, 45), doneSet(0, 45), doneSet(0, 45)] }] })
+    expect(trainerLog(w)).toBe('Планка\nб/в × 45с — 4')
+  })
+  it('bodyweight prints б/в for 0/empty weight, б/в +Nkg for added weight', () => {
+    const w = wk({ exercises: [
+      { exerciseRef: 'pl', nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [doneSet(0, 1)] },
+      { exerciseRef: 'wp', nameEn: 'Weighted Pull-up', nameRu: 'Подтягивания с весом', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [doneSet(30, 8)] },
+    ] })
+    expect(trainerLog(w)).toBe('Планка\nб/в × 1 — 1\n\nПодтягивания с весом\nб/в +14 × 8 — 1') // 30 lb → 14 kg added
+  })
+})
+
+describe('setWeightDisplay', () => {
+  it('barbell shows plate weight + full (w/ bar), in kg', () => {
+    expect(setWeightDisplay(220, 'barbell', 'kg')).toBe('100 kg (120 w/ bar)')
+  })
+  it('barbell shows plate weight + full (w/ bar), in lb', () => {
+    expect(setWeightDisplay(220, 'barbell', 'lb')).toBe('220 lb (265 w/ bar)')
+  })
+  it('non-barbell shows the weight as-is, no bar', () => {
+    expect(setWeightDisplay(44, 'dumbbell', 'kg')).toBe('20 kg')
+    expect(setWeightDisplay(44, 'dumbbell', 'lb')).toBe('44 lb')
+  })
+  it('null weight → dash', () => {
+    expect(setWeightDisplay(null, 'barbell', 'kg')).toBe('–')
+  })
+  it('bodyweight: 0/empty → BW, added weight → BW +N', () => {
+    expect(setWeightDisplay(0, 'bodyweight', 'kg')).toBe('BW')
+    expect(setWeightDisplay(null, 'bodyweight', 'lb')).toBe('BW')
+    expect(setWeightDisplay(30, 'bodyweight', 'kg')).toBe('BW +14 kg')
+    expect(setWeightDisplay(30, 'bodyweight', 'lb')).toBe('BW +30 lb')
+  })
+})
+
+describe('completeProblem / canComplete', () => {
+  const set = (weightLb: number | null, reps: number | null): LoggedSet => ({ weightLb, reps, done: false, restSec: 90 })
+  it('blocks empty weight and/or reps', () => {
+    expect(completeProblem(set(null, null))).toBe('Enter weight and reps first')
+    expect(completeProblem(set(null, 5))).toBe('Enter weight first')
+    expect(completeProblem(set(100, null))).toBe('Enter reps first')
+  })
+  it('blocks 0 / decimal / negative reps', () => {
+    expect(completeProblem(set(100, 0))).toBe('Reps must be a whole number (1+)')
+    expect(completeProblem(set(100, 3.5))).toBe('Reps must be a whole number (1+)')
+    expect(completeProblem(set(100, -2))).toBe('Reps must be a whole number (1+)')
+  })
+  it('blocks negative weight', () => {
+    expect(completeProblem(set(-5, 3))).toBe("Weight can't be negative")
+  })
+  it('allows weight 0 (empty bar / loadless) with reps ≥ 1', () => {
+    expect(completeProblem(set(0, 1))).toBeNull()
+    expect(canComplete(set(0, 1))).toBe(true)
+  })
+  it('allows a normal weighted set', () => {
+    expect(canComplete(set(100, 5))).toBe(true)
+  })
+  it('labels the rep field per the second arg (e.g. seconds for holds)', () => {
+    expect(completeProblem(set(0, null), 'seconds')).toBe('Enter seconds first')
+    expect(completeProblem(set(0, 0), 'seconds')).toBe('Seconds must be a whole number (1+)')
   })
 })

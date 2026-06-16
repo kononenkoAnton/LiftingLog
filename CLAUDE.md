@@ -33,10 +33,34 @@ still produces 0 unknowns and type-checks.
   `src/data/program.json`.
 - **Plate math is correctness-critical and unit-tested.** Targets round UP (never
   under the trainer's number). Bar = 45 lb; plates per side = 45/35/25/10/5/2.5.
+- **Coach weights are TOTALS; logged barbell weights are PLATES (excl. the bar).**
+  The trainer's kg is the total on the bar (`computeBarbellLoad` + session screen).
+  A logged barbell `weightLb` is only the plates you load — full lift =
+  `fullBarLb(weightLb)` = `weightLb + 45` (`load.ts`). So the coach pre-fill
+  subtracts the bar, and `trainerLog` / Max chips / history add it back before
+  converting to kg. Per-side plates for a logged set = `platesForPlateLb`
+  (`decompose(plateLb/2)`), NOT the total-based `computeBarbellLoad`. Non-barbell
+  equipment (dumbbell/machine/bodyweight) is logged as-is — no bar.
+  - **Set-completion guard** (`completeProblem`/`canComplete` in `logger-model.ts`,
+    pure + tested): a set's ✓ stays locked until it has a weight (`0` allowed —
+    empty bar / loadless) and a **whole number of reps ≥ 1**; negative weight and
+    non-integer/zero reps are blocked. The trainer log prints `б/в` for a bodyweight
+    set with weight `0`/empty (and `б/в +Nkg` for added weight).
+  - **Timed holds** (plank etc.): a coach exercise whose `reps` is a duration like
+    `45s`/`35-40s` is flagged `WorkoutExercise.isTimed` (via `timedSeconds`); the
+    seconds live in the `reps` field (no new column), the logger shows a **Sec**
+    column, completion says "seconds", and History / coach log append `s` / `с`.
+  - **"(or …)" alternatives**: a coach exercise whose English note starts with a
+    recognised swap (`Or hanging leg raises …`, `Or plank: …`) carries the
+    alternative in `WorkoutExercise.alt`, parsed at build time by `altFromNotes`
+    (runtime only — no parser / `program.json` change). The logger shows a
+    `⇄ <name>` pill; `swapVariant` toggles active⇄alt and each side keeps its own
+    pre-filled sets. Add new swaps to `ALT_PATTERNS` in `logger-model.ts`.
 - **Barbell viz is a static 2D SVG** (`src/components/barbell-svg.ts`). three.js
   was removed — do not reintroduce it without reason.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as
-  `{ finished: {...} }`. Leave room for future logger keys (sets, timer, notes).
+  `{ finished: {...} }`. Other keys: `liftinglog:workouts` + `liftinglog:activeWorkout`
+  (logger), `liftinglog:unit` (History kg/lb display toggle, defaults to kg).
 - **Rendering uses `innerHTML` with trusted static data.** User-entered text is a
   stored-XSS sink and must use `textContent` / an input's `.value` property — NEVER
   an `innerHTML` template. Live sinks: the **coach message** in `logging.ts`

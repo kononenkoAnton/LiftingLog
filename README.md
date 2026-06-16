@@ -21,6 +21,15 @@ Bar = 45 lb. Plates per side = 45, 35, 25, 10, 5, 2.5 lb. Targets round UP to th
 nearest achievable load (never under the trainer's number). Logic in
 `src/lib/load.ts` (`computeBarbellLoad`), covered by unit tests.
 
+**Coach prescriptions are totals; logged weights are plates.** The trainer's kg is
+the *total* on the bar (bar + plates) — that's what `computeBarbellLoad` and the
+session screen show. In the **logger**, a barbell set's weight is the *plate*
+weight you load, **excluding** the 45 lb bar (`platesForPlateLb` = `decompose(plateLb/2)`).
+The full lifted weight = `fullBarLb(plateLb)` = `plateLb + 45`. So coach pre-fills
+subtract the bar (total → plates), and the trainer log / Max chips add it back
+(plates → full weight in kg). Non-barbell equipment (dumbbell, machine, bodyweight)
+is logged as-is, no bar.
+
 ## Exercise catalog
 
 The exercise database (`src/data/exercises.json`) is generated from the

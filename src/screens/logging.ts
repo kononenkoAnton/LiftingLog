@@ -5,12 +5,13 @@
 // .value property.
 import type { WorkoutExercise, LoggedSet, Workout } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts, updateFinishedWorkout } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
-import { platesForLb } from '../lib/load'
+import { platesForPlateLb, fullBarLb } from '../lib/load'
 import { PLATE_COLOR } from '../components/barbell-svg'
+import { toast } from '../lib/toast'
 
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
 let restTimer: ReturnType<typeof setInterval> | null = null
@@ -31,21 +32,23 @@ function plateChips(perSide: { plate: number; count: number }[]): string {
     .join('')
 }
 
-/** Inner HTML of a per-set plate line for a given lb total (recomputed live on edit). */
-function plateLineInner(lb: number): string {
-  return `${plateChips(platesForLb(lb))}<span class="lg-plates-side">/ side · lb</span>`
+/** Inner HTML of a per-set plate line for a logged PLATE weight (excl. bar);
+ *  shows per-side plates + the full bar weight. Recomputed live on edit. */
+function plateLineInner(plateLb: number): string {
+  return `${plateChips(platesForPlateLb(plateLb))}<span class="lg-plates-side">/ side · ${fullBarLb(plateLb)} lb w/ bar</span>`
 }
 
 function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null): string {
-  const lastStr = last && last[0] ? `Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}` : ''
+  const lastStr = last && last[0] ? `Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}${ex.isTimed ? 's' : ''}` : ''
   return `
     <div class="lg-ex">
       <div class="lg-exh">
         <div><div class="lg-exname">${ex.nameEn}</div><div class="lg-exru">${ex.nameRu}</div></div>
         <button class="lg-ex-del" data-ex="${i}" type="button" aria-label="Remove exercise">✕</button>
       </div>
+      ${ex.alt ? `<button class="lg-swap" data-ex="${i}" type="button">⇄ ${ex.alt.nameEn}</button>` : ''}
       ${ex.coachTarget || lastStr ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${ex.coachTarget && lastStr ? ' · ' : ''}${lastStr}</div>` : ''}
-      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span></div>
+      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">${ex.isTimed ? 'Sec' : 'Reps'}</span><span class="r">✓</span><span></span></div>
       ${ex.sets.map((st, si) => {
         const lp = last && last[si] ? last[si] : null
         // per-set plate line for barbell lifts; recomputed live by the input handler
@@ -56,8 +59,8 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
         <div class="lg-row ${st.done ? 'done' : ''}">
           <span class="lg-setno">${si + 1}</span>
           <input class="lg-inp" type="text" inputmode="decimal" data-ex="${i}" data-set="${si}" data-field="weightLb" value="${st.weightLb ?? ''}" placeholder="${lp && lp.weightLb !== null ? lp.weightLb : 'lb'}">
-          <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : '–'}">
-          <button class="lg-chk ${st.done ? 'on' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
+          <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : (ex.isTimed ? 'sec' : '–')}">
+          <button class="lg-chk ${st.done ? 'on' : ''}${!st.done && !canComplete(st) ? ' locked' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
           <button class="lg-del" data-ex="${i}" data-set="${si}" type="button" aria-label="Delete set">−</button>
         </div>${plateBox}`
       }).join('')}
@@ -179,6 +182,10 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
           const lb = cur.exercises[exi].sets[si].weightLb
           if (box) box.innerHTML = lb !== null ? plateLineInner(lb) : ''
         }
+        // keep the ✓ lock state in sync as fields are filled/cleared
+        const st = cur.exercises[exi].sets[si]
+        const chk = el.querySelector(`.lg-chk[data-ex="${exi}"][data-set="${si}"]`)
+        if (chk) chk.classList.toggle('locked', !st.done && !canComplete(st))
       })
     })
 
@@ -187,6 +194,11 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const cur = current(); if (!cur) return
         const exi = Number(btn.dataset.ex), si = Number(btn.dataset.set)
         const st = cur.exercises[exi].sets[si]
+        // block completing a set with an empty/invalid weight or reps
+        if (!st.done) {
+          const problem = completeProblem(st, cur.exercises[exi].isTimed ? 'seconds' : 'reps')
+          if (problem) { toast(problem, 'info'); return }
+        }
         st.done = !st.done
         if (!edit && st.done) rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }
         else if (rest && rest.exIdx === exi && rest.setIdx === si) rest = null
@@ -233,6 +245,17 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         if (!confirm(`Remove ${name} and all its logged sets?`)) return
         cur.exercises.splice(exi, 1)
         if (rest) { if (rest.exIdx === exi) rest = null; else if (rest.exIdx > exi) rest.exIdx-- }
+        persist(cur)
+        draw()
+      })
+    })
+
+    el.querySelectorAll<HTMLButtonElement>('.lg-swap').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const cur = current(); if (!cur) return
+        const exi = Number(btn.dataset.ex)
+        cur.exercises[exi] = swapVariant(cur.exercises[exi])
+        if (rest && rest.exIdx === exi) rest = null // swapped-in variant has different sets
         persist(cur)
         draw()
       })

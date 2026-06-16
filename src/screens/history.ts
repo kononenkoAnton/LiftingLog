@@ -1,15 +1,22 @@
 // Past finished workouts. SECURITY: workout/exercise names are trusted, but the
 // coach message is USER TEXT — rendered via textContent only.
 import { listWorkouts } from '../lib/workouts'
-import { workoutDurationSec } from '../lib/logger-model'
+import { workoutDurationSec, trainerLog, setWeightDisplay, type Unit } from '../lib/logger-model'
 import type { Workout } from '../lib/logger-types'
+import { toast } from '../lib/toast'
 
 const fmtDur = (sec: number) => `${Math.floor(sec / 60)}m`
 const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 
+// Display unit for weights, persisted; defaults to kg.
+const UNIT_KEY = 'liftinglog:unit'
+const getUnit = (): Unit => { try { return localStorage.getItem(UNIT_KEY) === 'lb' ? 'lb' : 'kg' } catch { return 'kg' } }
+const setUnit = (u: Unit) => { try { localStorage.setItem(UNIT_KEY, u) } catch { /* ignore */ } }
+
 let openId: string | null = null
 
 export function renderHistory(el: HTMLElement) {
+  let unit = getUnit()
   const draw = () => {
     const finished = listWorkouts()
       .filter((w) => w.status === 'finished')
@@ -18,9 +25,23 @@ export function renderHistory(el: HTMLElement) {
     el.innerHTML = `
       <div class="screen">
         <a class="back" href="#/">‹ Program</a>
-        <h1 class="hist-h">History</h1>
+        <div class="hist-top">
+          <h1 class="hist-h">History</h1>
+          ${finished.length ? `<div class="unit-toggle" role="group" aria-label="Weight unit">
+            <button class="ut ${unit === 'kg' ? 'on' : ''}" data-unit="kg" type="button">kg</button>
+            <button class="ut ${unit === 'lb' ? 'on' : ''}" data-unit="lb" type="button">lb</button>
+          </div>` : ''}
+        </div>
         ${finished.length ? `<div id="histList"></div>` : '<div class="note">No finished workouts yet.</div>'}
       </div>`
+
+    el.querySelectorAll<HTMLButtonElement>('.ut').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const u = btn.dataset.unit as Unit
+        if (u === unit) return
+        unit = u; setUnit(u); draw()
+      })
+    })
 
     const list = el.querySelector('#histList')
     if (list) finished.forEach((w) => list.appendChild(card(w)))
@@ -51,7 +72,8 @@ export function renderHistory(el: HTMLElement) {
           const row = document.createElement('div')
           row.className = 'hist-set'
           const done = s.done ? '✓' : '·'
-          row.textContent = `${done} ${s.weightLb ?? '–'} lb × ${s.reps ?? '–'}`
+          const repStr = s.reps === null ? '–' : `${s.reps}${ex.isTimed ? 's' : ''}`
+          row.textContent = `${done} ${setWeightDisplay(s.weightLb, ex.equipment, unit)} × ${repStr}`
           exEl.appendChild(row)
         }
         body.appendChild(exEl)
@@ -62,6 +84,16 @@ export function renderHistory(el: HTMLElement) {
         m.textContent = `Coach message: ${w.coachMessage}`
         body.appendChild(m)
       }
+      const copyBtn = document.createElement('button')
+      copyBtn.className = 'trainer-btn'
+      copyBtn.type = 'button'
+      copyBtn.textContent = '📋 Copy for trainer (kg)'
+      copyBtn.addEventListener('click', async () => {
+        const text = trainerLog(w)
+        try { await navigator.clipboard.writeText(text); toast('Copied for trainer ✓', 'info') }
+        catch { toast(text, 'info') }
+      })
+      body.appendChild(copyBtn)
       root.appendChild(body)
     }
     return root

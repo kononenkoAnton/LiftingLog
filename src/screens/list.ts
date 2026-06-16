@@ -3,7 +3,7 @@ import { liftTags } from '../lib/focus'
 import { getSession } from '../data/program'
 import { isFinished, finish, unfinish } from '../lib/progress'
 import { listWorkouts } from '../lib/workouts'
-import { KG_TO_LB } from '../lib/load'
+import { KG_TO_LB, BAR_LB } from '../lib/load'
 import { supabase } from '../lib/supabase'
 import { gsap } from 'gsap'
 
@@ -40,6 +40,8 @@ function maxCoachKgFor(match: RegExp): number {
 }
 
 // Heaviest barbell weight the user has actually LOGGED for a lift (lb → kg).
+// Logged barbell weight is PLATE weight (excl. bar); add the bar so the logged PR
+// is the full lifted weight, comparable to the coach's (total) numbers.
 function maxLoggedKgFor(match: RegExp): number {
   let maxLb = 0
   for (const w of listWorkouts()) {
@@ -49,7 +51,7 @@ function maxLoggedKgFor(match: RegExp): number {
       for (const s of ex.sets) if (s.done && s.weightLb !== null) maxLb = Math.max(maxLb, s.weightLb)
     }
   }
-  return maxLb > 0 ? Math.round(maxLb / KG_TO_LB) : 0
+  return maxLb > 0 ? Math.round((maxLb + BAR_LB) / KG_TO_LB) : 0
 }
 
 // Best of the coach's prescription and the user's logged actuals.

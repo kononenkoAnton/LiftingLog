@@ -42,8 +42,17 @@ export function computeBarbellLoad(kg: number): BarbellLoad {
   return { targetLb, totalLb, perSideLb, plates: decompose(perSideLb) }
 }
 
-/** Per-side plate stacks for an exact barbell total in lb (e.g. a logged set). */
-export function platesForLb(totalLb: number): PlateStack[] {
-  if (totalLb <= BAR_LB) return []
-  return decompose((totalLb - BAR_LB) / 2)
+/**
+ * Per-side plate stacks for a logged PLATE weight in lb — i.e. the weight on the
+ * bar EXCLUDING the 45 lb bar (how the user logs barbell lifts). Per side = half
+ * the plate weight; the bar is not part of the plates.
+ */
+export function platesForPlateLb(plateLb: number): PlateStack[] {
+  if (plateLb <= 0) return []
+  return decompose(plateLb / 2)
+}
+
+/** Full barbell weight (incl. the 45 lb bar) for a logged plate weight in lb. */
+export function fullBarLb(plateLb: number): number {
+  return plateLb + BAR_LB
 }

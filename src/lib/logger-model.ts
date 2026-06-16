@@ -1,9 +1,41 @@
 // Pure model for the workout logger. No DOM, no storage, no Date.now() — callers
 // pass `now` in so these stay deterministic and unit-testable.
-import type { Exercise, Session, Weight } from '../data/types'
+import type { Equipment, Exercise, Session, Weight } from '../data/types'
 import type { CatalogExercise } from '../data/catalog-types'
-import { kgToLb, KG_TO_LB } from './load'
+import { kgToLb, KG_TO_LB, BAR_LB } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
+
+export type Unit = 'kg' | 'lb'
+
+/**
+ * Display label for a logged set's weight in the chosen unit. Bodyweight shows "BW"
+ * (or "BW +N u" for added weight). A barbell log is the PLATE weight (excl. bar), so
+ * it shows "<plates> u (<full> w/ bar)". Other equipment shows the weight as-is.
+ * null (no weight) → '–'.
+ */
+export function setWeightDisplay(lb: number | null, equipment: string, unit: Unit): string {
+  const conv = (x: number) => (unit === 'kg' ? Math.round(x / KG_TO_LB) : x)
+  if (equipment === 'bodyweight') return lb === null || lb <= 0 ? 'BW' : `BW +${conv(lb)} ${unit}`
+  if (lb === null) return '–'
+  if (equipment === 'barbell') return `${conv(lb)} ${unit} (${conv(lb + BAR_LB)} w/ bar)`
+  return `${conv(lb)} ${unit}`
+}
+
+/**
+ * Why a set can't be marked done yet, or null if it can. Needs a weight (0 allowed —
+ * empty bar / loadless) and a whole number of reps ≥ 1. Applies to every exercise.
+ */
+export function completeProblem(st: LoggedSet, repsLabel = 'reps'): string | null {
+  const w = st.weightLb, r = st.reps
+  if (w === null && r === null) return `Enter weight and ${repsLabel} first`
+  if (w !== null && w < 0) return "Weight can't be negative"
+  if (w === null) return 'Enter weight first'
+  if (r === null) return `Enter ${repsLabel} first`
+  if (!Number.isInteger(r) || r < 1) return `${repsLabel[0].toUpperCase()}${repsLabel.slice(1)} must be a whole number (1+)`
+  return null
+}
+
+export const canComplete = (st: LoggedSet): boolean => completeProblem(st) === null
 
 // Stable per-exercise identity for matching the same movement across workouts.
 const slugify = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -37,6 +69,13 @@ function coachRepsForSet(e: Exercise, i: number): number | null {
   return Number.isFinite(n) && String(n) === e.reps.trim() ? n : null
 }
 
+/** Hold duration in seconds if `reps` is a duration like "45s" / "35-40s" (upper
+ *  bound), else null. Used to flag timed exercises (planks/holds). */
+export function timedSeconds(reps: string): number | null {
+  const m = reps.trim().match(/^(\d+)(?:\s*-\s*(\d+))?\s*s$/i)
+  return m ? Number(m[2] ?? m[1]) : null
+}
+
 // How many set rows to pre-fill. Coach `sets` wins; when it's null, derive from the
 // weight scheme (perSet/progression carry their own per-set values) so we don't drop sets.
 function defaultSetCount(e: Exercise): number {
@@ -58,30 +97,81 @@ export function coachTargetText(e: Exercise): string {
   return `Bodyweight${reps}`
 }
 
-/** Seed the logger from a session's coach prescription (one WorkoutExercise each). */
-export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
-  return session.exercises.map((e) => {
-    const count = defaultSetCount(e)
-    const rest = restDefaultFor(e.nameEn)
-    const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
-      const kg = coachKgForSet(e.weight, i)
-      return {
-        weightLb: kg !== null ? Math.round(kgToLb(kg)) : null,
-        reps: coachRepsForSet(e, i),
-        done: false,
-        restSec: rest,
-      }
-    })
+/** Build one WorkoutExercise (pre-filled sets) from a coach Exercise. */
+function buildOne(e: Exercise): WorkoutExercise {
+  const count = defaultSetCount(e)
+  const rest = restDefaultFor(e.nameEn)
+  // Barbell lifts are logged as PLATE weight (excl. the bar), so pre-fill the
+  // plates needed to hit the coach's total: total lb − bar. Other equipment is
+  // logged as-is. Timed holds (e.g. plank "45s") pre-fill `reps` with the seconds.
+  const isBarbell = e.equipment === 'barbell'
+  const secs = timedSeconds(e.reps)
+  const isTimed = secs !== null
+  const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
+    const kg = coachKgForSet(e.weight, i)
+    const totalLb = kg !== null ? Math.round(kgToLb(kg)) : null
     return {
-      exerciseRef: `coach:${slugify(e.nameEn)}`,
-      nameEn: e.nameEn,
-      nameRu: e.nameRu,
-      equipment: e.equipment,
-      isCoachPrescribed: true,
-      coachTarget: coachTargetText(e),
-      sets,
+      weightLb: totalLb === null ? null : isBarbell ? Math.max(0, totalLb - BAR_LB) : totalLb,
+      reps: isTimed ? secs : coachRepsForSet(e, i),
+      done: false,
+      restSec: rest,
     }
   })
+  return {
+    exerciseRef: `coach:${slugify(e.nameEn)}`,
+    nameEn: e.nameEn,
+    nameRu: e.nameRu,
+    equipment: e.equipment,
+    isCoachPrescribed: true,
+    coachTarget: coachTargetText(e),
+    isTimed,
+    sets,
+  }
+}
+
+/** Curated "(or …)" alternatives we recognise from the English note. The coach's
+ *  notes are free text; we only act on ones that START with a known swap so loose
+ *  "knee sleeves / heavy load" notes never trigger a selector. */
+const ALT_PATTERNS: { test: RegExp; nameEn: string; nameRu: string; equipment: Equipment }[] = [
+  { test: /^or\s+hanging\s+leg\s+raises/i, nameEn: 'Hanging Leg Raises', nameRu: 'Подъём ног к перекладине', equipment: 'bodyweight' },
+  { test: /^or\s+plank/i, nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight' },
+]
+
+/** Parse a coach exercise's note into a structured alternative, or null. */
+export function altFromNotes(notesEn: string | undefined): { nameEn: string; nameRu: string; equipment: Equipment; sets: number | null; reps: string } | null {
+  const note = (notesEn ?? '').trim()
+  for (const p of ALT_PATTERNS) {
+    if (!p.test.test(note)) continue
+    const m = note.match(/(\d+)\s*[x×]\s*(\d+(?:\s*[-–]\s*\d+)?\s*s?)/i) // e.g. 3x8, 4×8, 3x8-12, 3x45s
+    return {
+      nameEn: p.nameEn, nameRu: p.nameRu, equipment: p.equipment,
+      sets: m ? Number(m[1]) : null,
+      reps: m ? m[2].replace(/\s+/g, '') : '',
+    }
+  }
+  return null
+}
+
+/** Seed the logger from a session's coach prescription (one WorkoutExercise each).
+ *  An exercise with a recognised "(or …)" note also carries its alternative in `alt`. */
+export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
+  return session.exercises.map((e) => {
+    const we = buildOne(e)
+    const alt = altFromNotes(e.notesEn)
+    if (alt) {
+      we.alt = buildOne({
+        order: e.order, nameEn: alt.nameEn, nameRu: alt.nameRu, descEn: '', descRu: '',
+        equipment: alt.equipment, weight: { kind: 'bodyweight' }, sets: alt.sets, reps: alt.reps,
+      })
+    }
+    return we
+  })
+}
+
+/** Toggle between an exercise and its "(or …)" alternative; each keeps its own sets. */
+export function swapVariant(we: WorkoutExercise): WorkoutExercise {
+  if (!we.alt) return we
+  return { ...we.alt, alt: { ...we, alt: undefined } }
 }
 
 /** Elapsed seconds, excluding paused time; frozen while paused. Pass `nowMs`. */
@@ -159,16 +249,24 @@ export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
 
 /** Russian-only log of a finished workout for sending to the coach (weights in kg). */
 export function trainerLog(w: Workout): string {
-  const wt = (lb: number | null) => (lb === null ? 'б/в' : String(Math.round(lb / KG_TO_LB)))
   const body = w.exercises
     .map((ex) => {
+      // Report the full lifted weight in kg. Barbell logs are plate weight, so add
+      // the bar back. Bodyweight has no load → 'б/в' (or 'б/в +Nkg' for added weight).
+      const wt = (lb: number | null): string => {
+        if (ex.equipment === 'bodyweight') return lb === null || lb <= 0 ? 'б/в' : `б/в +${Math.round(lb / KG_TO_LB)}`
+        if (lb === null) return 'б/в'
+        const full = ex.equipment === 'barbell' ? lb + BAR_LB : lb
+        return String(Math.round(full / KG_TO_LB))
+      }
       const lines: string[] = []
       let i = 0
       while (i < ex.sets.length) {
         const s = ex.sets[i]
         let n = 1
         while (i + n < ex.sets.length && ex.sets[i + n].weightLb === s.weightLb && ex.sets[i + n].reps === s.reps) n++
-        lines.push(`${wt(s.weightLb)} × ${s.reps ?? '?'} — ${n}`)
+        const rep = s.reps === null ? '?' : `${s.reps}${ex.isTimed ? 'с' : ''}` // 'с' = seconds for timed holds
+        lines.push(`${wt(s.weightLb)} × ${rep} — ${n}`)
         i += n
       }
       return [ex.nameRu, ...lines].join('\n')

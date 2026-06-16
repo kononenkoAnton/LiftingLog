@@ -2,7 +2,11 @@ import type { Equipment } from '../data/types'
 
 export type WorkoutStatus = 'active' | 'finished' | 'cancelled'
 
-/** One logged set. weightLb/reps are null until the user fills them in. */
+/**
+ * One logged set. weightLb/reps are null until the user fills them in.
+ * For a TIMED exercise (see WorkoutExercise.isTimed), `reps` holds the hold
+ * duration in SECONDS — same field, just shown with a `s`/`с` unit.
+ */
 export interface LoggedSet {
   weightLb: number | null
   reps: number | null
@@ -17,6 +21,8 @@ export interface WorkoutExercise {
   equipment: Equipment
   isCoachPrescribed: boolean
   coachTarget: string        // display string, e.g. "100 kg × 5"; '' when none
+  isTimed?: boolean          // true for holds (plank): `reps` is seconds, not reps
+  alt?: WorkoutExercise      // the coach "(or …)" alternative; toggling swaps active⇄alt
   sets: LoggedSet[]
 }
 
