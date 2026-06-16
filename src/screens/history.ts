@@ -1,11 +1,16 @@
 // Past finished workouts. SECURITY: workout/exercise names are trusted, but the
 // coach message is USER TEXT — rendered via textContent only.
 import { listWorkouts } from '../lib/workouts'
-import { workoutDurationSec } from '../lib/logger-model'
+import { workoutDurationSec, trainerLog } from '../lib/logger-model'
 import type { Workout } from '../lib/logger-types'
+import { KG_TO_LB } from '../lib/load'
+import { toast } from '../lib/toast'
 
 const fmtDur = (sec: number) => `${Math.floor(sec / 60)}m`
 const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+// Stored lb is the full bar weight; show kg too, rounded exactly as trainerLog does
+// so the on-screen kg always matches the kg in the copied trainer log.
+const kgOf = (lb: number) => Math.round(lb / KG_TO_LB)
 
 let openId: string | null = null
 
@@ -51,7 +56,8 @@ export function renderHistory(el: HTMLElement) {
           const row = document.createElement('div')
           row.className = 'hist-set'
           const done = s.done ? '✓' : '·'
-          row.textContent = `${done} ${s.weightLb ?? '–'} lb × ${s.reps ?? '–'}`
+          const wlabel = s.weightLb !== null ? `${s.weightLb} lb · ${kgOf(s.weightLb)} kg` : '–'
+          row.textContent = `${done} ${wlabel} × ${s.reps ?? '–'}`
           exEl.appendChild(row)
         }
         body.appendChild(exEl)
@@ -62,6 +68,16 @@ export function renderHistory(el: HTMLElement) {
         m.textContent = `Coach message: ${w.coachMessage}`
         body.appendChild(m)
       }
+      const copyBtn = document.createElement('button')
+      copyBtn.className = 'trainer-btn'
+      copyBtn.type = 'button'
+      copyBtn.textContent = '📋 Copy for trainer (kg)'
+      copyBtn.addEventListener('click', async () => {
+        const text = trainerLog(w)
+        try { await navigator.clipboard.writeText(text); toast('Copied for trainer ✓', 'info') }
+        catch { toast(text, 'info') }
+      })
+      body.appendChild(copyBtn)
       root.appendChild(body)
     }
     return root
