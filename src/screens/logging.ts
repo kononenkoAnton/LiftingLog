@@ -22,9 +22,10 @@ const clearRest = () => { if (restTimer) { clearInterval(restTimer); restTimer =
 const clearAll = () => { clearElapsed(); clearRest(); rest = null }
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
 
-// A set can be marked done only once it has BOTH a weight and reps filled — for
-// every exercise (bodyweight included; enter a number, e.g. 0, if there's no load).
-const canComplete = (st: LoggedSet): boolean => st.weightLb !== null && st.reps !== null
+// A set can be marked done only once it has a weight (0 allowed — e.g. an empty bar
+// or a loadless exercise) and at least 1 rep. Applies to every exercise.
+const canComplete = (st: LoggedSet): boolean =>
+  st.weightLb !== null && st.reps !== null && st.reps > 0
 
 function plateChips(perSide: { plate: number; count: number }[]): string {
   if (!perSide.length) return '<span class="lg-plates-empty">bar only</span>'
@@ -201,7 +202,11 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         if (!st.done && !canComplete(st)) {
           const needWeight = st.weightLb === null
           const needReps = st.reps === null
-          toast(needWeight && needReps ? 'Enter weight and reps first' : needWeight ? 'Enter weight first' : 'Enter reps first', 'info')
+          const repsZero = st.reps !== null && st.reps <= 0
+          toast(repsZero ? 'Reps must be 1 or more'
+            : needWeight && needReps ? 'Enter weight and reps first'
+            : needWeight ? 'Enter weight first'
+            : 'Enter reps first', 'info')
           return
         }
         st.done = !st.done
