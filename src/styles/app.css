@@ -168,6 +168,10 @@
   color:var(--ink);font-size:14px;font-family:var(--sans);resize:vertical;margin-bottom:10px}
 .lg-msg:focus{outline:none;border-color:rgba(39,230,180,.5)}
 .hist-h{font-size:22px;font-weight:800;margin:8px 0 14px}
+.hist-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.unit-toggle{display:inline-flex;border:1px solid var(--line);border-radius:20px;overflow:hidden;flex:0 0 auto}
+.ut{background:none;border:none;color:var(--dim);font-size:12px;font-weight:800;padding:5px 13px;cursor:pointer;font-family:var(--mono)}
+.ut.on{background:rgba(39,230,180,.15);color:var(--mint)}
 .hist-link{font-size:11px;color:var(--mint);text-decoration:none;border:1px solid rgba(39,230,180,.4);border-radius:20px;padding:4px 10px;white-space:nowrap}
 .hist-card{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
 .hist-head{width:100%;text-align:left;background:none;border:none;color:var(--ink);font-weight:700;font-size:13px;padding:13px;cursor:pointer}

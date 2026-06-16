@@ -9,21 +9,25 @@ import { toast } from '../lib/toast'
 const fmtDur = (sec: number) => `${Math.floor(sec / 60)}m`
 const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 
-// One set's weight label. Barbell logs are PLATE weight (excl. bar), so show the
-// full bar weight in parens + kg of that full weight (matching trainerLog). Other
-// equipment is logged as-is. kg is rounded exactly as trainerLog does.
-function setWeightLabel(lb: number | null, equipment: string): string {
+// Display unit for weights, persisted; defaults to kg.
+type Unit = 'kg' | 'lb'
+const UNIT_KEY = 'liftinglog:unit'
+const getUnit = (): Unit => { try { return localStorage.getItem(UNIT_KEY) === 'lb' ? 'lb' : 'kg' } catch { return 'kg' } }
+const setUnit = (u: Unit) => { try { localStorage.setItem(UNIT_KEY, u) } catch { /* ignore */ } }
+
+// One set's weight in the chosen unit. A barbell log is PLATE weight (excl. bar),
+// so we show the FULL lift (plates + 45 bar); other equipment is logged as-is.
+// kg is rounded exactly as trainerLog does. Bodyweight / empty → '–'.
+function setWeightLabel(lb: number | null, equipment: string, unit: Unit): string {
   if (lb === null) return '–'
-  if (equipment === 'barbell') {
-    const full = fullBarLb(lb)
-    return `${lb} lb (${full} w/ bar) · ${Math.round(full / KG_TO_LB)} kg`
-  }
-  return `${lb} lb · ${Math.round(lb / KG_TO_LB)} kg`
+  const fullLb = equipment === 'barbell' ? fullBarLb(lb) : lb
+  return unit === 'kg' ? `${Math.round(fullLb / KG_TO_LB)} kg` : `${fullLb} lb`
 }
 
 let openId: string | null = null
 
 export function renderHistory(el: HTMLElement) {
+  let unit = getUnit()
   const draw = () => {
     const finished = listWorkouts()
       .filter((w) => w.status === 'finished')
@@ -32,9 +36,23 @@ export function renderHistory(el: HTMLElement) {
     el.innerHTML = `
       <div class="screen">
         <a class="back" href="#/">‹ Program</a>
-        <h1 class="hist-h">History</h1>
+        <div class="hist-top">
+          <h1 class="hist-h">History</h1>
+          ${finished.length ? `<div class="unit-toggle" role="group" aria-label="Weight unit">
+            <button class="ut ${unit === 'kg' ? 'on' : ''}" data-unit="kg" type="button">kg</button>
+            <button class="ut ${unit === 'lb' ? 'on' : ''}" data-unit="lb" type="button">lb</button>
+          </div>` : ''}
+        </div>
         ${finished.length ? `<div id="histList"></div>` : '<div class="note">No finished workouts yet.</div>'}
       </div>`
+
+    el.querySelectorAll<HTMLButtonElement>('.ut').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const u = btn.dataset.unit as Unit
+        if (u === unit) return
+        unit = u; setUnit(u); draw()
+      })
+    })
 
     const list = el.querySelector('#histList')
     if (list) finished.forEach((w) => list.appendChild(card(w)))
@@ -65,7 +83,7 @@ export function renderHistory(el: HTMLElement) {
           const row = document.createElement('div')
           row.className = 'hist-set'
           const done = s.done ? '✓' : '·'
-          row.textContent = `${done} ${setWeightLabel(s.weightLb, ex.equipment)} × ${s.reps ?? '–'}`
+          row.textContent = `${done} ${setWeightLabel(s.weightLb, ex.equipment, unit)} × ${s.reps ?? '–'}`
           exEl.appendChild(row)
         }
         body.appendChild(exEl)
