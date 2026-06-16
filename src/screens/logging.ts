@@ -22,10 +22,9 @@ const clearRest = () => { if (restTimer) { clearInterval(restTimer); restTimer =
 const clearAll = () => { clearElapsed(); clearRest(); rest = null }
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
 
-// A set can be marked done only once it has reps and (for weighted lifts) a weight.
-// Bodyweight exercises legitimately have an empty weight, so they need only reps.
-const canComplete = (st: LoggedSet, equipment: string): boolean =>
-  st.reps !== null && (st.weightLb !== null || equipment === 'bodyweight')
+// A set can be marked done only once it has BOTH a weight and reps filled — for
+// every exercise (bodyweight included; enter a number, e.g. 0, if there's no load).
+const canComplete = (st: LoggedSet): boolean => st.weightLb !== null && st.reps !== null
 
 function plateChips(perSide: { plate: number; count: number }[]): string {
   if (!perSide.length) return '<span class="lg-plates-empty">bar only</span>'
@@ -64,7 +63,7 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
           <span class="lg-setno">${si + 1}</span>
           <input class="lg-inp" type="text" inputmode="decimal" data-ex="${i}" data-set="${si}" data-field="weightLb" value="${st.weightLb ?? ''}" placeholder="${lp && lp.weightLb !== null ? lp.weightLb : 'lb'}">
           <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : '–'}">
-          <button class="lg-chk ${st.done ? 'on' : ''}${!st.done && !canComplete(st, ex.equipment) ? ' locked' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
+          <button class="lg-chk ${st.done ? 'on' : ''}${!st.done && !canComplete(st) ? ' locked' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
           <button class="lg-del" data-ex="${i}" data-set="${si}" type="button" aria-label="Delete set">−</button>
         </div>${plateBox}`
       }).join('')}
@@ -187,9 +186,9 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
           if (box) box.innerHTML = lb !== null ? plateLineInner(lb) : ''
         }
         // keep the ✓ lock state in sync as fields are filled/cleared
-        const ex = cur.exercises[exi], st = ex.sets[si]
+        const st = cur.exercises[exi].sets[si]
         const chk = el.querySelector(`.lg-chk[data-ex="${exi}"][data-set="${si}"]`)
-        if (chk) chk.classList.toggle('locked', !st.done && !canComplete(st, ex.equipment))
+        if (chk) chk.classList.toggle('locked', !st.done && !canComplete(st))
       })
     })
 
@@ -197,11 +196,10 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       btn.addEventListener('click', () => {
         const cur = current(); if (!cur) return
         const exi = Number(btn.dataset.ex), si = Number(btn.dataset.set)
-        const ex = cur.exercises[exi]
-        const st = ex.sets[si]
-        // block completing a set with empty fields (bodyweight needs only reps)
-        if (!st.done && !canComplete(st, ex.equipment)) {
-          const needWeight = ex.equipment !== 'bodyweight' && st.weightLb === null
+        const st = cur.exercises[exi].sets[si]
+        // block completing a set with an empty weight or reps
+        if (!st.done && !canComplete(st)) {
+          const needWeight = st.weightLb === null
           const needReps = st.reps === null
           toast(needWeight && needReps ? 'Enter weight and reps first' : needWeight ? 'Enter weight first' : 'Enter reps first', 'info')
           return
