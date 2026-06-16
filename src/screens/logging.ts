@@ -9,7 +9,7 @@ import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, la
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
-import { platesForLb } from '../lib/load'
+import { platesForPlateLb, fullBarLb } from '../lib/load'
 import { PLATE_COLOR } from '../components/barbell-svg'
 
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
@@ -31,9 +31,10 @@ function plateChips(perSide: { plate: number; count: number }[]): string {
     .join('')
 }
 
-/** Inner HTML of a per-set plate line for a given lb total (recomputed live on edit). */
-function plateLineInner(lb: number): string {
-  return `${plateChips(platesForLb(lb))}<span class="lg-plates-side">/ side · lb</span>`
+/** Inner HTML of a per-set plate line for a logged PLATE weight (excl. bar);
+ *  shows per-side plates + the full bar weight. Recomputed live on edit. */
+function plateLineInner(plateLb: number): string {
+  return `${plateChips(platesForPlateLb(plateLb))}<span class="lg-plates-side">/ side · ${fullBarLb(plateLb)} lb w/ bar</span>`
 }
 
 function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null): string {

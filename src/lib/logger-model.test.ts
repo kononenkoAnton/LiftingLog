@@ -56,23 +56,27 @@ describe('buildWorkoutExercises', () => {
     expect(out[0].exerciseRef).toBe('coach:squat-barbell')
     expect(out[0].isCoachPrescribed).toBe(true)
   })
-  it('pre-fills set count from coach sets, lb from kg, reps from reps', () => {
+  it('pre-fills barbell lb as PLATE weight (coach total − 45 bar), reps from reps', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: 3, weight: { kind: 'single', kg: 100 }, reps: '5' })]))
     expect(we.sets).toHaveLength(3)
-    expect(we.sets[0].weightLb).toBe(220)
+    expect(we.sets[0].weightLb).toBe(175) // 100kg = 220 lb total − 45 bar
     expect(we.sets[0].reps).toBe(5)
     expect(we.sets[0].done).toBe(false)
     expect(we.sets[0].restSec).toBe(300)
   })
+  it('does NOT subtract the bar for non-barbell equipment', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ equipment: 'dumbbell', weight: { kind: 'single', kg: 30 } })]))
+    expect(we.sets[0].weightLb).toBe(66) // round(kgToLb(30)), no bar
+  })
   it('defaults to one set when coach sets is null', () => {
     expect(buildWorkoutExercises(mkSession([ex({ sets: null })]))[0].sets).toHaveLength(1)
   })
-  it('uses per-set kg/reps for a perSet scheme', () => {
+  it('uses per-set kg/reps for a perSet scheme (barbell plate weight)', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({
       weight: { kind: 'perSet', steps: [{ kg: 100, reps: 5 }, { kg: 90, reps: 8 }] }, sets: 2,
     })]))
-    expect(we.sets[0].weightLb).toBe(220)
-    expect(we.sets[1].weightLb).toBe(198)
+    expect(we.sets[0].weightLb).toBe(175) // 220 − 45
+    expect(we.sets[1].weightLb).toBe(153) // 198 − 45
     expect(we.sets[1].reps).toBe(8)
   })
   it('leaves weightLb null for bodyweight and non-numeric reps null', () => {
@@ -80,14 +84,14 @@ describe('buildWorkoutExercises', () => {
     expect(we.sets[0].weightLb).toBeNull()
     expect(we.sets[0].reps).toBeNull()
   })
-  it('uses per-index kg for a progression scheme, clamping extra sets', () => {
+  it('uses per-index kg for a progression scheme, clamping extra sets (barbell plate weight)', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ weight: { kind: 'progression', kg: [80, 90, 100] }, sets: 5 })]))
-    expect(we.sets.map((s) => s.weightLb)).toEqual([176, 198, 220, 220, 220])
+    expect(we.sets.map((s) => s.weightLb)).toEqual([131, 153, 175, 175, 175]) // each − 45 bar
   })
   it('keeps every perSet step when coach sets is null', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: null, weight: { kind: 'perSet', steps: [{ kg: 130, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }] } })]))
     expect(we.sets).toHaveLength(4)
-    expect(we.sets[3].weightLb).toBe(320)
+    expect(we.sets[3].weightLb).toBe(275) // 145kg = 320 lb total − 45 bar
   })
 })
 
@@ -213,12 +217,17 @@ describe('withLastActual', () => {
 })
 
 describe('trainerLog', () => {
-  it('formats a Russian log with kg and grouped consecutive sets', () => {
+  it('adds the 45 lb bar to barbell sets, then kg, grouping consecutive sets', () => {
     const w = wk({ exercises: [
       { exerciseRef: 'b', nameEn: 'Bench', nameRu: 'Жим лёжа', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 2), doneSet(225, 2), doneSet(225, 2), doneSet(225, 2)] },
       { exerciseRef: 'd', nameEn: 'DL', nameRu: 'Становая', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(295, 3), doneSet(315, 3), doneSet(315, 3), doneSet(315, 3)] },
     ] })
-    expect(trainerLog(w)).toBe('Жим лёжа\n102 × 2 — 4\n\nСтановая\n134 × 3 — 1\n143 × 3 — 3')
+    // 225+45=270→122, 295+45=340→154, 315+45=360→163
+    expect(trainerLog(w)).toBe('Жим лёжа\n122 × 2 — 4\n\nСтановая\n154 × 3 — 1\n163 × 3 — 3')
+  })
+  it('does NOT add the bar for non-barbell equipment', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'i', nameEn: 'Incline DB', nameRu: 'Жим гантелей', equipment: 'dumbbell', isCoachPrescribed: false, coachTarget: '', sets: [doneSet(44, 3)] }] })
+    expect(trainerLog(w)).toBe('Жим гантелей\n20 × 3 — 1') // 44/2.20462 → 20
   })
   it('uses б/в for bodyweight sets', () => {
     const w = wk({ exercises: [{ exerciseRef: 'p', nameEn: 'Pushup', nameRu: 'Отжимания', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [{ weightLb: null, reps: 20, done: true, restSec: 90 }] }] })
@@ -226,6 +235,6 @@ describe('trainerLog', () => {
   })
   it('appends the coach message when present', () => {
     const w = wk({ coachMessage: 'Колено побаливало', exercises: [{ exerciseRef: 'b', nameEn: 'Bench', nameRu: 'Жим лёжа', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 2)] }] })
-    expect(trainerLog(w)).toBe('Жим лёжа\n102 × 2 — 1\n\nКолено побаливало')
+    expect(trainerLog(w)).toBe('Жим лёжа\n122 × 2 — 1\n\nКолено побаливало')
   })
 })

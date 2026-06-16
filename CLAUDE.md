@@ -33,6 +33,14 @@ still produces 0 unknowns and type-checks.
   `src/data/program.json`.
 - **Plate math is correctness-critical and unit-tested.** Targets round UP (never
   under the trainer's number). Bar = 45 lb; plates per side = 45/35/25/10/5/2.5.
+- **Coach weights are TOTALS; logged barbell weights are PLATES (excl. the bar).**
+  The trainer's kg is the total on the bar (`computeBarbellLoad` + session screen).
+  A logged barbell `weightLb` is only the plates you load — full lift =
+  `fullBarLb(weightLb)` = `weightLb + 45` (`load.ts`). So the coach pre-fill
+  subtracts the bar, and `trainerLog` / Max chips / history add it back before
+  converting to kg. Per-side plates for a logged set = `platesForPlateLb`
+  (`decompose(plateLb/2)`), NOT the total-based `computeBarbellLoad`. Non-barbell
+  equipment (dumbbell/machine/bodyweight) is logged as-is — no bar.
 - **Barbell viz is a static 2D SVG** (`src/components/barbell-svg.ts`). three.js
   was removed — do not reintroduce it without reason.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as

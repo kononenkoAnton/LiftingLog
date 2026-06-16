@@ -3,14 +3,23 @@
 import { listWorkouts } from '../lib/workouts'
 import { workoutDurationSec, trainerLog } from '../lib/logger-model'
 import type { Workout } from '../lib/logger-types'
-import { KG_TO_LB } from '../lib/load'
+import { KG_TO_LB, fullBarLb } from '../lib/load'
 import { toast } from '../lib/toast'
 
 const fmtDur = (sec: number) => `${Math.floor(sec / 60)}m`
 const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
-// Stored lb is the full bar weight; show kg too, rounded exactly as trainerLog does
-// so the on-screen kg always matches the kg in the copied trainer log.
-const kgOf = (lb: number) => Math.round(lb / KG_TO_LB)
+
+// One set's weight label. Barbell logs are PLATE weight (excl. bar), so show the
+// full bar weight in parens + kg of that full weight (matching trainerLog). Other
+// equipment is logged as-is. kg is rounded exactly as trainerLog does.
+function setWeightLabel(lb: number | null, equipment: string): string {
+  if (lb === null) return '–'
+  if (equipment === 'barbell') {
+    const full = fullBarLb(lb)
+    return `${lb} lb (${full} w/ bar) · ${Math.round(full / KG_TO_LB)} kg`
+  }
+  return `${lb} lb · ${Math.round(lb / KG_TO_LB)} kg`
+}
 
 let openId: string | null = null
 
@@ -56,8 +65,7 @@ export function renderHistory(el: HTMLElement) {
           const row = document.createElement('div')
           row.className = 'hist-set'
           const done = s.done ? '✓' : '·'
-          const wlabel = s.weightLb !== null ? `${s.weightLb} lb · ${kgOf(s.weightLb)} kg` : '–'
-          row.textContent = `${done} ${wlabel} × ${s.reps ?? '–'}`
+          row.textContent = `${done} ${setWeightLabel(s.weightLb, ex.equipment)} × ${s.reps ?? '–'}`
           exEl.appendChild(row)
         }
         body.appendChild(exEl)

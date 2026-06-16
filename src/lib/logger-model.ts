@@ -2,7 +2,7 @@
 // pass `now` in so these stay deterministic and unit-testable.
 import type { Exercise, Session, Weight } from '../data/types'
 import type { CatalogExercise } from '../data/catalog-types'
-import { kgToLb, KG_TO_LB } from './load'
+import { kgToLb, KG_TO_LB, BAR_LB } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
 // Stable per-exercise identity for matching the same movement across workouts.
@@ -63,10 +63,15 @@ export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
   return session.exercises.map((e) => {
     const count = defaultSetCount(e)
     const rest = restDefaultFor(e.nameEn)
+    // Barbell lifts are logged as PLATE weight (excl. the bar), so pre-fill the
+    // plates needed to hit the coach's total: total lb − bar. Other equipment is
+    // logged as-is.
+    const isBarbell = e.equipment === 'barbell'
     const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
       const kg = coachKgForSet(e.weight, i)
+      const totalLb = kg !== null ? Math.round(kgToLb(kg)) : null
       return {
-        weightLb: kg !== null ? Math.round(kgToLb(kg)) : null,
+        weightLb: totalLb === null ? null : isBarbell ? Math.max(0, totalLb - BAR_LB) : totalLb,
         reps: coachRepsForSet(e, i),
         done: false,
         restSec: rest,
@@ -159,9 +164,12 @@ export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
 
 /** Russian-only log of a finished workout for sending to the coach (weights in kg). */
 export function trainerLog(w: Workout): string {
-  const wt = (lb: number | null) => (lb === null ? 'б/в' : String(Math.round(lb / KG_TO_LB)))
   const body = w.exercises
     .map((ex) => {
+      // barbell sets are logged as plate weight (excl. bar) — report the full
+      // lifted weight by adding the bar back before converting to kg.
+      const wt = (lb: number | null) =>
+        lb === null ? 'б/в' : String(Math.round((ex.equipment === 'barbell' ? lb + BAR_LB : lb) / KG_TO_LB))
       const lines: string[] = []
       let i = 0
       while (i < ex.sets.length) {
