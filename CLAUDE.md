@@ -19,6 +19,8 @@ matching skill file:
 | Plate set, bar weight, or rounding (`src/lib/load.ts`) | `parsing-rules.md` notes + `README.md` "Plates & bar" |
 | How the doc is fetched/exported, or its markdown shape | `update-program/SKILL.md` |
 | Added a new skill or workflow | give it a `SKILL.md` and note it here |
+| Added/renamed catalog data, the wger equipment/rest mapping, or RU↔EN entries | `scripts/build-catalog.mjs` (`classifyEquip`/`restFor`) + the `scripts/catalog-extras.json` overrides + `scripts/catalog-ru.json` + `README.md` "Exercise catalog" |
+| The rest-timer default heuristic (`restDefaultFor` in `src/lib/logger-model.ts`) | keep it identical to `scripts/build-catalog.mjs` `restFor` — the catalog bakes it in, the logger resolves it for coach lifts |
 
 The glossary lives in two places on purpose (code + docs) — change both or they
 drift. When in doubt, re-run `npm run parse` against the live doc and confirm it
@@ -35,9 +37,11 @@ still produces 0 unknowns and type-checks.
   was removed — do not reintroduce it without reason.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as
   `{ finished: {...} }`. Leave room for future logger keys (sets, timer, notes).
-- **Rendering uses `innerHTML` with trusted static data.** When the logger adds
-  user-entered text, escape it / use `textContent` — `innerHTML` would become a
-  stored-XSS sink.
+- **Rendering uses `innerHTML` with trusted static data.** User-entered text is a
+  stored-XSS sink and must use `textContent` / an input's `.value` property — NEVER
+  an `innerHTML` template. Live sinks: the **coach message** in `logging.ts`
+  (textarea `.value`) and `history.ts` (built with `createElement` + `textContent`).
+  Verified with an `<img onerror>` probe.
 - **Cyrillic gotcha:** JS `\w`/`\b` do NOT match Cyrillic. Use `[а-яё]` classes
   and whitespace anchors in any Russian-text regex.
 
@@ -56,8 +60,20 @@ still produces 0 unknowns and type-checks.
 - `src/lib/focus.ts` — session focus label + main-lift tags
 - `src/lib/progress.ts` — finished-day persistence
 - `src/data/{types,program.json,program}.ts` — schema, data, loader
+- `src/data/exercises.json` — bilingual exercise catalog (GENERATED; never hand-edit — use `scripts/catalog-extras.json` + `npm run build:catalog`)
+- `src/data/catalog-types.ts` — `CatalogExercise` schema
+- `src/lib/catalog.ts` — catalog search/filter (Cyrillic-aware, tested)
+- `src/components/exercise-picker.ts` — the add-exercise picker sheet
+- `scripts/build-catalog.mjs` — wger → exercises.json importer (run `npm run build:catalog`)
+- `scripts/catalog-ru.json` — Russian-name overlay (id→nameRu) merged into the catalog by `build-catalog.mjs`
 - `src/screens/{list,session}.ts` — program list, session detail
 - `src/components/barbell-svg.ts` — 2D barbell renderer (+ `barbell.ts` wrapper)
 - `scripts/parse-program.mjs` — deterministic doc → program.json parser
 - `.claude/skills/update-program/` — the re-parse skill + rules
 - `docs/superpowers/` — original spec and plan
+- `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; tested)
+- `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
+- `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
+- `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel)
+- `src/screens/history.ts` — past finished workouts (#/history)
+- `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)

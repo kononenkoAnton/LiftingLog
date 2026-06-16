@@ -5,6 +5,10 @@ import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
 import { isFinished, getSnapshot, finish, unfinish } from '../lib/progress'
 import { gsap } from 'gsap'
+import { getActiveWorkout, startWorkout, getFinishedForSession } from '../lib/workouts'
+import { renderLogging } from './logging'
+import { trainerLog } from '../lib/logger-model'
+import { toast } from '../lib/toast'
 
 // Distinct per-set loads for a barbell lift (progression / per-set scheme), else
 // null. Each entry is a weight the bar is loaded to for one (or more) sets.
@@ -93,11 +97,17 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
 export function renderSession(el: HTMLElement, n: number) {
   const s = getSession(n)
   if (!s) { el.innerHTML = '<div class="screen">Session not found · <a href="#/">back</a></div>'; return }
+
+  const active = getActiveWorkout()
+  if (active && active.sessionNum === n) { renderLogging(el, n, () => renderSession(el, n)); return }
+  const otherActive = active && active.sessionNum !== n ? active : null
+
   let focusIdx = s.exercises.findIndex((e) => e.equipment === 'barbell')
   if (focusIdx < 0) focusIdx = 0
   let stepIdx = 0 // selected step within a progression/per-set lift
 
   const draw = (animate = true) => {
+    const logged = getFinishedForSession(s.num)
     // Finished days render their locked snapshot; unfinished show the latest parse.
     const snap = isFinished(s.num) ? getSnapshot(s.num) : null
     const exercises = snap ?? s.exercises
@@ -135,6 +145,12 @@ export function renderSession(el: HTMLElement, n: number) {
         <div class="note">${e.descEn}<br><span style="opacity:.7">${e.descRu}</span>
           ${e.notesEn ? `<br><br>${e.notesEn}<br><span style="opacity:.7">${e.notesRu ?? ''}</span>` : ''}</div>
         <div style="margin-top:14px" id="mini"></div>
+        ${otherActive
+          ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
+          : logged
+            ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
+            : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
+        ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Copy for trainer</button>` : ''}
       </div>`
 
     const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
@@ -142,6 +158,19 @@ export function renderSession(el: HTMLElement, n: number) {
       if (isFinished(s.num)) await unfinish(s.num)
       else await finish(s.num, s.exercises) // snapshot the canonical content now
       draw(false)
+    })
+
+    const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
+    if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n, () => renderSession(el, n)) })
+
+    const editBtn = el.querySelector<HTMLButtonElement>('#editBtn')
+    if (editBtn && logged) editBtn.addEventListener('click', () => renderLogging(el, n, () => renderSession(el, n), logged))
+
+    const trainerBtn = el.querySelector<HTMLButtonElement>('#trainerBtn')
+    if (trainerBtn && logged) trainerBtn.addEventListener('click', async () => {
+      const text = trainerLog(logged)
+      try { await navigator.clipboard.writeText(text); toast('Copied for trainer ✓', 'info') }
+      catch { toast(text, 'info') }
     })
 
     const go = (num: number) => { if (getSession(num)) location.hash = `#/session/${num}` }
@@ -172,8 +201,14 @@ export function renderSession(el: HTMLElement, n: number) {
       if (i === focusIdx) return
       const row = document.createElement('div')
       row.className = 'exmini'
+      // per-side plate breakdown for barbell lifts, so loading is visible without
+      // opening each exercise (uses the top/working weight)
+      const miniKg = x.equipment === 'barbell' ? primaryKg(x.weight) : null
+      const miniPlates = miniKg !== null
+        ? `<div class="exmini-pl">${platesText(computeBarbellLoad(miniKg).plates)}<span class="exmini-side">/ side · lb</span></div>`
+        : ''
       row.innerHTML = `<div class="i">${x.order}</div>
-        <div class="exmini-name"><div class="t">${x.nameEn}</div><div class="tr">${x.nameRu}</div></div>
+        <div class="exmini-name"><div class="t">${x.nameEn}</div><div class="tr">${x.nameRu}</div>${miniPlates}</div>
         <div class="w">${weightLabel(x.weight, x.perImplement)}</div>`
       row.addEventListener('click', () => { focusIdx = i; stepIdx = 0; draw() })
       mini.appendChild(row)

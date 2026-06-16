@@ -41,3 +41,9 @@ export function computeBarbellLoad(kg: number): BarbellLoad {
   const perSideLb = (totalLb - BAR_LB) / 2
   return { targetLb, totalLb, perSideLb, plates: decompose(perSideLb) }
 }
+
+/** Per-side plate stacks for an exact barbell total in lb (e.g. a logged set). */
+export function platesForLb(totalLb: number): PlateStack[] {
+  if (totalLb <= BAR_LB) return []
+  return decompose((totalLb - BAR_LB) / 2)
+}

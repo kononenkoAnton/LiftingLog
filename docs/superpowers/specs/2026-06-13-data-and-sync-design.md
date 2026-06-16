@@ -116,3 +116,17 @@ Confirm). RLS scopes every row to the JWT's `sub`.
 ## Out of scope (now)
 
 Logger (sets/timer/notes), trainer accounts, multi-athlete. Schema leaves room.
+
+## Workout logger storage (added 2026-06-15, Spec B / plan B1)
+
+`workouts` table — **one JSONB row per workout** (deviation from the original
+two-table `workouts`+`logged_sets` proposal; chosen for single-user simplicity and
+exact parity with the localStorage offline mirror). Migration: `supabase/workouts.sql`.
+Same `(auth.jwt() ->> 'sub')::uuid` RLS as `progress`; the DB `status` column is
+authoritative. The client (`src/lib/workouts.ts`) keeps an active-workout cache
+hydrated at boot, writes through to localStorage always and Supabase when configured
+(`upsert … onConflict: 'id'`), and computes the "Last actual" reference client-side
+(`logger-model.lastActualFor`) over fetched finished workouts. Logged exercises are
+keyed by a stable identity ref — catalog id for catalog exercises, `coach:<slug(nameEn)>`
+for prescribed lifts (NOT session order, so "Last" matches the same movement across
+sessions). Cancelling a workout DELETES its row ("all progress lost").
