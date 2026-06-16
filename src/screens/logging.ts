@@ -5,7 +5,7 @@
 // .value property.
 import type { WorkoutExercise, LoggedSet, Workout } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts, updateFinishedWorkout } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
@@ -46,6 +46,7 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
         <div><div class="lg-exname">${ex.nameEn}</div><div class="lg-exru">${ex.nameRu}</div></div>
         <button class="lg-ex-del" data-ex="${i}" type="button" aria-label="Remove exercise">✕</button>
       </div>
+      ${ex.alt ? `<button class="lg-swap" data-ex="${i}" type="button">⇄ ${ex.alt.nameEn}</button>` : ''}
       ${ex.coachTarget || lastStr ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${ex.coachTarget && lastStr ? ' · ' : ''}${lastStr}</div>` : ''}
       <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">${ex.isTimed ? 'Sec' : 'Reps'}</span><span class="r">✓</span><span></span></div>
       ${ex.sets.map((st, si) => {
@@ -244,6 +245,17 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         if (!confirm(`Remove ${name} and all its logged sets?`)) return
         cur.exercises.splice(exi, 1)
         if (rest) { if (rest.exIdx === exi) rest = null; else if (rest.exIdx > exi) rest.exIdx-- }
+        persist(cur)
+        draw()
+      })
+    })
+
+    el.querySelectorAll<HTMLButtonElement>('.lg-swap').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const cur = current(); if (!cur) return
+        const exi = Number(btn.dataset.ex)
+        cur.exercises[exi] = swapVariant(cur.exercises[exi])
+        if (rest && rest.exIdx === exi) rest = null // swapped-in variant has different sets
         persist(cur)
         draw()
       })

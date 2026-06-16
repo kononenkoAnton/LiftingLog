@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout, LoggedSet } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -105,6 +105,50 @@ describe('buildWorkoutExercises', () => {
     expect(hold.isTimed).toBe(true)
     expect(hold.sets[0].reps).toBe(40)
     expect(buildWorkoutExercises(mkSession([ex({ reps: '5' })]))[0].isTimed).toBe(false)
+  })
+  it('attaches a populated alternative when the note has a recognised swap', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ nameEn: 'Plank', equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 4, reps: '45s', notesEn: 'Or hanging leg raises (4×8)' })]))
+    expect(we.isTimed).toBe(true)              // primary: timed plank
+    expect(we.alt?.nameEn).toBe('Hanging Leg Raises')
+    expect(we.alt?.isTimed).toBe(false)        // alt: rep-based
+    expect(we.alt?.sets).toHaveLength(4)
+    expect(we.alt?.sets[0].reps).toBe(8)
+    expect(we.alt?.sets[0].weightLb).toBeNull()
+  })
+})
+
+describe('altFromNotes', () => {
+  it('parses recognised swaps with their sets/reps', () => {
+    expect(altFromNotes('Or hanging leg raises 3x8')).toEqual({ nameEn: 'Hanging Leg Raises', nameRu: 'Подъём ног к перекладине', equipment: 'bodyweight', sets: 3, reps: '8' })
+    expect(altFromNotes('Or hanging leg raises (4×8)')).toMatchObject({ sets: 4, reps: '8' })
+    expect(altFromNotes('Or hanging leg raises 3x8-12')).toMatchObject({ sets: 3, reps: '8-12' })
+    expect(altFromNotes('Or plank: 3x45s')).toMatchObject({ nameEn: 'Plank', sets: 3, reps: '45s' })
+  })
+  it('handles a swap with no sets/reps', () => {
+    expect(altFromNotes('Or hanging leg raises.')).toMatchObject({ nameEn: 'Hanging Leg Raises', sets: null, reps: '' })
+  })
+  it('ignores non-swap "or" notes and empty notes', () => {
+    expect(altFromNotes('Light knee wraps or sleeves allowed.')).toBeNull()
+    expect(altFromNotes('Medium or heavy load.')).toBeNull()
+    expect(altFromNotes(undefined)).toBeNull()
+    expect(altFromNotes('')).toBeNull()
+  })
+})
+
+describe('swapVariant', () => {
+  const swapSession = mkSession([{ order: 1, nameEn: 'Plank', nameRu: 'Планка', descEn: '', descRu: '', equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 4, reps: '45s', notesEn: 'Or hanging leg raises (4×8)' }])
+  it('toggles to the alternative and back, keeping each variant', () => {
+    const [plank] = buildWorkoutExercises(swapSession)
+    const legRaises = swapVariant(plank)
+    expect(legRaises.nameEn).toBe('Hanging Leg Raises')
+    expect(legRaises.alt?.nameEn).toBe('Plank')
+    const back = swapVariant(legRaises)
+    expect(back.nameEn).toBe('Plank')
+    expect(back.alt?.nameEn).toBe('Hanging Leg Raises')
+  })
+  it('is a no-op without an alternative', () => {
+    const [squat] = buildWorkoutExercises(mkSession([{ order: 1, nameEn: 'Squat', nameRu: 'Присед', descEn: '', descRu: '', equipment: 'barbell', weight: { kind: 'single', kg: 100 }, sets: 3, reps: '5' }]))
+    expect(swapVariant(squat)).toBe(squat)
   })
 })
 

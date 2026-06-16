@@ -1,6 +1,6 @@
 // Pure model for the workout logger. No DOM, no storage, no Date.now() — callers
 // pass `now` in so these stay deterministic and unit-testable.
-import type { Exercise, Session, Weight } from '../data/types'
+import type { Equipment, Exercise, Session, Weight } from '../data/types'
 import type { CatalogExercise } from '../data/catalog-types'
 import { kgToLb, KG_TO_LB, BAR_LB } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
@@ -97,38 +97,81 @@ export function coachTargetText(e: Exercise): string {
   return `Bodyweight${reps}`
 }
 
-/** Seed the logger from a session's coach prescription (one WorkoutExercise each). */
-export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
-  return session.exercises.map((e) => {
-    const count = defaultSetCount(e)
-    const rest = restDefaultFor(e.nameEn)
-    // Barbell lifts are logged as PLATE weight (excl. the bar), so pre-fill the
-    // plates needed to hit the coach's total: total lb − bar. Other equipment is
-    // logged as-is. Timed holds (e.g. plank "45s") pre-fill `reps` with the seconds.
-    const isBarbell = e.equipment === 'barbell'
-    const secs = timedSeconds(e.reps)
-    const isTimed = secs !== null
-    const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
-      const kg = coachKgForSet(e.weight, i)
-      const totalLb = kg !== null ? Math.round(kgToLb(kg)) : null
-      return {
-        weightLb: totalLb === null ? null : isBarbell ? Math.max(0, totalLb - BAR_LB) : totalLb,
-        reps: isTimed ? secs : coachRepsForSet(e, i),
-        done: false,
-        restSec: rest,
-      }
-    })
+/** Build one WorkoutExercise (pre-filled sets) from a coach Exercise. */
+function buildOne(e: Exercise): WorkoutExercise {
+  const count = defaultSetCount(e)
+  const rest = restDefaultFor(e.nameEn)
+  // Barbell lifts are logged as PLATE weight (excl. the bar), so pre-fill the
+  // plates needed to hit the coach's total: total lb − bar. Other equipment is
+  // logged as-is. Timed holds (e.g. plank "45s") pre-fill `reps` with the seconds.
+  const isBarbell = e.equipment === 'barbell'
+  const secs = timedSeconds(e.reps)
+  const isTimed = secs !== null
+  const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
+    const kg = coachKgForSet(e.weight, i)
+    const totalLb = kg !== null ? Math.round(kgToLb(kg)) : null
     return {
-      exerciseRef: `coach:${slugify(e.nameEn)}`,
-      nameEn: e.nameEn,
-      nameRu: e.nameRu,
-      equipment: e.equipment,
-      isCoachPrescribed: true,
-      coachTarget: coachTargetText(e),
-      isTimed,
-      sets,
+      weightLb: totalLb === null ? null : isBarbell ? Math.max(0, totalLb - BAR_LB) : totalLb,
+      reps: isTimed ? secs : coachRepsForSet(e, i),
+      done: false,
+      restSec: rest,
     }
   })
+  return {
+    exerciseRef: `coach:${slugify(e.nameEn)}`,
+    nameEn: e.nameEn,
+    nameRu: e.nameRu,
+    equipment: e.equipment,
+    isCoachPrescribed: true,
+    coachTarget: coachTargetText(e),
+    isTimed,
+    sets,
+  }
+}
+
+/** Curated "(or …)" alternatives we recognise from the English note. The coach's
+ *  notes are free text; we only act on ones that START with a known swap so loose
+ *  "knee sleeves / heavy load" notes never trigger a selector. */
+const ALT_PATTERNS: { test: RegExp; nameEn: string; nameRu: string; equipment: Equipment }[] = [
+  { test: /^or\s+hanging\s+leg\s+raises/i, nameEn: 'Hanging Leg Raises', nameRu: 'Подъём ног к перекладине', equipment: 'bodyweight' },
+  { test: /^or\s+plank/i, nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight' },
+]
+
+/** Parse a coach exercise's note into a structured alternative, or null. */
+export function altFromNotes(notesEn: string | undefined): { nameEn: string; nameRu: string; equipment: Equipment; sets: number | null; reps: string } | null {
+  const note = (notesEn ?? '').trim()
+  for (const p of ALT_PATTERNS) {
+    if (!p.test.test(note)) continue
+    const m = note.match(/(\d+)\s*[x×]\s*(\d+(?:\s*[-–]\s*\d+)?\s*s?)/i) // e.g. 3x8, 4×8, 3x8-12, 3x45s
+    return {
+      nameEn: p.nameEn, nameRu: p.nameRu, equipment: p.equipment,
+      sets: m ? Number(m[1]) : null,
+      reps: m ? m[2].replace(/\s+/g, '') : '',
+    }
+  }
+  return null
+}
+
+/** Seed the logger from a session's coach prescription (one WorkoutExercise each).
+ *  An exercise with a recognised "(or …)" note also carries its alternative in `alt`. */
+export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
+  return session.exercises.map((e) => {
+    const we = buildOne(e)
+    const alt = altFromNotes(e.notesEn)
+    if (alt) {
+      we.alt = buildOne({
+        order: e.order, nameEn: alt.nameEn, nameRu: alt.nameRu, descEn: '', descRu: '',
+        equipment: alt.equipment, weight: { kind: 'bodyweight' }, sets: alt.sets, reps: alt.reps,
+      })
+    }
+    return we
+  })
+}
+
+/** Toggle between an exercise and its "(or …)" alternative; each keeps its own sets. */
+export function swapVariant(we: WorkoutExercise): WorkoutExercise {
+  if (!we.alt) return we
+  return { ...we.alt, alt: { ...we, alt: undefined } }
 }
 
 /** Elapsed seconds, excluding paused time; frozen while paused. Pass `nowMs`. */

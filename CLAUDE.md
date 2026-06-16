@@ -50,6 +50,12 @@ still produces 0 unknowns and type-checks.
     `45s`/`35-40s` is flagged `WorkoutExercise.isTimed` (via `timedSeconds`); the
     seconds live in the `reps` field (no new column), the logger shows a **Sec**
     column, completion says "seconds", and History / coach log append `s` / `с`.
+  - **"(or …)" alternatives**: a coach exercise whose English note starts with a
+    recognised swap (`Or hanging leg raises …`, `Or plank: …`) carries the
+    alternative in `WorkoutExercise.alt`, parsed at build time by `altFromNotes`
+    (runtime only — no parser / `program.json` change). The logger shows a
+    `⇄ <name>` pill; `swapVariant` toggles active⇄alt and each side keeps its own
+    pre-filled sets. Add new swaps to `ALT_PATTERNS` in `logger-model.ts`.
 - **Barbell viz is a static 2D SVG** (`src/components/barbell-svg.ts`). three.js
   was removed — do not reintroduce it without reason.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as
