@@ -41,10 +41,16 @@ still produces 0 unknowns and type-checks.
   converting to kg. Per-side plates for a logged set = `platesForPlateLb`
   (`decompose(plateLb/2)`), NOT the total-based `computeBarbellLoad`. Non-barbell
   equipment (dumbbell/machine/bodyweight) is logged as-is — no bar.
+  - **Set-completion guard** (`completeProblem`/`canComplete` in `logger-model.ts`,
+    pure + tested): a set's ✓ stays locked until it has a weight (`0` allowed —
+    empty bar / loadless) and a **whole number of reps ≥ 1**; negative weight and
+    non-integer/zero reps are blocked. The trainer log prints `б/в` for a bodyweight
+    set with weight `0`/empty (and `б/в +Nkg` for added weight).
 - **Barbell viz is a static 2D SVG** (`src/components/barbell-svg.ts`). three.js
   was removed — do not reintroduce it without reason.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as
-  `{ finished: {...} }`. Leave room for future logger keys (sets, timer, notes).
+  `{ finished: {...} }`. Other keys: `liftinglog:workouts` + `liftinglog:activeWorkout`
+  (logger), `liftinglog:unit` (History kg/lb display toggle, defaults to kg).
 - **Rendering uses `innerHTML` with trusted static data.** User-entered text is a
   stored-XSS sink and must use `textContent` / an input's `.value` property — NEVER
   an `innerHTML` template. Live sinks: the **coach message** in `logging.ts`

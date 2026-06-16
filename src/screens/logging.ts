@@ -5,7 +5,7 @@
 // .value property.
 import type { WorkoutExercise, LoggedSet, Workout } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts, updateFinishedWorkout } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
@@ -21,11 +21,6 @@ const clearElapsed = () => { if (elapsedTimer) { clearInterval(elapsedTimer); el
 const clearRest = () => { if (restTimer) { clearInterval(restTimer); restTimer = null } }
 const clearAll = () => { clearElapsed(); clearRest(); rest = null }
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
-
-// A set can be marked done only once it has a weight (0 allowed — e.g. an empty bar
-// or a loadless exercise) and at least 1 rep. Applies to every exercise.
-const canComplete = (st: LoggedSet): boolean =>
-  st.weightLb !== null && st.reps !== null && st.reps > 0
 
 function plateChips(perSide: { plate: number; count: number }[]): string {
   if (!perSide.length) return '<span class="lg-plates-empty">bar only</span>'
@@ -198,16 +193,10 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const cur = current(); if (!cur) return
         const exi = Number(btn.dataset.ex), si = Number(btn.dataset.set)
         const st = cur.exercises[exi].sets[si]
-        // block completing a set with an empty weight or reps
-        if (!st.done && !canComplete(st)) {
-          const needWeight = st.weightLb === null
-          const needReps = st.reps === null
-          const repsZero = st.reps !== null && st.reps <= 0
-          toast(repsZero ? 'Reps must be 1 or more'
-            : needWeight && needReps ? 'Enter weight and reps first'
-            : needWeight ? 'Enter weight first'
-            : 'Enter reps first', 'info')
-          return
+        // block completing a set with an empty/invalid weight or reps
+        if (!st.done) {
+          const problem = completeProblem(st)
+          if (problem) { toast(problem, 'info'); return }
         }
         st.done = !st.done
         if (!edit && st.done) rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }

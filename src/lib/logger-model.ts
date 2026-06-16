@@ -5,6 +5,38 @@ import type { CatalogExercise } from '../data/catalog-types'
 import { kgToLb, KG_TO_LB, BAR_LB } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
+export type Unit = 'kg' | 'lb'
+
+/**
+ * Display label for a logged set's weight in the chosen unit. Bodyweight shows "BW"
+ * (or "BW +N u" for added weight). A barbell log is the PLATE weight (excl. bar), so
+ * it shows "<plates> u (<full> w/ bar)". Other equipment shows the weight as-is.
+ * null (no weight) → '–'.
+ */
+export function setWeightDisplay(lb: number | null, equipment: string, unit: Unit): string {
+  const conv = (x: number) => (unit === 'kg' ? Math.round(x / KG_TO_LB) : x)
+  if (equipment === 'bodyweight') return lb === null || lb <= 0 ? 'BW' : `BW +${conv(lb)} ${unit}`
+  if (lb === null) return '–'
+  if (equipment === 'barbell') return `${conv(lb)} ${unit} (${conv(lb + BAR_LB)} w/ bar)`
+  return `${conv(lb)} ${unit}`
+}
+
+/**
+ * Why a set can't be marked done yet, or null if it can. Needs a weight (0 allowed —
+ * empty bar / loadless) and a whole number of reps ≥ 1. Applies to every exercise.
+ */
+export function completeProblem(st: LoggedSet): string | null {
+  const w = st.weightLb, r = st.reps
+  if (w === null && r === null) return 'Enter weight and reps first'
+  if (w !== null && w < 0) return "Weight can't be negative"
+  if (w === null) return 'Enter weight first'
+  if (r === null) return 'Enter reps first'
+  if (!Number.isInteger(r) || r < 1) return 'Reps must be a whole number (1+)'
+  return null
+}
+
+export const canComplete = (st: LoggedSet): boolean => completeProblem(st) === null
+
 // Stable per-exercise identity for matching the same movement across workouts.
 const slugify = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
@@ -166,10 +198,14 @@ export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
 export function trainerLog(w: Workout): string {
   const body = w.exercises
     .map((ex) => {
-      // barbell sets are logged as plate weight (excl. bar) — report the full
-      // lifted weight by adding the bar back before converting to kg.
-      const wt = (lb: number | null) =>
-        lb === null ? 'б/в' : String(Math.round((ex.equipment === 'barbell' ? lb + BAR_LB : lb) / KG_TO_LB))
+      // Report the full lifted weight in kg. Barbell logs are plate weight, so add
+      // the bar back. Bodyweight has no load → 'б/в' (or 'б/в +Nkg' for added weight).
+      const wt = (lb: number | null): string => {
+        if (ex.equipment === 'bodyweight') return lb === null || lb <= 0 ? 'б/в' : `б/в +${Math.round(lb / KG_TO_LB)}`
+        if (lb === null) return 'б/в'
+        const full = ex.equipment === 'barbell' ? lb + BAR_LB : lb
+        return String(Math.round(full / KG_TO_LB))
+      }
       const lines: string[] = []
       let i = 0
       while (i < ex.sets.length) {

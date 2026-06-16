@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete } from './logger-model'
 import type { Session, Exercise } from '../data/types'
-import type { Workout } from './logger-types'
+import type { Workout, LoggedSet } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
 
 const mkSession = (exercises: Exercise[]): Session => ({
@@ -236,5 +236,58 @@ describe('trainerLog', () => {
   it('appends the coach message when present', () => {
     const w = wk({ coachMessage: 'Колено побаливало', exercises: [{ exerciseRef: 'b', nameEn: 'Bench', nameRu: 'Жим лёжа', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 2)] }] })
     expect(trainerLog(w)).toBe('Жим лёжа\n122 × 2 — 1\n\nКолено побаливало')
+  })
+  it('bodyweight prints б/в for 0/empty weight, б/в +Nkg for added weight', () => {
+    const w = wk({ exercises: [
+      { exerciseRef: 'pl', nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [doneSet(0, 1)] },
+      { exerciseRef: 'wp', nameEn: 'Weighted Pull-up', nameRu: 'Подтягивания с весом', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [doneSet(30, 8)] },
+    ] })
+    expect(trainerLog(w)).toBe('Планка\nб/в × 1 — 1\n\nПодтягивания с весом\nб/в +14 × 8 — 1') // 30 lb → 14 kg added
+  })
+})
+
+describe('setWeightDisplay', () => {
+  it('barbell shows plate weight + full (w/ bar), in kg', () => {
+    expect(setWeightDisplay(220, 'barbell', 'kg')).toBe('100 kg (120 w/ bar)')
+  })
+  it('barbell shows plate weight + full (w/ bar), in lb', () => {
+    expect(setWeightDisplay(220, 'barbell', 'lb')).toBe('220 lb (265 w/ bar)')
+  })
+  it('non-barbell shows the weight as-is, no bar', () => {
+    expect(setWeightDisplay(44, 'dumbbell', 'kg')).toBe('20 kg')
+    expect(setWeightDisplay(44, 'dumbbell', 'lb')).toBe('44 lb')
+  })
+  it('null weight → dash', () => {
+    expect(setWeightDisplay(null, 'barbell', 'kg')).toBe('–')
+  })
+  it('bodyweight: 0/empty → BW, added weight → BW +N', () => {
+    expect(setWeightDisplay(0, 'bodyweight', 'kg')).toBe('BW')
+    expect(setWeightDisplay(null, 'bodyweight', 'lb')).toBe('BW')
+    expect(setWeightDisplay(30, 'bodyweight', 'kg')).toBe('BW +14 kg')
+    expect(setWeightDisplay(30, 'bodyweight', 'lb')).toBe('BW +30 lb')
+  })
+})
+
+describe('completeProblem / canComplete', () => {
+  const set = (weightLb: number | null, reps: number | null): LoggedSet => ({ weightLb, reps, done: false, restSec: 90 })
+  it('blocks empty weight and/or reps', () => {
+    expect(completeProblem(set(null, null))).toBe('Enter weight and reps first')
+    expect(completeProblem(set(null, 5))).toBe('Enter weight first')
+    expect(completeProblem(set(100, null))).toBe('Enter reps first')
+  })
+  it('blocks 0 / decimal / negative reps', () => {
+    expect(completeProblem(set(100, 0))).toBe('Reps must be a whole number (1+)')
+    expect(completeProblem(set(100, 3.5))).toBe('Reps must be a whole number (1+)')
+    expect(completeProblem(set(100, -2))).toBe('Reps must be a whole number (1+)')
+  })
+  it('blocks negative weight', () => {
+    expect(completeProblem(set(-5, 3))).toBe("Weight can't be negative")
+  })
+  it('allows weight 0 (empty bar / loadless) with reps ≥ 1', () => {
+    expect(completeProblem(set(0, 1))).toBeNull()
+    expect(canComplete(set(0, 1))).toBe(true)
+  })
+  it('allows a normal weighted set', () => {
+    expect(canComplete(set(100, 5))).toBe(true)
   })
 })
