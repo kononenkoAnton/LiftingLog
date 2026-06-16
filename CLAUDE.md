@@ -46,6 +46,10 @@ still produces 0 unknowns and type-checks.
     empty bar / loadless) and a **whole number of reps ≥ 1**; negative weight and
     non-integer/zero reps are blocked. The trainer log prints `б/в` for a bodyweight
     set with weight `0`/empty (and `б/в +Nkg` for added weight).
+  - **Timed holds** (plank etc.): a coach exercise whose `reps` is a duration like
+    `45s`/`35-40s` is flagged `WorkoutExercise.isTimed` (via `timedSeconds`); the
+    seconds live in the `reps` field (no new column), the logger shows a **Sec**
+    column, completion says "seconds", and History / coach log append `s` / `с`.
 - **Barbell viz is a static 2D SVG** (`src/components/barbell-svg.ts`). three.js
   was removed — do not reintroduce it without reason.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as

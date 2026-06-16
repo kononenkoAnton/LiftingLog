@@ -72,7 +72,8 @@ export function renderHistory(el: HTMLElement) {
           const row = document.createElement('div')
           row.className = 'hist-set'
           const done = s.done ? '✓' : '·'
-          row.textContent = `${done} ${setWeightDisplay(s.weightLb, ex.equipment, unit)} × ${s.reps ?? '–'}`
+          const repStr = s.reps === null ? '–' : `${s.reps}${ex.isTimed ? 's' : ''}`
+          row.textContent = `${done} ${setWeightDisplay(s.weightLb, ex.equipment, unit)} × ${repStr}`
           exEl.appendChild(row)
         }
         body.appendChild(exEl)

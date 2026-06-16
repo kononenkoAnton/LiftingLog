@@ -39,7 +39,7 @@ function plateLineInner(plateLb: number): string {
 }
 
 function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null): string {
-  const lastStr = last && last[0] ? `Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}` : ''
+  const lastStr = last && last[0] ? `Last ${last[0].weightLb ?? '–'}×${last[0].reps ?? '–'}${ex.isTimed ? 's' : ''}` : ''
   return `
     <div class="lg-ex">
       <div class="lg-exh">
@@ -47,7 +47,7 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
         <button class="lg-ex-del" data-ex="${i}" type="button" aria-label="Remove exercise">✕</button>
       </div>
       ${ex.coachTarget || lastStr ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${ex.coachTarget && lastStr ? ' · ' : ''}${lastStr}</div>` : ''}
-      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">Reps</span><span class="r">✓</span><span></span></div>
+      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">${ex.isTimed ? 'Sec' : 'Reps'}</span><span class="r">✓</span><span></span></div>
       ${ex.sets.map((st, si) => {
         const lp = last && last[si] ? last[si] : null
         // per-set plate line for barbell lifts; recomputed live by the input handler
@@ -58,7 +58,7 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
         <div class="lg-row ${st.done ? 'done' : ''}">
           <span class="lg-setno">${si + 1}</span>
           <input class="lg-inp" type="text" inputmode="decimal" data-ex="${i}" data-set="${si}" data-field="weightLb" value="${st.weightLb ?? ''}" placeholder="${lp && lp.weightLb !== null ? lp.weightLb : 'lb'}">
-          <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : '–'}">
+          <input class="lg-inp" type="text" inputmode="numeric" data-ex="${i}" data-set="${si}" data-field="reps" value="${st.reps ?? ''}" placeholder="${lp && lp.reps !== null ? lp.reps : (ex.isTimed ? 'sec' : '–')}">
           <button class="lg-chk ${st.done ? 'on' : ''}${!st.done && !canComplete(st) ? ' locked' : ''}" data-ex="${i}" data-set="${si}" type="button">✓</button>
           <button class="lg-del" data-ex="${i}" data-set="${si}" type="button" aria-label="Delete set">−</button>
         </div>${plateBox}`
@@ -195,7 +195,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const st = cur.exercises[exi].sets[si]
         // block completing a set with an empty/invalid weight or reps
         if (!st.done) {
-          const problem = completeProblem(st)
+          const problem = completeProblem(st, cur.exercises[exi].isTimed ? 'seconds' : 'reps')
           if (problem) { toast(problem, 'info'); return }
         }
         st.done = !st.done

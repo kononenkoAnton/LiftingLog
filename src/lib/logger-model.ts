@@ -25,13 +25,13 @@ export function setWeightDisplay(lb: number | null, equipment: string, unit: Uni
  * Why a set can't be marked done yet, or null if it can. Needs a weight (0 allowed —
  * empty bar / loadless) and a whole number of reps ≥ 1. Applies to every exercise.
  */
-export function completeProblem(st: LoggedSet): string | null {
+export function completeProblem(st: LoggedSet, repsLabel = 'reps'): string | null {
   const w = st.weightLb, r = st.reps
-  if (w === null && r === null) return 'Enter weight and reps first'
+  if (w === null && r === null) return `Enter weight and ${repsLabel} first`
   if (w !== null && w < 0) return "Weight can't be negative"
   if (w === null) return 'Enter weight first'
-  if (r === null) return 'Enter reps first'
-  if (!Number.isInteger(r) || r < 1) return 'Reps must be a whole number (1+)'
+  if (r === null) return `Enter ${repsLabel} first`
+  if (!Number.isInteger(r) || r < 1) return `${repsLabel[0].toUpperCase()}${repsLabel.slice(1)} must be a whole number (1+)`
   return null
 }
 
@@ -69,6 +69,13 @@ function coachRepsForSet(e: Exercise, i: number): number | null {
   return Number.isFinite(n) && String(n) === e.reps.trim() ? n : null
 }
 
+/** Hold duration in seconds if `reps` is a duration like "45s" / "35-40s" (upper
+ *  bound), else null. Used to flag timed exercises (planks/holds). */
+export function timedSeconds(reps: string): number | null {
+  const m = reps.trim().match(/^(\d+)(?:\s*-\s*(\d+))?\s*s$/i)
+  return m ? Number(m[2] ?? m[1]) : null
+}
+
 // How many set rows to pre-fill. Coach `sets` wins; when it's null, derive from the
 // weight scheme (perSet/progression carry their own per-set values) so we don't drop sets.
 function defaultSetCount(e: Exercise): number {
@@ -97,14 +104,16 @@ export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
     const rest = restDefaultFor(e.nameEn)
     // Barbell lifts are logged as PLATE weight (excl. the bar), so pre-fill the
     // plates needed to hit the coach's total: total lb − bar. Other equipment is
-    // logged as-is.
+    // logged as-is. Timed holds (e.g. plank "45s") pre-fill `reps` with the seconds.
     const isBarbell = e.equipment === 'barbell'
+    const secs = timedSeconds(e.reps)
+    const isTimed = secs !== null
     const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
       const kg = coachKgForSet(e.weight, i)
       const totalLb = kg !== null ? Math.round(kgToLb(kg)) : null
       return {
         weightLb: totalLb === null ? null : isBarbell ? Math.max(0, totalLb - BAR_LB) : totalLb,
-        reps: coachRepsForSet(e, i),
+        reps: isTimed ? secs : coachRepsForSet(e, i),
         done: false,
         restSec: rest,
       }
@@ -116,6 +125,7 @@ export function buildWorkoutExercises(session: Session): WorkoutExercise[] {
       equipment: e.equipment,
       isCoachPrescribed: true,
       coachTarget: coachTargetText(e),
+      isTimed,
       sets,
     }
   })
@@ -212,7 +222,8 @@ export function trainerLog(w: Workout): string {
         const s = ex.sets[i]
         let n = 1
         while (i + n < ex.sets.length && ex.sets[i + n].weightLb === s.weightLb && ex.sets[i + n].reps === s.reps) n++
-        lines.push(`${wt(s.weightLb)} × ${s.reps ?? '?'} — ${n}`)
+        const rep = s.reps === null ? '?' : `${s.reps}${ex.isTimed ? 'с' : ''}` // 'с' = seconds for timed holds
+        lines.push(`${wt(s.weightLb)} × ${rep} — ${n}`)
         i += n
       }
       return [ex.nameRu, ...lines].join('\n')

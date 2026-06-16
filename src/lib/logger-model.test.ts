@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout, LoggedSet } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -92,6 +92,30 @@ describe('buildWorkoutExercises', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: null, weight: { kind: 'perSet', steps: [{ kg: 130, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }] } })]))
     expect(we.sets).toHaveLength(4)
     expect(we.sets[3].weightLb).toBe(275) // 145kg = 320 lb total − 45 bar
+  })
+  it('flags timed holds and pre-fills reps with the duration in seconds', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ nameEn: 'Plank', equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 4, reps: '45s' })]))
+    expect(we.isTimed).toBe(true)
+    expect(we.sets).toHaveLength(4)
+    expect(we.sets[0].weightLb).toBeNull()
+    expect(we.sets[0].reps).toBe(45)
+  })
+  it('uses the upper bound for a duration range; rep schemes are not timed', () => {
+    const [hold] = buildWorkoutExercises(mkSession([ex({ equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 3, reps: '35-40s' })]))
+    expect(hold.isTimed).toBe(true)
+    expect(hold.sets[0].reps).toBe(40)
+    expect(buildWorkoutExercises(mkSession([ex({ reps: '5' })]))[0].isTimed).toBe(false)
+  })
+})
+
+describe('timedSeconds', () => {
+  it('parses durations (upper bound for ranges), null otherwise', () => {
+    expect(timedSeconds('45s')).toBe(45)
+    expect(timedSeconds('35-40s')).toBe(40)
+    expect(timedSeconds('70-80s')).toBe(80)
+    expect(timedSeconds('5')).toBeNull()
+    expect(timedSeconds('6-8')).toBeNull()
+    expect(timedSeconds('8–12')).toBeNull()
   })
 })
 
@@ -237,6 +261,10 @@ describe('trainerLog', () => {
     const w = wk({ coachMessage: 'Колено побаливало', exercises: [{ exerciseRef: 'b', nameEn: 'Bench', nameRu: 'Жим лёжа', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', sets: [doneSet(225, 2)] }] })
     expect(trainerLog(w)).toBe('Жим лёжа\n122 × 2 — 1\n\nКолено побаливало')
   })
+  it('appends с (seconds) for timed holds', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'pl', nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isCoachPrescribed: true, coachTarget: '', isTimed: true, sets: [doneSet(0, 45), doneSet(0, 45), doneSet(0, 45), doneSet(0, 45)] }] })
+    expect(trainerLog(w)).toBe('Планка\nб/в × 45с — 4')
+  })
   it('bodyweight prints б/в for 0/empty weight, б/в +Nkg for added weight', () => {
     const w = wk({ exercises: [
       { exerciseRef: 'pl', nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isCoachPrescribed: false, coachTarget: '', sets: [doneSet(0, 1)] },
@@ -289,5 +317,9 @@ describe('completeProblem / canComplete', () => {
   })
   it('allows a normal weighted set', () => {
     expect(canComplete(set(100, 5))).toBe(true)
+  })
+  it('labels the rep field per the second arg (e.g. seconds for holds)', () => {
+    expect(completeProblem(set(0, null), 'seconds')).toBe('Enter seconds first')
+    expect(completeProblem(set(0, 0), 'seconds')).toBe('Seconds must be a whole number (1+)')
   })
 })
