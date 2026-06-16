@@ -15,17 +15,15 @@ const UNIT_KEY = 'liftinglog:unit'
 const getUnit = (): Unit => { try { return localStorage.getItem(UNIT_KEY) === 'lb' ? 'lb' : 'kg' } catch { return 'kg' } }
 const setUnit = (u: Unit) => { try { localStorage.setItem(UNIT_KEY, u) } catch { /* ignore */ } }
 
-// One set's weight in the chosen unit. A barbell log is PLATE weight (excl. bar),
-// so we show the FULL lift (plates + 45 bar) tagged "(w/ bar)"; other equipment is
-// logged as-is. kg is rounded exactly as trainerLog does. Bodyweight / empty → '–'.
+// One set's weight in the chosen unit. A barbell log is PLATE weight (excl. bar) —
+// the number you typed — so we show that plus the FULL lift (plates + 45 bar) as
+// "<plates> u (<full> w/ bar)". Other equipment is logged as-is. kg is rounded
+// exactly as trainerLog does. Bodyweight / empty → '–'.
 function setWeightLabel(lb: number | null, equipment: string, unit: Unit): string {
   if (lb === null) return '–'
-  if (equipment === 'barbell') {
-    const fullLb = fullBarLb(lb)
-    const v = unit === 'kg' ? `${Math.round(fullLb / KG_TO_LB)} kg` : `${fullLb} lb`
-    return `${v} (w/ bar)`
-  }
-  return unit === 'kg' ? `${Math.round(lb / KG_TO_LB)} kg` : `${lb} lb`
+  const conv = (x: number) => (unit === 'kg' ? Math.round(x / KG_TO_LB) : x)
+  if (equipment === 'barbell') return `${conv(lb)} ${unit} (${conv(fullBarLb(lb))} w/ bar)`
+  return `${conv(lb)} ${unit}`
 }
 
 let openId: string | null = null
