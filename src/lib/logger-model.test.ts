@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout, LoggedSet } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -365,5 +365,40 @@ describe('completeProblem / canComplete', () => {
   it('labels the rep field per the second arg (e.g. seconds for holds)', () => {
     expect(completeProblem(set(0, null), 'seconds')).toBe('Enter seconds first')
     expect(completeProblem(set(0, 0), 'seconds')).toBe('Seconds must be a whole number (1+)')
+  })
+})
+
+describe('fillEmptySets', () => {
+  const set = (weightLb: number | null, reps: number | null, done = false): LoggedSet => ({ weightLb, reps, done, restSec: 90 })
+  it('fills every other blank set with the completed set, left not done', () => {
+    const out = fillEmptySets([set(100, 6, true), set(null, null), set(null, null), set(null, null)], 0)
+    expect(out.slice(1)).toEqual([
+      { weightLb: 100, reps: 6, done: false, restSec: 90 },
+      { weightLb: 100, reps: 6, done: false, restSec: 90 },
+      { weightLb: 100, reps: 6, done: false, restSec: 90 },
+    ])
+  })
+  it('fills only empty fields, keeping coach-prefilled reps', () => {
+    const out = fillEmptySets([set(30, 10, true), set(null, 10), set(null, 10)], 0)
+    expect(out[1]).toEqual({ weightLb: 30, reps: 10, done: false, restSec: 90 })
+    expect(out[2]).toEqual({ weightLb: 30, reps: 10, done: false, restSec: 90 })
+  })
+  it('never overwrites an already-entered value', () => {
+    expect(fillEmptySets([set(100, 6, true), set(95, null)], 0)[1])
+      .toEqual({ weightLb: 95, reps: 6, done: false, restSec: 90 })
+  })
+  it('leaves already-done sets untouched', () => {
+    expect(fillEmptySets([set(100, 6, true), set(50, 8, true)], 0)[1])
+      .toEqual({ weightLb: 50, reps: 8, done: true, restSec: 90 })
+  })
+  it('is a no-op (same ref) when the source set has a null field', () => {
+    const sets = [set(null, 6, true), set(null, null)]
+    expect(fillEmptySets(sets, 0)).toBe(sets)
+  })
+  it('does not mutate the input array', () => {
+    const sets = [set(100, 6, true), set(null, null)]
+    const before = JSON.parse(JSON.stringify(sets))
+    fillEmptySets(sets, 0)
+    expect(sets).toEqual(before)
   })
 })

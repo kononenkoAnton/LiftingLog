@@ -5,7 +5,7 @@
 // .value property.
 import type { WorkoutExercise, LoggedSet, Workout } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts, updateFinishedWorkout } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant, fillEmptySets } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
@@ -201,6 +201,9 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
           if (problem) { toast(problem, 'info'); return }
         }
         st.done = !st.done
+        // On complete, pre-fill the other still-blank sets with this set's weight/reps
+        // (left un-checked) so the user doesn't retype the same numbers.
+        if (st.done) cur.exercises[exi].sets = fillEmptySets(cur.exercises[exi].sets, si)
         if (!edit && st.done) {
           unlockAudio() // prime the gong within this tap so it can fire when rest ends
           rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }

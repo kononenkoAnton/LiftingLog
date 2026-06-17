@@ -234,6 +234,23 @@ export function blankSet(restSec: number): LoggedSet {
   return { weightLb: null, reps: null, done: false, restSec }
 }
 
+/**
+ * Fill-down on complete: when set `srcIdx` is marked done, copy its weight/reps into
+ * every OTHER set's empty (null) fields, so the remaining sets pre-fill to the same
+ * numbers. Filled sets stay NOT done — the user still confirms (or tweaks) each.
+ * Never overwrites an entered value or touches an already-done set. Returns a new
+ * array (no mutation); a no-op if the source set itself has a null field.
+ */
+export function fillEmptySets(sets: LoggedSet[], srcIdx: number): LoggedSet[] {
+  const src = sets[srcIdx]
+  if (!src || src.weightLb === null || src.reps === null) return sets
+  return sets.map((s, i) =>
+    i === srcIdx || s.done || (s.weightLb !== null && s.reps !== null)
+      ? s
+      : { ...s, weightLb: s.weightLb ?? src.weightLb, reps: s.reps ?? src.reps },
+  )
+}
+
 /** Turn a catalog pick into a non-coach WorkoutExercise with one blank set. */
 export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
   return {
