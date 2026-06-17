@@ -179,9 +179,9 @@ export function renderSession(el: HTMLElement, n: number) {
           ? '<div class="skip-badge">✓ Skipped · no workout logged</div>'
           : ''}
         ${activeThisDay
-          ? `<button class="lg-start" id="resumeBtn" type="button">▶ Resume workout</button>`
+          ? '' /* the persistent bottom bar is the resume affordance for the active day */
           : otherActive
-            ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
+            ? `<button class="lg-start" type="button" disabled>Finish your Day ${otherActive.sessionNum} workout to start another</button>`
             : logged
               ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
               : `<button class="lg-start" id="startBtn" type="button">▶ ${isFinished(s.num) ? 'Log this day' : 'Start Session'}</button>`}
@@ -191,9 +191,6 @@ export function renderSession(el: HTMLElement, n: number) {
 
     const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
     if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n, () => renderSession(el, n)) })
-
-    const resumeBtn = el.querySelector<HTMLButtonElement>('#resumeBtn')
-    if (resumeBtn) resumeBtn.addEventListener('click', () => renderLogging(el, n, () => renderSession(el, n)))
 
     const editBtn = el.querySelector<HTMLButtonElement>('#editBtn')
     if (editBtn && logged) editBtn.addEventListener('click', () => renderLogging(el, n, () => renderSession(el, n), logged))

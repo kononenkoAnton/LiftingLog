@@ -21,7 +21,12 @@ const app = document.querySelector<HTMLElement>('#app')!
 // Start the app + the persistent "active workout" bar (tap → straight into the logger).
 function launch() {
   startRouter(app)
-  mountActiveBar((n) => { requestEnterLogger(); location.hash = `#/session/${n}` })
+  mountActiveBar(app, (n) => {
+    requestEnterLogger()
+    // Already on that day's route (e.g. its schedule) → re-render in place; else navigate.
+    if (location.hash === `#/session/${n}`) renderSession(app, n)
+    else location.hash = `#/session/${n}`
+  })
 }
 
 async function boot() {

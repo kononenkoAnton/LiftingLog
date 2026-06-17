@@ -172,6 +172,8 @@ body.has-active-bar .screen{padding-bottom:calc(82px + env(safe-area-inset-botto
 .lg-start{display:block;width:100%;text-align:center;margin-top:18px;padding:15px;border-radius:13px;border:none;
   cursor:pointer;font-weight:800;font-size:15px;background:linear-gradient(160deg,var(--mint),#159c79);color:#04210f;text-decoration:none}
 .lg-start.resume{background:rgba(94,168,255,.14);color:var(--blue)}
+.lg-start:disabled{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--dim);
+  font-weight:600;font-size:13px;cursor:default}
 .btn-add{margin-top:6px;width:100%;text-align:center;font-weight:700;font-size:13px;padding:12px;border-radius:11px;
   border:none;background:rgba(94,168,255,.14);color:var(--blue);cursor:pointer}
 .btn-cancel{margin-top:9px;width:100%;text-align:center;font-weight:700;font-size:13px;padding:12px;border-radius:11px;

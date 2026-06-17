@@ -6,6 +6,7 @@ import { getActiveWorkout } from '../lib/workouts'
 import { workoutDurationSec } from '../lib/logger-model'
 
 let bar: HTMLElement | null = null
+let appEl: HTMLElement | null = null
 let onResume: ((sessionNum: number) => void) | null = null
 
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
@@ -14,9 +15,10 @@ function refresh() {
   if (!bar) return
   const w = getActiveWorkout()
   const num = w?.sessionNum ?? null // null = ad-hoc workout (no day route) → no bar
-  // The active day's route (#/session/N) is shared by the logger and that day's
-  // schedule — hide there; show on every other screen.
-  const show = num !== null && location.hash !== `#/session/${num}`
+  // Show on every screen while a workout is active — including the active day's own
+  // schedule — EXCEPT the logger itself (which renders .screen.lg).
+  const inLogger = !!appEl?.querySelector('.screen.lg')
+  const show = num !== null && !inLogger
   document.body.classList.toggle('has-active-bar', show)
   if (!show || !w) { bar.style.display = 'none'; return }
   bar.style.display = 'flex'
@@ -27,7 +29,8 @@ function refresh() {
     `<span class="ab-time mono">${time}</span>`
 }
 
-export function mountActiveBar(onResumeCb: (sessionNum: number) => void) {
+export function mountActiveBar(app: HTMLElement, onResumeCb: (sessionNum: number) => void) {
+  appEl = app
   onResume = onResumeCb
   bar = document.createElement('div')
   bar.className = 'active-bar'
@@ -37,7 +40,9 @@ export function mountActiveBar(onResumeCb: (sessionNum: number) => void) {
     if (w && w.sessionNum !== null && onResume) onResume(w.sessionNum)
   })
   document.body.appendChild(bar)
-  window.addEventListener('hashchange', refresh)
-  setInterval(refresh, 1000) // drives the live clock + catches start/finish/cancel
+  // Re-evaluate whenever #app re-renders — a route change OR the logger
+  // mounting/unmounting (which share a hash) — plus a 1s tick for the live clock.
+  new MutationObserver(refresh).observe(app, { childList: true })
+  setInterval(refresh, 1000)
   refresh()
 }
