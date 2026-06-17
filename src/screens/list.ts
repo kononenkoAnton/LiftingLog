@@ -2,7 +2,7 @@ import { program } from '../data/program'
 import { liftTags } from '../lib/focus'
 import { getSession } from '../data/program'
 import { isFinished, finish, unfinish } from '../lib/progress'
-import { listWorkouts } from '../lib/workouts'
+import { listWorkouts, getFinishedForSession } from '../lib/workouts'
 import { KG_TO_LB, BAR_LB } from '../lib/load'
 import { supabase } from '../lib/supabase'
 import { gsap } from 'gsap'
@@ -129,9 +129,17 @@ export function renderList(el: HTMLElement) {
     if (numBtn) {
       // tap the number to mark a day done (skipped — no logged workout) or un-mark it
       const willFinish = !isFinished(num)
-      if (willFinish && !confirm('Skip this day? It will be marked done without a logged workout.')) return
-      if (willFinish) finish(num, getSession(num)?.exercises ?? [])
-      else unfinish(num)
+      if (willFinish) {
+        if (!confirm('Skip this day? It will be marked done without a logged workout.')) return
+        finish(num, getSession(num)?.exercises ?? [])
+      } else {
+        // un-mark: warn, and reassure if a logged workout exists (it's not deleted)
+        const msg = getFinishedForSession(num)
+          ? 'Unmark this day? Your logged workout stays in History.'
+          : 'Unmark this day?'
+        if (!confirm(msg)) return
+        unfinish(num)
+      }
       numBtn.classList.toggle('done', willFinish)
       numBtn.setAttribute('aria-pressed', String(willFinish))
       refreshProgress()

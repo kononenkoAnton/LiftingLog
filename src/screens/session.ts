@@ -3,9 +3,9 @@ import type { Exercise, Weight } from '../data/types'
 import { computeBarbellLoad, kgToLb, roundToStep } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
-import { isFinished, getSnapshot } from '../lib/progress'
+import { isFinished, getSnapshot, unfinish } from '../lib/progress'
 import { gsap } from 'gsap'
-import { getActiveWorkout, startWorkout, getFinishedForSession } from '../lib/workouts'
+import { getActiveWorkout, startWorkout, getFinishedForSession, deleteWorkout } from '../lib/workouts'
 import { renderLogging } from './logging'
 import { trainerLog } from '../lib/logger-model'
 import { toast } from '../lib/toast'
@@ -176,6 +176,7 @@ export function renderSession(el: HTMLElement, n: number) {
               ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
               : `<button class="lg-start" id="startBtn" type="button">▶ ${isFinished(s.num) ? 'Log this day' : 'Start Session'}</button>`}
         ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Copy for trainer</button>` : ''}
+        ${logged ? `<button class="delete-btn" id="delWorkoutBtn" type="button">🗑 Delete workout</button>` : ''}
       </div>`
 
     const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
@@ -192,6 +193,15 @@ export function renderSession(el: HTMLElement, n: number) {
       const text = trainerLog(logged)
       try { await navigator.clipboard.writeText(text); toast('Copied for trainer ✓', 'info') }
       catch { toast(text, 'info') }
+    })
+
+    const delBtn = el.querySelector<HTMLButtonElement>('#delWorkoutBtn')
+    if (delBtn && logged) delBtn.addEventListener('click', async () => {
+      if (!confirm(`Delete the logged workout for Day ${s.num}? This permanently removes it and can't be undone.`)) return
+      await deleteWorkout(logged.id)
+      await unfinish(s.num) // the day's "done" came from this log → revert it to not done
+      toast('Workout deleted', 'info')
+      draw(false)
     })
 
     const go = (num: number) => { if (getSession(num)) location.hash = `#/session/${num}` }

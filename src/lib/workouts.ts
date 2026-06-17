@@ -150,3 +150,14 @@ export async function cancelWorkout(): Promise<void> {
   const { error } = await supabase.from('workouts').update({ status: 'cancelled', data: { ...w, status: 'cancelled' } }).eq('id', w.id)
   if (error) console.error('[workouts] cancel failed', error)
 }
+
+/** Permanently delete a finished workout (history + localStorage + Supabase). */
+export async function deleteWorkout(id: string): Promise<void> {
+  history = history.filter((h) => h.id !== id)
+  writeLocalHistory()
+  if (!supabase) return
+  const uid = await currentUserId()
+  if (!uid) return
+  const { error } = await supabase.from('workouts').delete().eq('id', id)
+  if (error) { console.error('[workouts] delete failed', error); toast(`Delete failed: ${error.message}`, 'error') }
+}
