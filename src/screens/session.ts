@@ -86,6 +86,22 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
           <span class="mono"><span class="pl bar">45 bar</span> ${platesText(load.plates)}</span></div>
       </div>`
   }
+  if (e.weight.kind === 'range' && selKg !== null) {
+    // Non-barbell range (e.g. dumbbells): same slider, but no plates to load — just
+    // the picked weight and its lb conversion.
+    const w = e.weight
+    const each = e.perImplement ? ' each' : ''
+    return `
+      <div class="hero">
+        <div class="big" id="rangeVal">${selKg} kg${each}</div>
+        <div class="rangerow">
+          <span class="rend">${w.minKg}</span>
+          <input class="rslider" id="rangeSlider" type="range" min="${w.minKg}" max="${w.maxKg}" step="2.5" value="${selKg}" aria-label="Weight within range">
+          <span class="rend">${w.maxKg}</span>
+        </div>
+        <div class="conv mono" id="rangeConv">= ${roundUpToStep(kgToLb(selKg), 5)} lb${each}</div>
+      </div>`
+  }
   const kg = primaryKg(e.weight)
   return `
     <div class="hero">
@@ -118,8 +134,8 @@ export function renderSession(el: HTMLElement, n: number) {
     const e = exercises[focusIdx]
     const steps = e.equipment === 'barbell' ? stepWeightsOf(e.weight) : null
     if (steps && stepIdx >= steps.length) stepIdx = 0
-    // range lifts default to the lighter end (the slider takes it from there)
-    const selKg = e.equipment === 'barbell' && e.weight.kind === 'range'
+    // range lifts (barbell OR dumbbell) default to the lighter end (the slider takes it from there)
+    const selKg = e.weight.kind === 'range'
       ? e.weight.minKg
       : steps ? steps[stepIdx] : primaryKg(e.weight)
     // per-set schemes carry their own reps; otherwise use the exercise reps
@@ -190,17 +206,24 @@ export function renderSession(el: HTMLElement, n: number) {
       btn.addEventListener('click', () => { stepIdx = Number(btn.dataset.step); draw(false) })
     })
 
-    // range slider: live-update the bar/conversion/plates without re-rendering
+    // range slider: live-update the conversion (and the bar/plates for barbell) without re-rendering
     const slider = el.querySelector<HTMLInputElement>('#rangeSlider')
     if (slider) {
+      const isBarbell = e.equipment === 'barbell'
+      const each = e.perImplement ? ' each' : ''
       slider.addEventListener('input', () => {
         const val = Number(slider.value)
-        const load = computeBarbellLoad(val)
-        el.querySelector('#rangeVal')!.textContent = `${val} kg`
-        el.querySelector('#rangeConv')!.textContent = `= ${load.totalLb} lb total`
-        el.querySelector('#rangePside')!.innerHTML = `<span class="pl bar">45 bar</span> ${platesText(load.plates)}`
-        const bbEl = el.querySelector<HTMLElement>('#bb')
-        if (bbEl) mountBarbell(bbEl, load.plates)
+        if (isBarbell) {
+          const load = computeBarbellLoad(val)
+          el.querySelector('#rangeVal')!.textContent = `${val} kg`
+          el.querySelector('#rangeConv')!.textContent = `= ${load.totalLb} lb total`
+          el.querySelector('#rangePside')!.innerHTML = `<span class="pl bar">45 bar</span> ${platesText(load.plates)}`
+          const bbEl = el.querySelector<HTMLElement>('#bb')
+          if (bbEl) mountBarbell(bbEl, load.plates)
+        } else {
+          el.querySelector('#rangeVal')!.textContent = `${val} kg${each}`
+          el.querySelector('#rangeConv')!.textContent = `= ${roundUpToStep(kgToLb(val), 5)} lb${each}`
+        }
       })
     }
 
