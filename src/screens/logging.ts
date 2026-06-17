@@ -170,6 +170,9 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     })
 
     el.querySelectorAll<HTMLInputElement>('.lg-inp').forEach((inp) => {
+      // Select the whole value on focus so typing replaces it (no backspacing the
+      // pre-fill). Deferred a tick so iOS's own caret placement doesn't override it.
+      inp.addEventListener('focus', () => setTimeout(() => inp.select(), 0))
       inp.addEventListener('change', () => {
         const cur = current(); if (!cur) return
         const exi = Number(inp.dataset.ex), si = Number(inp.dataset.set)
