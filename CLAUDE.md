@@ -32,7 +32,10 @@ still produces 0 unknowns and type-checks.
   runtime by `src/lib/load.ts` — never store lb or plate math in
   `src/data/program.json`.
 - **Plate math is correctness-critical and unit-tested.** Targets round UP (never
-  under the trainer's number). Bar = 45 lb; plates per side = 45/35/25/10/5/2.5.
+  under the trainer's number) — **per side to the smallest plate (5 lb); no 2.5 lb
+  microplates**. Bar = 45 lb; plates per side = 45/35/25/10/5. `computeBarbellLoad`
+  rounds the per-side weight up to `PLATES_LB`'s smallest entry. Non-barbell lifts
+  (dumbbell/machine/cable) pre-fill rounded up to 5 lb (`roundUpToStep(lb, 5)`).
 - **Coach weights are TOTALS; logged barbell weights are PLATES (excl. the bar).**
   The trainer's kg is the total on the bar (`computeBarbellLoad` + session screen).
   A logged barbell `weightLb` is only the plates you load — full lift =

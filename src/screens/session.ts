@@ -1,6 +1,6 @@
 import { getSession, program } from '../data/program'
 import type { Exercise, Weight } from '../data/types'
-import { computeBarbellLoad, kgToLb } from '../lib/load'
+import { computeBarbellLoad, kgToLb, roundUpToStep } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
 import { isFinished, getSnapshot, finish, unfinish } from '../lib/progress'
@@ -90,7 +90,7 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
   return `
     <div class="hero">
       <div class="big">${weightLabel(e.weight, e.perImplement)}</div>
-      <div class="conv mono">${kg !== null ? '= ' + kgToLb(kg).toFixed(0) + ' lb' + (e.perImplement ? ' each' : '') : ''}</div>
+      <div class="conv mono">${kg !== null ? '= ' + roundUpToStep(kgToLb(kg), 5) + ' lb' + (e.perImplement ? ' each' : '') : ''}</div>
     </div>`
 }
 

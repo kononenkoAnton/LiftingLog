@@ -66,7 +66,7 @@ describe('buildWorkoutExercises', () => {
   })
   it('does NOT subtract the bar for non-barbell equipment', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ equipment: 'dumbbell', weight: { kind: 'single', kg: 30 } })]))
-    expect(we.sets[0].weightLb).toBe(66) // round(kgToLb(30)), no bar
+    expect(we.sets[0].weightLb).toBe(70) // roundUp5(kgToLb(30)=66.1)=70, no bar
   })
   it('defaults to one set when coach sets is null', () => {
     expect(buildWorkoutExercises(mkSession([ex({ sets: null })]))[0].sets).toHaveLength(1)
@@ -76,7 +76,7 @@ describe('buildWorkoutExercises', () => {
       weight: { kind: 'perSet', steps: [{ kg: 100, reps: 5 }, { kg: 90, reps: 8 }] }, sets: 2,
     })]))
     expect(we.sets[0].weightLb).toBe(180) // 100kg → 225 − 45
-    expect(we.sets[1].weightLb).toBe(155) // 90kg → 200 − 45
+    expect(we.sets[1].weightLb).toBe(160) // 90kg → 205 − 45
     expect(we.sets[1].reps).toBe(8)
   })
   it('leaves weightLb null for bodyweight and non-numeric reps null', () => {
@@ -86,12 +86,12 @@ describe('buildWorkoutExercises', () => {
   })
   it('uses per-index kg for a progression scheme, clamping extra sets (barbell plate weight)', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ weight: { kind: 'progression', kg: [80, 90, 100] }, sets: 5 })]))
-    expect(we.sets.map((s) => s.weightLb)).toEqual([135, 155, 180, 180, 180]) // 80/90/100kg loadable totals − 45 bar
+    expect(we.sets.map((s) => s.weightLb)).toEqual([140, 160, 180, 180, 180]) // 80/90/100kg loadable totals − 45 bar
   })
   it('keeps every perSet step when coach sets is null', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: null, weight: { kind: 'perSet', steps: [{ kg: 130, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }] } })]))
     expect(we.sets).toHaveLength(4)
-    expect(we.sets[3].weightLb).toBe(275) // 145kg = 320 lb total − 45 bar
+    expect(we.sets[3].weightLb).toBe(280) // 145kg → 325 lb total − 45 bar
   })
   it('flags timed holds and pre-fills reps with the duration in seconds', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ nameEn: 'Plank', equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 4, reps: '45s' })]))

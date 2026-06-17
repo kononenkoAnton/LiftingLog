@@ -17,9 +17,11 @@ Built with Vite + TypeScript, GSAP, and a three.js barbell hero.
 `vite.config.ts` makes it path-independent.
 
 ## Plates & bar
-Bar = 45 lb. Plates per side = 45, 35, 25, 10, 5, 2.5 lb. Targets round UP to the
-nearest achievable load (never under the trainer's number). Logic in
-`src/lib/load.ts` (`computeBarbellLoad`), covered by unit tests.
+Bar = 45 lb. Plates per side = 45, 35, 25, 10, 5 lb — **no 2.5 lb microplates** (rarely
+stocked). Targets round UP **per side to the nearest 5 lb** (the smallest plate) — the
+nearest achievable load, never under the trainer's number. Logic in `src/lib/load.ts`
+(`computeBarbellLoad`), covered by unit tests. Non-barbell lifts (dumbbell/machine/cable)
+round up to 5 lb too.
 
 **Coach prescriptions are totals; logged weights are plates.** The trainer's kg is
 the *total* on the bar (bar + plates) — that's what `computeBarbellLoad` and the
