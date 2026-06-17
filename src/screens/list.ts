@@ -90,10 +90,6 @@ export function renderList(el: HTMLElement) {
       <div class="hero-h">
         <div><div class="k">Program · Jan–Jun 2026</div><h1>${program.title}</h1></div>
         <div class="hero-actions">
-          <div class="unit-toggle" role="group" aria-label="Weight unit">
-            <button class="ut ${unit === 'kg' ? 'on' : ''}" data-unit="kg" type="button">kg</button>
-            <button class="ut ${unit === 'lb' ? 'on' : ''}" data-unit="lb" type="button">lb</button>
-          </div>
           <a class="hist-link" href="#/history" aria-label="History">History</a>
           <span class="lang">EN · RU</span>
           ${supabase ? '<button class="signout" id="signout" type="button" aria-label="Sign out">⎋</button>' : ''}
@@ -102,6 +98,12 @@ export function renderList(el: HTMLElement) {
       <div class="stats">
         <div class="chip"><div class="n mono"><span id="donecount">0</span><span style="color:var(--dim)">/${total}</span></div><div class="l">Done</div></div>
         <div class="chip"><div class="n mono" id="upnext">—</div><div class="l">Up next</div></div>
+      </div>
+      <div class="unit-row">
+        <div class="unit-toggle" role="group" aria-label="Weight unit">
+          <button class="ut ${unit === 'kg' ? 'on' : ''}" data-unit="kg" type="button">kg</button>
+          <button class="ut ${unit === 'lb' ? 'on' : ''}" data-unit="lb" type="button">lb</button>
+        </div>
       </div>
       <div class="stats2" id="maxRow">
         <div class="chip2"><div class="n2 mono" style="color:#e3b341">${maxChip(/deadlift/i, unit)}</div><div class="l2">Max Deadlift</div></div>
