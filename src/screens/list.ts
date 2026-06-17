@@ -3,7 +3,9 @@ import { liftTags } from '../lib/focus'
 import { getSession } from '../data/program'
 import { isFinished, finish, unfinish } from '../lib/progress'
 import { listWorkouts, getFinishedForSession } from '../lib/workouts'
-import { bestE1rmKg } from '../lib/e1rm'
+import { bestE1rmKg, bestE1rmLb } from '../lib/e1rm'
+import { getUnit, setUnit } from '../lib/unit'
+import type { Unit } from '../lib/logger-model'
 import { KG_TO_LB, BAR_LB } from '../lib/load'
 import { supabase } from '../lib/supabase'
 import { gsap } from 'gsap'
@@ -60,10 +62,17 @@ function maxKgFor(match: RegExp): number {
   return Math.max(maxCoachKgFor(match), maxLoggedKgFor(match))
 }
 
-// User's best estimated 1RM (kg) for a lift from logged sets; '—' if none logged yet.
-function e1rmChip(match: RegExp): string {
-  const kg = bestE1rmKg(listWorkouts(), match)
-  return kg === null ? '—' : `~${kg}<span class="u">kg</span>`
+// Coach/best Max for a lift in the chosen unit (coach prescribes kg; lb is a conversion).
+function maxChip(match: RegExp, unit: Unit): string {
+  const kg = maxKgFor(match)
+  const v = unit === 'kg' ? kg : Math.round(kg * KG_TO_LB)
+  return `${v}<span class="u">${unit}</span>`
+}
+
+// User's best estimated 1RM for a lift from logged sets in the chosen unit; '—' if none.
+function e1rmChip(match: RegExp, unit: Unit): string {
+  const v = unit === 'kg' ? bestE1rmKg(listWorkouts(), match) : bestE1rmLb(listWorkouts(), match)
+  return v === null ? '—' : `~${v}<span class="u">${unit}</span>`
 }
 
 // The earliest chronological session not yet finished; null if all are done.
@@ -74,11 +83,17 @@ function firstUnfinished(): number | null {
 
 export function renderList(el: HTMLElement) {
   const total = program.sessions.length
+  let unit = getUnit()
+  const LIFTS: RegExp[] = [/deadlift/i, /squat/i, /bench/i]
   el.innerHTML = `
     <div class="screen">
       <div class="hero-h">
         <div><div class="k">Program · Jan–Jun 2026</div><h1>${program.title}</h1></div>
         <div class="hero-actions">
+          <div class="unit-toggle" role="group" aria-label="Weight unit">
+            <button class="ut ${unit === 'kg' ? 'on' : ''}" data-unit="kg" type="button">kg</button>
+            <button class="ut ${unit === 'lb' ? 'on' : ''}" data-unit="lb" type="button">lb</button>
+          </div>
           <a class="hist-link" href="#/history" aria-label="History">History</a>
           <span class="lang">EN · RU</span>
           ${supabase ? '<button class="signout" id="signout" type="button" aria-label="Sign out">⎋</button>' : ''}
@@ -88,15 +103,15 @@ export function renderList(el: HTMLElement) {
         <div class="chip"><div class="n mono"><span id="donecount">0</span><span style="color:var(--dim)">/${total}</span></div><div class="l">Done</div></div>
         <div class="chip"><div class="n mono" id="upnext">—</div><div class="l">Up next</div></div>
       </div>
-      <div class="stats2">
-        <div class="chip2"><div class="n2 mono" style="color:#e3b341">${maxKgFor(/deadlift/i)}<span class="u">kg</span></div><div class="l2">Max Deadlift</div></div>
-        <div class="chip2"><div class="n2 mono" style="color:#e23b3b">${maxKgFor(/squat/i)}<span class="u">kg</span></div><div class="l2">Max Squat</div></div>
-        <div class="chip2"><div class="n2 mono" style="color:#3b74e6">${maxKgFor(/bench/i)}<span class="u">kg</span></div><div class="l2">Max Bench</div></div>
+      <div class="stats2" id="maxRow">
+        <div class="chip2"><div class="n2 mono" style="color:#e3b341">${maxChip(/deadlift/i, unit)}</div><div class="l2">Max Deadlift</div></div>
+        <div class="chip2"><div class="n2 mono" style="color:#e23b3b">${maxChip(/squat/i, unit)}</div><div class="l2">Max Squat</div></div>
+        <div class="chip2"><div class="n2 mono" style="color:#3b74e6">${maxChip(/bench/i, unit)}</div><div class="l2">Max Bench</div></div>
       </div>
-      <div class="stats2">
-        <div class="chip2"><div class="n2 mono" style="color:#e3b341">${e1rmChip(/deadlift/i)}</div><div class="l2">~1RM Deadlift</div></div>
-        <div class="chip2"><div class="n2 mono" style="color:#e23b3b">${e1rmChip(/squat/i)}</div><div class="l2">~1RM Squat</div></div>
-        <div class="chip2"><div class="n2 mono" style="color:#3b74e6">${e1rmChip(/bench/i)}</div><div class="l2">~1RM Bench</div></div>
+      <div class="stats2" id="e1rmRow">
+        <div class="chip2"><div class="n2 mono" style="color:#e3b341">${e1rmChip(/deadlift/i, unit)}</div><div class="l2">~1RM Deadlift</div></div>
+        <div class="chip2"><div class="n2 mono" style="color:#e23b3b">${e1rmChip(/squat/i, unit)}</div><div class="l2">~1RM Squat</div></div>
+        <div class="chip2"><div class="n2 mono" style="color:#3b74e6">${e1rmChip(/bench/i, unit)}</div><div class="l2">~1RM Bench</div></div>
       </div>
       <div id="rows">
         ${[...program.sessions].reverse().map((s) => `
@@ -161,6 +176,25 @@ export function renderList(el: HTMLElement) {
   })
 
   refreshProgress()
+
+  // kg/lb toggle: repaint the Max + ~1RM chip values in place (no full re-render,
+  // so the row entry animation isn't replayed) and persist the shared unit setting.
+  const maxRow = el.querySelector('#maxRow')!
+  const e1rmRow = el.querySelector('#e1rmRow')!
+  function paintChips() {
+    maxRow.querySelectorAll<HTMLElement>('.n2').forEach((n, i) => { n.innerHTML = maxChip(LIFTS[i], unit) })
+    e1rmRow.querySelectorAll<HTMLElement>('.n2').forEach((n, i) => { n.innerHTML = e1rmChip(LIFTS[i], unit) })
+  }
+  el.querySelectorAll<HTMLButtonElement>('.ut').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const u = btn.dataset.unit as Unit
+      if (u === unit) return
+      unit = u
+      setUnit(u)
+      el.querySelectorAll('.ut').forEach((b) => b.classList.toggle('on', (b as HTMLElement).dataset.unit === u))
+      paintChips()
+    })
+  })
 
   el.querySelector('#signout')?.addEventListener('click', async () => {
     await supabase?.auth.signOut()
