@@ -35,7 +35,8 @@ still produces 0 unknowns and type-checks.
   under the trainer's number) — **per side to the smallest plate (5 lb); no 2.5 lb
   microplates**. Bar = 45 lb; plates per side = 45/35/25/10/5. `computeBarbellLoad`
   rounds the per-side weight up to `PLATES_LB`'s smallest entry. Non-barbell lifts
-  (dumbbell/machine/cable) pre-fill rounded up to 5 lb (`roundUpToStep(lb, 5)`).
+  (dumbbell/machine/cable) round to the **nearest** 5 lb (`roundToStep(lb, 5)` — closest
+  fixed size you grab, not up; e.g. 25 kg → 55 lb, not 60).
 - **Coach weights are TOTALS; logged barbell weights are PLATES (excl. the bar).**
   The trainer's kg is the total on the bar (`computeBarbellLoad` + session screen).
   A logged barbell `weightLb` is only the plates you load — full lift =

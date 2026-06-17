@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { kgToLb, roundUpToStep, computeBarbellLoad, platesForPlateLb, fullBarLb } from './load'
+import { kgToLb, roundUpToStep, roundToStep, computeBarbellLoad, platesForPlateLb, fullBarLb } from './load'
 
 describe('kgToLb', () => {
   it('converts kilograms to pounds', () => {
@@ -15,6 +15,14 @@ describe('roundUpToStep', () => {
   })
   it('keeps exact multiples unchanged', () => {
     expect(roundUpToStep(170, 5)).toBe(170)
+  })
+})
+
+describe('roundToStep (nearest)', () => {
+  it('rounds to the nearest step, not up', () => {
+    expect(roundToStep(kgToLb(25), 5)).toBe(55) // 55.1 → 55 (not 60)
+    expect(roundToStep(kgToLb(22.5), 5)).toBe(50) // 49.6 → 50
+    expect(roundToStep(kgToLb(30), 5)).toBe(65) // 66.1 → 65
   })
 })
 

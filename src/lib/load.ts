@@ -12,6 +12,12 @@ export function roundUpToStep(value: number, step: number): number {
   return Math.ceil(value / step - 1e-9) * step
 }
 
+/** Round to the NEAREST multiple of step — for fixed sizes you pick (dumbbells,
+ *  machine/cable stacks) rather than build, so you grab the closest weight. */
+export function roundToStep(value: number, step: number): number {
+  return Math.round(value / step) * step
+}
+
 export interface PlateStack {
   plate: number
   count: number

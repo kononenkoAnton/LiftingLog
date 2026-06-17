@@ -2,7 +2,7 @@
 // pass `now` in so these stay deterministic and unit-testable.
 import type { Equipment, Exercise, Session, Weight } from '../data/types'
 import type { CatalogExercise } from '../data/catalog-types'
-import { kgToLb, KG_TO_LB, BAR_LB, computeBarbellLoad, roundUpToStep } from './load'
+import { kgToLb, KG_TO_LB, BAR_LB, computeBarbellLoad, roundToStep } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
 export type Unit = 'kg' | 'lb'
@@ -115,7 +115,7 @@ function buildOne(e: Exercise): WorkoutExercise {
     // and makes the coach-facing kg ≥ the prescription (never less). Others: as-is.
     const weightLb = kg === null ? null
       : isBarbell ? computeBarbellLoad(kg).totalLb - BAR_LB
-      : roundUpToStep(kgToLb(kg), 5) // dumbbell/machine/cable: round up to 5 lb (no microplates)
+      : roundToStep(kgToLb(kg), 5) // dumbbell/machine/cable: round to the nearest fixed 5 lb size
     return {
       weightLb,
       reps: isTimed ? secs : coachRepsForSet(e, i),

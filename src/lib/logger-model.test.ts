@@ -66,7 +66,7 @@ describe('buildWorkoutExercises', () => {
   })
   it('does NOT subtract the bar for non-barbell equipment', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ equipment: 'dumbbell', weight: { kind: 'single', kg: 30 } })]))
-    expect(we.sets[0].weightLb).toBe(70) // roundUp5(kgToLb(30)=66.1)=70, no bar
+    expect(we.sets[0].weightLb).toBe(65) // nearest 5 of kgToLb(30)=66.1 → 65, no bar
   })
   it('defaults to one set when coach sets is null', () => {
     expect(buildWorkoutExercises(mkSession([ex({ sets: null })]))[0].sets).toHaveLength(1)

@@ -1,6 +1,6 @@
 import { getSession, program } from '../data/program'
 import type { Exercise, Weight } from '../data/types'
-import { computeBarbellLoad, kgToLb, roundUpToStep } from '../lib/load'
+import { computeBarbellLoad, kgToLb, roundToStep } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
 import { isFinished, getSnapshot, finish, unfinish } from '../lib/progress'
@@ -99,14 +99,14 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
           <input class="rslider" id="rangeSlider" type="range" min="${w.minKg}" max="${w.maxKg}" step="2.5" value="${selKg}" aria-label="Weight within range">
           <span class="rend">${w.maxKg}</span>
         </div>
-        <div class="conv mono" id="rangeConv">= ${roundUpToStep(kgToLb(selKg), 5)} lb${each}</div>
+        <div class="conv mono" id="rangeConv">= ${roundToStep(kgToLb(selKg), 5)} lb${each}</div>
       </div>`
   }
   const kg = primaryKg(e.weight)
   return `
     <div class="hero">
       <div class="big">${weightLabel(e.weight, e.perImplement)}</div>
-      <div class="conv mono">${kg !== null ? '= ' + roundUpToStep(kgToLb(kg), 5) + ' lb' + (e.perImplement ? ' each' : '') : ''}</div>
+      <div class="conv mono">${kg !== null ? '= ' + roundToStep(kgToLb(kg), 5) + ' lb' + (e.perImplement ? ' each' : '') : ''}</div>
     </div>`
 }
 
@@ -222,7 +222,7 @@ export function renderSession(el: HTMLElement, n: number) {
           if (bbEl) mountBarbell(bbEl, load.plates)
         } else {
           el.querySelector('#rangeVal')!.textContent = `${val} kg${each}`
-          el.querySelector('#rangeConv')!.textContent = `= ${roundUpToStep(kgToLb(val), 5)} lb${each}`
+          el.querySelector('#rangeConv')!.textContent = `= ${roundToStep(kgToLb(val), 5)} lb${each}`
         }
       })
     }

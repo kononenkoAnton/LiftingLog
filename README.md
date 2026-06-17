@@ -21,7 +21,7 @@ Bar = 45 lb. Plates per side = 45, 35, 25, 10, 5 lb — **no 2.5 lb microplates*
 stocked). Targets round UP **per side to the nearest 5 lb** (the smallest plate) — the
 nearest achievable load, never under the trainer's number. Logic in `src/lib/load.ts`
 (`computeBarbellLoad`), covered by unit tests. Non-barbell lifts (dumbbell/machine/cable)
-round up to 5 lb too.
+round to the **nearest** 5 lb (`roundToStep` — the closest fixed size you'd grab, not up).
 
 **Coach prescriptions are totals; logged weights are plates.** The trainer's kg is
 the *total* on the bar (bar + plates) — that's what `computeBarbellLoad` and the
