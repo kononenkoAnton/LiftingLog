@@ -174,7 +174,7 @@ export function renderSession(el: HTMLElement, n: number) {
             ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
             : logged
               ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
-              : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
+              : `<button class="lg-start" id="startBtn" type="button">▶ ${isFinished(s.num) ? 'Log this day' : 'Start Session'}</button>`}
         ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Copy for trainer</button>` : ''}
       </div>`
 
