@@ -49,6 +49,8 @@ body.has-active-bar .screen{padding-bottom:calc(82px + env(safe-area-inset-botto
 .chip .n{font-size:20px;font-weight:800}
 .chip .l{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
 .stats2{display:flex;gap:8px;margin-bottom:18px}
+.stats2 + .stats2{margin-top:-10px}
+.unit-row{display:flex;justify-content:flex-end;margin-bottom:8px}
 .chip2{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:8px 10px;overflow:hidden}
 .chip2 .n2{font-size:16px;font-weight:800}
 .chip2 .n2 .u{font-size:9px;color:var(--dim);margin-left:1px;font-weight:700}
