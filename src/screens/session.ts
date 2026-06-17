@@ -62,7 +62,7 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
           <input class="rslider" id="rangeSlider" type="range" min="${w.minKg}" max="${w.maxKg}" step="2.5" value="${selKg}" aria-label="Weight within range">
           <span class="rend">${w.maxKg}</span>
         </div>
-        <div class="conv mono" id="rangeConv">= ${kgToLb(selKg).toFixed(0)} lb → ${load.totalLb} lb total</div>
+        <div class="conv mono" id="rangeConv">= ${load.totalLb} lb total</div>
         <div id="bb"></div>
         <div class="pside"><span style="color:var(--dim)">Per side · lb</span>
           <span class="mono" id="rangePside"><span class="pl bar">45 bar</span> ${platesText(load.plates)}</span></div>
@@ -80,7 +80,7 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
     return `
       <div class="hero">
         ${headline}
-        <div class="conv mono">= ${kgToLb(selKg).toFixed(0)} lb → ${load.totalLb} lb total</div>
+        <div class="conv mono">= ${load.totalLb} lb total</div>
         <div id="bb"></div>
         <div class="pside"><span style="color:var(--dim)">Per side · lb</span>
           <span class="mono"><span class="pl bar">45 bar</span> ${platesText(load.plates)}</span></div>
@@ -197,7 +197,7 @@ export function renderSession(el: HTMLElement, n: number) {
         const val = Number(slider.value)
         const load = computeBarbellLoad(val)
         el.querySelector('#rangeVal')!.textContent = `${val} kg`
-        el.querySelector('#rangeConv')!.textContent = `= ${kgToLb(val).toFixed(0)} lb → ${load.totalLb} lb total`
+        el.querySelector('#rangeConv')!.textContent = `= ${load.totalLb} lb total`
         el.querySelector('#rangePside')!.innerHTML = `<span class="pl bar">45 bar</span> ${platesText(load.plates)}`
         const bbEl = el.querySelector<HTMLElement>('#bb')
         if (bbEl) mountBarbell(bbEl, load.plates)
