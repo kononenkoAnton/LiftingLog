@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { epley1rm, bestE1rmKg } from './e1rm'
+import { epley1rm, bestE1rmKg, bestE1rmLb } from './e1rm'
 import type { Workout, WorkoutExercise, LoggedSet } from './logger-types'
 import type { Equipment } from '../data/types'
 
@@ -58,5 +58,24 @@ describe('bestE1rmKg', () => {
   it('skips active (unfinished) workouts', () => {
     const active = wk({ status: 'active', exercises: [ex('Back Squat', 'barbell', [set(999, 5)])] })
     expect(bestE1rmKg([active], /squat/i)).toBeNull()
+  })
+})
+
+describe('bestE1rmLb', () => {
+  it('returns null when nothing qualifies', () => {
+    expect(bestE1rmLb([], /squat/i)).toBeNull()
+  })
+
+  it('returns the best full e1RM in lb, rounded once (bar added back)', () => {
+    // 1x135 plates → (135+45)*(1+1/30)=186.0 lb → 186
+    const w = wk({ exercises: [ex('Bench Press', 'barbell', [set(135, 1)])] })
+    expect(bestE1rmLb([w], /bench/i)).toBe(186)
+  })
+
+  it('does not double-round (lb is rounded from precise lb, not from rounded kg)', () => {
+    // 5x140 → (140+45)*(1+5/30)=215.833 lb → bestE1rmLb=216; kg path = round(215.833/2.20462)=98
+    const w = wk({ exercises: [ex('Back Squat', 'barbell', [set(140, 5)])] })
+    expect(bestE1rmLb([w], /squat/i)).toBe(216)
+    expect(bestE1rmKg([w], /squat/i)).toBe(98)
   })
 })

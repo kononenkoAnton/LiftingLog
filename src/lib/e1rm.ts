@@ -12,13 +12,14 @@ export function epley1rm(weight: number, reps: number): number {
 }
 
 /**
- * Best estimated 1RM in kg over FINISHED workouts for barbell lifts whose English
- * name matches `match`, or null if no qualifying logged set. Logged barbell weight
- * is plates-only, so the 45 lb bar is added back before applying Epley. Computes the
- * max in lb and converts once at the end to avoid per-set rounding drift.
+ * Best estimated 1RM as PRECISE full lb (incl. the 45 lb bar) over FINISHED workouts
+ * for barbell lifts whose English name matches `match`, or null if no qualifying set.
+ * Logged barbell weight is plates-only, so the bar is added back before applying
+ * Epley. Internal — callers round ONCE into the unit they display (avoids the
+ * double-rounding drift of converting a rounded kg back to lb).
  * `match` must be a non-global RegExp (reused across sets; the g flag is stateful).
  */
-export function bestE1rmKg(history: Workout[], match: RegExp): number | null {
+function bestE1rmFullLb(history: Workout[], match: RegExp): number | null {
   let maxLb = 0
   for (const w of history) {
     if (w.status !== 'finished') continue
@@ -31,5 +32,17 @@ export function bestE1rmKg(history: Workout[], match: RegExp): number | null {
       }
     }
   }
-  return maxLb > 0 ? Math.round(maxLb / KG_TO_LB) : null
+  return maxLb > 0 ? maxLb : null
+}
+
+/** Best estimated 1RM in kg over finished workouts for lifts matching `match`, or null. */
+export function bestE1rmKg(history: Workout[], match: RegExp): number | null {
+  const lb = bestE1rmFullLb(history, match)
+  return lb === null ? null : Math.round(lb / KG_TO_LB)
+}
+
+/** Best estimated 1RM in lb (full, incl. the 45 lb bar) over finished workouts, or null. */
+export function bestE1rmLb(history: Workout[], match: RegExp): number | null {
+  const lb = bestE1rmFullLb(history, match)
+  return lb === null ? null : Math.round(lb)
 }
