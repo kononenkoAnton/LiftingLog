@@ -3,6 +3,7 @@ import { liftTags } from '../lib/focus'
 import { getSession } from '../data/program'
 import { isFinished, finish, unfinish } from '../lib/progress'
 import { listWorkouts, getFinishedForSession } from '../lib/workouts'
+import { bestE1rmKg } from '../lib/e1rm'
 import { KG_TO_LB, BAR_LB } from '../lib/load'
 import { supabase } from '../lib/supabase'
 import { gsap } from 'gsap'
@@ -59,6 +60,12 @@ function maxKgFor(match: RegExp): number {
   return Math.max(maxCoachKgFor(match), maxLoggedKgFor(match))
 }
 
+// User's best estimated 1RM (kg) for a lift from logged sets; '—' if none logged yet.
+function e1rmChip(match: RegExp): string {
+  const kg = bestE1rmKg(listWorkouts(), match)
+  return kg === null ? '—' : `~${kg}<span class="u">kg</span>`
+}
+
 // The earliest chronological session not yet finished; null if all are done.
 function firstUnfinished(): number | null {
   for (const s of program.sessions) if (!isFinished(s.num)) return s.num
@@ -85,6 +92,11 @@ export function renderList(el: HTMLElement) {
         <div class="chip2"><div class="n2 mono" style="color:#e3b341">${maxKgFor(/deadlift/i)}<span class="u">kg</span></div><div class="l2">Max Deadlift</div></div>
         <div class="chip2"><div class="n2 mono" style="color:#e23b3b">${maxKgFor(/squat/i)}<span class="u">kg</span></div><div class="l2">Max Squat</div></div>
         <div class="chip2"><div class="n2 mono" style="color:#3b74e6">${maxKgFor(/bench/i)}<span class="u">kg</span></div><div class="l2">Max Bench</div></div>
+      </div>
+      <div class="stats2">
+        <div class="chip2"><div class="n2 mono" style="color:#e3b341">${e1rmChip(/deadlift/i)}</div><div class="l2">~1RM Deadlift</div></div>
+        <div class="chip2"><div class="n2 mono" style="color:#e23b3b">${e1rmChip(/squat/i)}</div><div class="l2">~1RM Squat</div></div>
+        <div class="chip2"><div class="n2 mono" style="color:#3b74e6">${e1rmChip(/bench/i)}</div><div class="l2">~1RM Bench</div></div>
       </div>
       <div id="rows">
         ${[...program.sessions].reverse().map((s) => `
