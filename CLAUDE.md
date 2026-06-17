@@ -36,8 +36,12 @@ still produces 0 unknowns and type-checks.
 - **Coach weights are TOTALS; logged barbell weights are PLATES (excl. the bar).**
   The trainer's kg is the total on the bar (`computeBarbellLoad` + session screen).
   A logged barbell `weightLb` is only the plates you load — full lift =
-  `fullBarLb(weightLb)` = `weightLb + 45` (`load.ts`). So the coach pre-fill
-  subtracts the bar, and `trainerLog` / Max chips / history add it back before
+  `fullBarLb(weightLb)` = `weightLb + 45` (`load.ts`). So the coach pre-fill is the
+  **loadable round-up total** (`computeBarbellLoad(kg).totalLb`, same as the schedule
+  screen) **minus the bar** — never `Math.round(kgToLb)−45`, which can yield a
+  non-loadable plate weight (e.g. 95 kg → 164, where 82/side is impossible). Round-up
+  keeps the pre-fill a real plate config (chips sum exactly) and ≥ the coach's kg when
+  converted back. `trainerLog` / Max chips / history add the bar back before
   converting to kg. Per-side plates for a logged set = `platesForPlateLb`
   (`decompose(plateLb/2)`), NOT the total-based `computeBarbellLoad`. Non-barbell
   equipment (dumbbell/machine/bodyweight) is logged as-is — no bar.

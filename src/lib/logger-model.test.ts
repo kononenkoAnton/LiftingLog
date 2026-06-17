@@ -56,10 +56,10 @@ describe('buildWorkoutExercises', () => {
     expect(out[0].exerciseRef).toBe('coach:squat-barbell')
     expect(out[0].isCoachPrescribed).toBe(true)
   })
-  it('pre-fills barbell lb as PLATE weight (coach total − 45 bar), reps from reps', () => {
+  it('pre-fills barbell lb as PLATE weight (loadable round-up total − 45 bar), reps from reps', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: 3, weight: { kind: 'single', kg: 100 }, reps: '5' })]))
     expect(we.sets).toHaveLength(3)
-    expect(we.sets[0].weightLb).toBe(175) // 100kg = 220 lb total − 45 bar
+    expect(we.sets[0].weightLb).toBe(180) // 100kg → 225 lb loadable total − 45 bar (2×45/side)
     expect(we.sets[0].reps).toBe(5)
     expect(we.sets[0].done).toBe(false)
     expect(we.sets[0].restSec).toBe(300)
@@ -75,8 +75,8 @@ describe('buildWorkoutExercises', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({
       weight: { kind: 'perSet', steps: [{ kg: 100, reps: 5 }, { kg: 90, reps: 8 }] }, sets: 2,
     })]))
-    expect(we.sets[0].weightLb).toBe(175) // 220 − 45
-    expect(we.sets[1].weightLb).toBe(153) // 198 − 45
+    expect(we.sets[0].weightLb).toBe(180) // 100kg → 225 − 45
+    expect(we.sets[1].weightLb).toBe(155) // 90kg → 200 − 45
     expect(we.sets[1].reps).toBe(8)
   })
   it('leaves weightLb null for bodyweight and non-numeric reps null', () => {
@@ -86,7 +86,7 @@ describe('buildWorkoutExercises', () => {
   })
   it('uses per-index kg for a progression scheme, clamping extra sets (barbell plate weight)', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ weight: { kind: 'progression', kg: [80, 90, 100] }, sets: 5 })]))
-    expect(we.sets.map((s) => s.weightLb)).toEqual([131, 153, 175, 175, 175]) // each − 45 bar
+    expect(we.sets.map((s) => s.weightLb)).toEqual([135, 155, 180, 180, 180]) // 80/90/100kg loadable totals − 45 bar
   })
   it('keeps every perSet step when coach sets is null', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: null, weight: { kind: 'perSet', steps: [{ kg: 130, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }] } })]))

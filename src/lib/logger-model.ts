@@ -2,7 +2,7 @@
 // pass `now` in so these stay deterministic and unit-testable.
 import type { Equipment, Exercise, Session, Weight } from '../data/types'
 import type { CatalogExercise } from '../data/catalog-types'
-import { kgToLb, KG_TO_LB, BAR_LB } from './load'
+import { kgToLb, KG_TO_LB, BAR_LB, computeBarbellLoad } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
 export type Unit = 'kg' | 'lb'
@@ -109,9 +109,15 @@ function buildOne(e: Exercise): WorkoutExercise {
   const isTimed = secs !== null
   const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
     const kg = coachKgForSet(e.weight, i)
-    const totalLb = kg !== null ? Math.round(kgToLb(kg)) : null
+    // Barbell: pre-fill the nearest LOADABLE plate weight that meets the coach's kg —
+    // round UP via computeBarbellLoad (same total the schedule screen shows), then
+    // drop the bar. This keeps the pre-fill a real plate config (chips sum exactly)
+    // and makes the coach-facing kg ≥ the prescription (never less). Others: as-is.
+    const weightLb = kg === null ? null
+      : isBarbell ? computeBarbellLoad(kg).totalLb - BAR_LB
+      : Math.round(kgToLb(kg))
     return {
-      weightLb: totalLb === null ? null : isBarbell ? Math.max(0, totalLb - BAR_LB) : totalLb,
+      weightLb,
       reps: isTimed ? secs : coachRepsForSet(e, i),
       done: false,
       restSec: rest,
