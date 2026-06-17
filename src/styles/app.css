@@ -26,6 +26,13 @@
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.error{border-color:rgba(226,59,59,.6);color:#ff9a9a}
 .toast.info{border-color:rgba(39,230,180,.5);color:var(--mint)}
+/* Persistent "active workout" bar (fixed bottom, mint) — tap to resume the logger. */
+.active-bar{position:fixed;left:0;right:0;bottom:0;z-index:35;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;cursor:pointer;background:rgba(10,16,28,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-top:1px solid rgba(39,230,180,.4);padding:13px 18px calc(13px + env(safe-area-inset-bottom))}
+.active-bar .ab-label{color:var(--mint);font-weight:800;font-size:14px}
+.active-bar .ab-time{color:var(--mint);font-weight:800;font-size:14px}
+body.has-active-bar .screen{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
 /* Centered, non-blocking "rest complete" notice — fades + scales in, then out. */
 .toast-center{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%) scale(.9);z-index:55;
   pointer-events:none;opacity:0;padding:14px 24px;border-radius:14px;font-size:16px;font-weight:800;

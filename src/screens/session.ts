@@ -110,6 +110,11 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
     </div>`
 }
 
+// One-shot request (set by the persistent active-workout bar) to drop straight into
+// the logger on the next render of the active day, instead of showing its schedule.
+let enterLogger = false
+export function requestEnterLogger() { enterLogger = true }
+
 export function renderSession(el: HTMLElement, n: number) {
   const s = getSession(n)
   if (!s) { el.innerHTML = '<div class="screen">Session not found · <a href="#/">back</a></div>'; return }
@@ -120,6 +125,11 @@ export function renderSession(el: HTMLElement, n: number) {
   const active = getActiveWorkout()
   const activeThisDay = active && active.sessionNum === n ? active : null
   const otherActive = active && active.sessionNum !== n ? active : null
+
+  // Resume bar tapped → go straight into the logger (consume the flag either way).
+  const wantLogger = enterLogger
+  enterLogger = false
+  if (activeThisDay && wantLogger) { renderLogging(el, n, () => renderSession(el, n)); return }
 
   let focusIdx = s.exercises.findIndex((e) => e.equipment === 'barbell')
   if (focusIdx < 0) focusIdx = 0
