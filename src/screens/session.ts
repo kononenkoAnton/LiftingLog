@@ -129,8 +129,10 @@ export function renderSession(el: HTMLElement, n: number) {
     const logged = getFinishedForSession(s.num)
     // Finished days render their locked snapshot; unfinished show the latest parse.
     const snap = isFinished(s.num) ? getSnapshot(s.num) : null
-    const exercises = snap ?? s.exercises
-    const changed = !!snap && JSON.stringify(snap) !== JSON.stringify(s.exercises)
+    // Fall back to the live parse if the snapshot is missing/empty (skipped days
+    // store the day's exercises, but guard against an empty/old entry).
+    const exercises = snap && snap.length ? snap : s.exercises
+    const changed = !!snap && snap.length > 0 && JSON.stringify(snap) !== JSON.stringify(s.exercises)
     const e = exercises[focusIdx]
     const steps = e.equipment === 'barbell' ? stepWeightsOf(e.weight) : null
     if (steps && stepIdx >= steps.length) stepIdx = 0
@@ -163,6 +165,9 @@ export function renderSession(el: HTMLElement, n: number) {
         <div class="note">${e.descEn}<br><span style="opacity:.7">${e.descRu}</span>
           ${e.notesEn ? `<br><br>${e.notesEn}<br><span style="opacity:.7">${e.notesRu ?? ''}</span>` : ''}</div>
         <div style="margin-top:14px" id="mini"></div>
+        ${isFinished(s.num) && !logged && !activeThisDay && !otherActive
+          ? '<div class="skip-badge">✓ Skipped · no workout logged</div>'
+          : ''}
         ${activeThisDay
           ? `<button class="lg-start" id="resumeBtn" type="button">▶ Resume workout</button>`
           : otherActive
