@@ -68,7 +68,7 @@ still produces 0 unknowns and type-checks.
   was removed — do not reintroduce it without reason.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as
   `{ finished: {...} }`. Other keys: `liftinglog:workouts` + `liftinglog:activeWorkout`
-  (logger), `liftinglog:unit` (History kg/lb display toggle, defaults to kg).
+  (logger), `liftinglog:unit` (shared History + home kg/lb display toggle, defaults to kg).
 - **Rendering uses `innerHTML` with trusted static data.** User-entered text is a
   stored-XSS sink and must use `textContent` / an input's `.value` property — NEVER
   an `innerHTML` template. Live sinks: the **coach message** in `logging.ts`
@@ -91,6 +91,7 @@ still produces 0 unknowns and type-checks.
 - `src/lib/load.ts` — kg→lb + plate math (pure, tested)
 - `src/lib/e1rm.ts` — Epley estimated 1RM + best-e1RM-per-lift over history (pure, tested)
 - `src/lib/focus.ts` — session focus label + main-lift tags
+- `src/lib/unit.ts` — shared kg/lb display-unit setting (localStorage `liftinglog:unit`)
 - `src/lib/progress.ts` — finished-day persistence
 - `src/data/{types,program.json,program}.ts` — schema, data, loader
 - `src/data/exercises.json` — bilingual exercise catalog (GENERATED; never hand-edit — use `scripts/catalog-extras.json` + `npm run build:catalog`)

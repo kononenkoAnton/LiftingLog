@@ -18,7 +18,10 @@ disagreeing. Instead we reuse History's explicit, discoverable control.
 ## Decisions (locked in brainstorming)
 
 1. **Reuse History's `kg|lb` segmented toggle** (`.unit-toggle` / `.ut` styles) on
-   the home screen, in the hero-actions row next to `History` / `EN·RU`.
+   the home screen, in a right-aligned row **directly above the chip rows** it
+   controls. (Originally planned for `hero-actions`, but verification at 390px showed
+   that with the production sign-out button present the header cluster clips the
+   "The Block" title — so the toggle lives in its own `.unit-row` above the chips.)
 2. **Shared state.** Extract `getUnit` / `setUnit` / `UNIT_KEY` from `history.ts`
    into `src/lib/unit.ts` so Home and History read/write the same `liftinglog:unit`
    key and always agree. History keeps identical behavior.
@@ -67,16 +70,16 @@ Both return `null` when no qualifying set.
     to lb when `unit === 'lb'`.
   - `e1rmChip(match, unit)` → `~<n><span class="u">unit</span>` or `—`, using
     `bestE1rmKg` / `bestE1rmLb` per unit.
-- Add the `kg|lb` toggle markup to `hero-actions`. Give the two `.stats2` rows ids
-  (`maxRow`, `e1rmRow`) so a `paintChips(unit)` helper can rewrite each `.n2`'s
-  innerHTML in place. Wire `.ut` clicks: ignore same-unit, else `setUnit`, toggle
-  `.on` classes, `paintChips`.
+- Add the `kg|lb` toggle markup in a right-aligned `.unit-row` directly above the
+  Max chips. Give the two `.stats2` rows ids (`maxRow`, `e1rmRow`) so a
+  `paintChips(unit)` helper can rewrite each `.n2`'s innerHTML in place. Wire `.ut`
+  clicks: ignore same-unit, else `setUnit`, toggle `.on` classes, `paintChips`.
 
 ### Styling
 
-No new CSS — reuse existing `.unit-toggle` / `.ut` / `.ut.on` and `.hero-actions`.
-`.hero-h` uses `justify-content:space-between` with an ellipsis-truncating title, so
-the extra control degrades gracefully at 390px.
+One new CSS rule: `.unit-row{display:flex;justify-content:flex-end;margin-bottom:8px}`.
+Otherwise reuse the existing `.unit-toggle` / `.ut` / `.ut.on`. (Header placement was
+rejected: at 390px with the sign-out button the title clips.)
 
 ## Testing
 
