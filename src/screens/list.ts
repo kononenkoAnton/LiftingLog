@@ -127,12 +127,13 @@ export function renderList(el: HTMLElement) {
     const num = Number(row.dataset.num)
     const numBtn = target.closest<HTMLButtonElement>('.wnum')
     if (numBtn) {
-      // tap the number to toggle finished, without navigating
-      const done = !isFinished(num)
-      if (done) finish(num, getSession(num)?.exercises ?? [])
+      // tap the number to mark a day done (skipped — no logged workout) or un-mark it
+      const willFinish = !isFinished(num)
+      if (willFinish && !confirm('Skip this day? It will be marked done without a logged workout.')) return
+      if (willFinish) finish(num, getSession(num)?.exercises ?? [])
       else unfinish(num)
-      numBtn.classList.toggle('done', done)
-      numBtn.setAttribute('aria-pressed', String(done))
+      numBtn.classList.toggle('done', willFinish)
+      numBtn.setAttribute('aria-pressed', String(willFinish))
       refreshProgress()
       return
     }

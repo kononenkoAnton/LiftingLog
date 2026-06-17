@@ -3,7 +3,7 @@ import type { Exercise, Weight } from '../data/types'
 import { computeBarbellLoad, kgToLb, roundToStep } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
-import { isFinished, getSnapshot, finish, unfinish } from '../lib/progress'
+import { isFinished, getSnapshot } from '../lib/progress'
 import { gsap } from 'gsap'
 import { getActiveWorkout, startWorkout, getFinishedForSession } from '../lib/workouts'
 import { renderLogging } from './logging'
@@ -145,7 +145,6 @@ export function renderSession(el: HTMLElement, n: number) {
       <div class="screen">
         <div class="shead">
           <a class="back" href="#/">‹ Program · ${s.dateLabel}</a>
-          <button class="finish-pill ${isFinished(s.num) ? 'done' : ''}" id="finishBtn" type="button">${isFinished(s.num) ? '✓ Finished' : 'Mark finished'}</button>
         </div>
         <div class="daynav">
           <button class="daybtn" id="prevDay" type="button" aria-label="Previous day" ${getSession(s.num - 1) ? '' : 'disabled'}>‹</button>
@@ -173,13 +172,6 @@ export function renderSession(el: HTMLElement, n: number) {
               : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
         ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Copy for trainer</button>` : ''}
       </div>`
-
-    const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
-    finishBtn.addEventListener('click', async () => {
-      if (isFinished(s.num)) await unfinish(s.num)
-      else await finish(s.num, s.exercises) // snapshot the canonical content now
-      draw(false)
-    })
 
     const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
     if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n, () => renderSession(el, n)) })
