@@ -178,8 +178,12 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const exi = Number(inp.dataset.ex), si = Number(inp.dataset.set)
         const field = inp.dataset.field as 'weightLb' | 'reps'
         const raw = inp.value.trim()
-        const num = raw === '' ? null : Number(raw)
-        cur.exercises[exi].sets[si][field] = num !== null && Number.isFinite(num) ? num : null
+        if (raw !== '' && !Number.isFinite(Number(raw))) {
+          toast('Numbers only', 'info')
+          inp.value = cur.exercises[exi].sets[si][field]?.toString() ?? '' // revert to the last valid value
+          return
+        }
+        cur.exercises[exi].sets[si][field] = raw === '' ? null : Number(raw)
         persist(cur)
         if (field === 'weightLb') {
           const box = el.querySelector(`.lg-plates[data-ex="${exi}"][data-set="${si}"]`)
