@@ -89,6 +89,7 @@ still produces 0 unknowns and type-checks.
 ## Key files
 
 - `src/lib/load.ts` — kg→lb + plate math (pure, tested)
+- `src/lib/e1rm.ts` — Epley estimated 1RM + best-e1RM-per-lift over history (pure, tested)
 - `src/lib/focus.ts` — session focus label + main-lift tags
 - `src/lib/progress.ts` — finished-day persistence
 - `src/data/{types,program.json,program}.ts` — schema, data, loader
