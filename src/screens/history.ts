@@ -2,16 +2,12 @@
 // coach message is USER TEXT — rendered via textContent only.
 import { listWorkouts } from '../lib/workouts'
 import { workoutDurationSec, trainerLog, setWeightDisplay, type Unit } from '../lib/logger-model'
+import { getUnit, setUnit } from '../lib/unit'
 import type { Workout } from '../lib/logger-types'
 import { toast } from '../lib/toast'
 
 const fmtDur = (sec: number) => `${Math.floor(sec / 60)}m`
 const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
-
-// Display unit for weights, persisted; defaults to kg.
-const UNIT_KEY = 'liftinglog:unit'
-const getUnit = (): Unit => { try { return localStorage.getItem(UNIT_KEY) === 'lb' ? 'lb' : 'kg' } catch { return 'kg' } }
-const setUnit = (u: Unit) => { try { localStorage.setItem(UNIT_KEY, u) } catch { /* ignore */ } }
 
 let openId: string | null = null
 
