@@ -98,6 +98,8 @@ still produces 0 unknowns and type-checks.
 - `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; tested)
 - `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
 - `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
-- `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel)
+- `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel). Rest timer is a **fixed bottom bar** (`.lg-rest` is `position:fixed`; `.lg.resting` reserves space) and plays a gong + vibrates at 0
+- `src/lib/sound.ts` — rest-timer gong cue: a preloaded `<audio>` for `public/gong.mp3`, **unlocked on the set-complete tap** (mobile blocks audio until a gesture); `playRestDone()` fires at 0
+- `scripts/make-gong.mjs` — synthesizes `public/gong.mp3` (license-clean additive synthesis; `node scripts/make-gong.mjs` then encode to mp3)
 - `src/screens/history.ts` — past finished workouts (#/history)
 - `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)

@@ -11,7 +11,8 @@ import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
 import { platesForPlateLb, fullBarLb } from '../lib/load'
 import { PLATE_COLOR } from '../components/barbell-svg'
-import { toast } from '../lib/toast'
+import { toast, restCompleteToast } from '../lib/toast'
+import { unlockAudio, playRestDone } from '../lib/sound'
 
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
 let restTimer: ReturnType<typeof setInterval> | null = null
@@ -92,7 +93,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     const history = listWorkouts()
 
     el.innerHTML = `
-      <div class="screen lg">
+      <div class="screen lg${!edit && rest ? ' resting' : ''}">
         <div class="lg-top">
           <div class="lg-clock">
             ${edit ? '<span class="lg-elapsed mono">Editing</span>'
@@ -140,7 +141,9 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const remain = Math.max(0, Math.round((rest.endMs - Date.now()) / 1000))
         e.textContent = fmt(remain)
         if (remain <= 0) {
+          playRestDone() // gong
           navigator.vibrate?.(200)
+          restCompleteToast()
           rest = null
           const af = document.activeElement
           if (af instanceof HTMLInputElement && af.closest('[data-ex]')) af.blur()
@@ -200,8 +203,10 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
           if (problem) { toast(problem, 'info'); return }
         }
         st.done = !st.done
-        if (!edit && st.done) rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }
-        else if (rest && rest.exIdx === exi && rest.setIdx === si) rest = null
+        if (!edit && st.done) {
+          unlockAudio() // prime the gong within this tap so it can fire when rest ends
+          rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }
+        } else if (rest && rest.exIdx === exi && rest.setIdx === si) rest = null
         persist(cur)
         draw()
       })
