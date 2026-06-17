@@ -98,8 +98,11 @@ export function renderSession(el: HTMLElement, n: number) {
   const s = getSession(n)
   if (!s) { el.innerHTML = '<div class="screen">Session not found · <a href="#/">back</a></div>'; return }
 
+  // A workout active for THIS day no longer auto-enters logging — the day shows its
+  // coach schedule with a "Resume workout" button, so the logger's back link can
+  // land here (one level up) instead of the program root.
   const active = getActiveWorkout()
-  if (active && active.sessionNum === n) { renderLogging(el, n, () => renderSession(el, n)); return }
+  const activeThisDay = active && active.sessionNum === n ? active : null
   const otherActive = active && active.sessionNum !== n ? active : null
 
   let focusIdx = s.exercises.findIndex((e) => e.equipment === 'barbell')
@@ -145,11 +148,13 @@ export function renderSession(el: HTMLElement, n: number) {
         <div class="note">${e.descEn}<br><span style="opacity:.7">${e.descRu}</span>
           ${e.notesEn ? `<br><br>${e.notesEn}<br><span style="opacity:.7">${e.notesRu ?? ''}</span>` : ''}</div>
         <div style="margin-top:14px" id="mini"></div>
-        ${otherActive
-          ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
-          : logged
-            ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
-            : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
+        ${activeThisDay
+          ? `<button class="lg-start" id="resumeBtn" type="button">▶ Resume workout</button>`
+          : otherActive
+            ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
+            : logged
+              ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
+              : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
         ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Copy for trainer</button>` : ''}
       </div>`
 
@@ -162,6 +167,9 @@ export function renderSession(el: HTMLElement, n: number) {
 
     const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
     if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n, () => renderSession(el, n)) })
+
+    const resumeBtn = el.querySelector<HTMLButtonElement>('#resumeBtn')
+    if (resumeBtn) resumeBtn.addEventListener('click', () => renderLogging(el, n, () => renderSession(el, n)))
 
     const editBtn = el.querySelector<HTMLButtonElement>('#editBtn')
     if (editBtn && logged) editBtn.addEventListener('click', () => renderLogging(el, n, () => renderSession(el, n), logged))

@@ -106,7 +106,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
             <button class="lg-finish" id="lgFinish" type="button">Finish</button>
           </div>`}
         </div>
-        <a class="back" id="lgBack" href="#/">‹ Program</a>
+        <a class="back" id="lgBack" href="#/session/${w.sessionNum}">‹ Schedule</a>
         <div class="lg-day">Day ${w.sessionNum} · logging</div>
         ${!edit ? restBannerHtml() : ''}
         <div id="lgEx">${w.exercises.map((ex, i) => exerciseHtml(ex, i, lastActualFor(history, ex.exerciseRef))).join('') || '<div class="note">No exercises — add one below.</div>'}</div>
@@ -162,13 +162,11 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
     el.querySelector('#lgBack')!.addEventListener('click', (ev) => {
       ev.preventDefault()
-      const msg = edit
-        ? 'Leave edit mode? Changes are already saved.'
-        : 'Leave this workout? It stays active — resume it from this day.'
-      if (confirm(msg)) {
-        clearAll()
-        location.hash = '#/'
-      }
+      // Go UP to the day's coach schedule, not the program root. Non-destructive: the
+      // workout stays active (edit changes are already saved), and the schedule offers
+      // Resume/Edit — so no confirm needed.
+      clearAll()
+      onExit()
     })
 
     el.querySelectorAll<HTMLInputElement>('.lg-inp').forEach((inp) => {
