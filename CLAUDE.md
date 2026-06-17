@@ -76,6 +76,12 @@ still produces 0 unknowns and type-checks.
   Verified with an `<img onerror>` probe.
 - **Cyrillic gotcha:** JS `\w`/`\b` do NOT match Cyrillic. Use `[а-яё]` classes
   and whitespace anchors in any Russian-text regex.
+- **Editable fields must be `font-size: ≥16px`.** iOS Safari auto-zooms the viewport
+  when a focused `<input>`/`<textarea>` is smaller, and `#app`'s `overflow-x:hidden`
+  then **traps** the zoom — clipping controls off-screen with no way to scroll back
+  (hit this on the logging/edit screen). Applies to `.lg-inp`, `.lg-msg`,
+  `.login-card input`, `.picker-search`. (`<select>` is exempt — iOS shows a wheel,
+  not a keyboard, so it doesn't zoom.)
 
 ## Workflow
 
