@@ -32,12 +32,20 @@ still produces 0 unknowns and type-checks.
   runtime by `src/lib/load.ts` — never store lb or plate math in
   `src/data/program.json`.
 - **Plate math is correctness-critical and unit-tested.** Targets round UP (never
-  under the trainer's number). Bar = 45 lb; plates per side = 45/35/25/10/5/2.5.
+  under the trainer's number) — **per side to the smallest plate (5 lb); no 2.5 lb
+  microplates**. Bar = 45 lb; plates per side = 45/35/25/10/5. `computeBarbellLoad`
+  rounds the per-side weight up to `PLATES_LB`'s smallest entry. Non-barbell lifts
+  (dumbbell/machine/cable) round to the **nearest** 5 lb (`roundToStep(lb, 5)` — closest
+  fixed size you grab, not up; e.g. 25 kg → 55 lb, not 60).
 - **Coach weights are TOTALS; logged barbell weights are PLATES (excl. the bar).**
   The trainer's kg is the total on the bar (`computeBarbellLoad` + session screen).
   A logged barbell `weightLb` is only the plates you load — full lift =
-  `fullBarLb(weightLb)` = `weightLb + 45` (`load.ts`). So the coach pre-fill
-  subtracts the bar, and `trainerLog` / Max chips / history add it back before
+  `fullBarLb(weightLb)` = `weightLb + 45` (`load.ts`). So the coach pre-fill is the
+  **loadable round-up total** (`computeBarbellLoad(kg).totalLb`, same as the schedule
+  screen) **minus the bar** — never `Math.round(kgToLb)−45`, which can yield a
+  non-loadable plate weight (e.g. 95 kg → 164, where 82/side is impossible). Round-up
+  keeps the pre-fill a real plate config (chips sum exactly) and ≥ the coach's kg when
+  converted back. `trainerLog` / Max chips / history add the bar back before
   converting to kg. Per-side plates for a logged set = `platesForPlateLb`
   (`decompose(plateLb/2)`), NOT the total-based `computeBarbellLoad`. Non-barbell
   equipment (dumbbell/machine/bodyweight) is logged as-is — no bar.
@@ -98,6 +106,8 @@ still produces 0 unknowns and type-checks.
 - `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; tested)
 - `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
 - `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
-- `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel)
+- `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel). Rest timer is a **fixed bottom bar** (`.lg-rest` is `position:fixed`; `.lg.resting` reserves space) and plays a gong + vibrates at 0
+- `src/lib/sound.ts` — rest-timer gong cue: a preloaded `<audio>` for `public/gong.mp3`, **unlocked on the set-complete tap** (mobile blocks audio until a gesture); `playRestDone()` fires at 0
+- `scripts/make-gong.mjs` — synthesizes `public/gong.mp3` (license-clean additive synthesis; `node scripts/make-gong.mjs` then encode to mp3)
 - `src/screens/history.ts` — past finished workouts (#/history)
 - `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)

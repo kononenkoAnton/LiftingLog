@@ -1,6 +1,8 @@
 export const KG_TO_LB = 2.20462
 export const BAR_LB = 45
-export const PLATES_LB = [45, 35, 25, 10, 5, 2.5]
+// Smallest plate is 5 lb — no 2.5 lb microplates (rarely stocked). The last entry
+// doubles as the per-side rounding granularity in computeBarbellLoad.
+export const PLATES_LB = [45, 35, 25, 10, 5]
 
 export function kgToLb(kg: number): number {
   return kg * KG_TO_LB
@@ -8,6 +10,12 @@ export function kgToLb(kg: number): number {
 
 export function roundUpToStep(value: number, step: number): number {
   return Math.ceil(value / step - 1e-9) * step
+}
+
+/** Round to the NEAREST multiple of step — for fixed sizes you pick (dumbbells,
+ *  machine/cable stacks) rather than build, so you grab the closest weight. */
+export function roundToStep(value: number, step: number): number {
+  return Math.round(value / step) * step
 }
 
 export interface PlateStack {
@@ -37,8 +45,11 @@ function decompose(perSide: number): PlateStack[] {
 
 export function computeBarbellLoad(kg: number): BarbellLoad {
   const targetLb = kgToLb(kg)
-  const totalLb = Math.max(BAR_LB, roundUpToStep(targetLb, 5))
-  const perSideLb = (totalLb - BAR_LB) / 2
+  // Round the PER-SIDE weight up to the smallest plate (no microplates), so the load
+  // is always achievable with the plate set and never under the target.
+  const step = PLATES_LB[PLATES_LB.length - 1]
+  const perSideLb = Math.max(0, roundUpToStep((targetLb - BAR_LB) / 2, step)) // Math.max also normalizes -0
+  const totalLb = BAR_LB + perSideLb * 2
   return { targetLb, totalLb, perSideLb, plates: decompose(perSideLb) }
 }
 

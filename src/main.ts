@@ -2,7 +2,8 @@ import './styles/theme.css'
 import './styles/app.css'
 import { route, startRouter } from './router'
 import { renderList } from './screens/list'
-import { renderSession } from './screens/session'
+import { renderSession, requestEnterLogger } from './screens/session'
+import { mountActiveBar } from './components/active-bar'
 import { renderLogin } from './screens/login'
 import { renderExercises } from './screens/exercises'
 import { renderHistory } from './screens/history'
@@ -17,11 +18,22 @@ route('/history', (el) => renderHistory(el))
 
 const app = document.querySelector<HTMLElement>('#app')!
 
+// Start the app + the persistent "active workout" bar (tap → straight into the logger).
+function launch() {
+  startRouter(app)
+  mountActiveBar(app, (n) => {
+    requestEnterLogger()
+    // Already on that day's route (e.g. its schedule) → re-render in place; else navigate.
+    if (location.hash === `#/session/${n}`) renderSession(app, n)
+    else location.hash = `#/session/${n}`
+  })
+}
+
 async function boot() {
   // No backend configured → run locally (localStorage, no auth).
   if (!supabase) {
     await Promise.all([loadProgress(), loadWorkouts()])
-    startRouter(app)
+    launch()
     return
   }
   const { data: { session } } = await supabase.auth.getSession()
@@ -30,7 +42,7 @@ async function boot() {
     return
   }
   await Promise.all([loadProgress(), loadWorkouts()]) // hydrate the user's rows, then render the app
-  startRouter(app)
+  launch()
 }
 
 boot()

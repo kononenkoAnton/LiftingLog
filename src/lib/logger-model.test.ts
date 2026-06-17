@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout, LoggedSet } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -56,17 +56,17 @@ describe('buildWorkoutExercises', () => {
     expect(out[0].exerciseRef).toBe('coach:squat-barbell')
     expect(out[0].isCoachPrescribed).toBe(true)
   })
-  it('pre-fills barbell lb as PLATE weight (coach total − 45 bar), reps from reps', () => {
+  it('pre-fills barbell lb as PLATE weight (loadable round-up total − 45 bar), reps from reps', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: 3, weight: { kind: 'single', kg: 100 }, reps: '5' })]))
     expect(we.sets).toHaveLength(3)
-    expect(we.sets[0].weightLb).toBe(175) // 100kg = 220 lb total − 45 bar
+    expect(we.sets[0].weightLb).toBe(180) // 100kg → 225 lb loadable total − 45 bar (2×45/side)
     expect(we.sets[0].reps).toBe(5)
     expect(we.sets[0].done).toBe(false)
     expect(we.sets[0].restSec).toBe(300)
   })
   it('does NOT subtract the bar for non-barbell equipment', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ equipment: 'dumbbell', weight: { kind: 'single', kg: 30 } })]))
-    expect(we.sets[0].weightLb).toBe(66) // round(kgToLb(30)), no bar
+    expect(we.sets[0].weightLb).toBe(65) // nearest 5 of kgToLb(30)=66.1 → 65, no bar
   })
   it('defaults to one set when coach sets is null', () => {
     expect(buildWorkoutExercises(mkSession([ex({ sets: null })]))[0].sets).toHaveLength(1)
@@ -75,8 +75,8 @@ describe('buildWorkoutExercises', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({
       weight: { kind: 'perSet', steps: [{ kg: 100, reps: 5 }, { kg: 90, reps: 8 }] }, sets: 2,
     })]))
-    expect(we.sets[0].weightLb).toBe(175) // 220 − 45
-    expect(we.sets[1].weightLb).toBe(153) // 198 − 45
+    expect(we.sets[0].weightLb).toBe(180) // 100kg → 225 − 45
+    expect(we.sets[1].weightLb).toBe(160) // 90kg → 205 − 45
     expect(we.sets[1].reps).toBe(8)
   })
   it('leaves weightLb null for bodyweight and non-numeric reps null', () => {
@@ -86,12 +86,12 @@ describe('buildWorkoutExercises', () => {
   })
   it('uses per-index kg for a progression scheme, clamping extra sets (barbell plate weight)', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ weight: { kind: 'progression', kg: [80, 90, 100] }, sets: 5 })]))
-    expect(we.sets.map((s) => s.weightLb)).toEqual([131, 153, 175, 175, 175]) // each − 45 bar
+    expect(we.sets.map((s) => s.weightLb)).toEqual([140, 160, 180, 180, 180]) // 80/90/100kg loadable totals − 45 bar
   })
   it('keeps every perSet step when coach sets is null', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ sets: null, weight: { kind: 'perSet', steps: [{ kg: 130, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }, { kg: 145, reps: 3 }] } })]))
     expect(we.sets).toHaveLength(4)
-    expect(we.sets[3].weightLb).toBe(275) // 145kg = 320 lb total − 45 bar
+    expect(we.sets[3].weightLb).toBe(280) // 145kg → 325 lb total − 45 bar
   })
   it('flags timed holds and pre-fills reps with the duration in seconds', () => {
     const [we] = buildWorkoutExercises(mkSession([ex({ nameEn: 'Plank', equipment: 'bodyweight', weight: { kind: 'bodyweight' }, sets: 4, reps: '45s' })]))
@@ -365,5 +365,40 @@ describe('completeProblem / canComplete', () => {
   it('labels the rep field per the second arg (e.g. seconds for holds)', () => {
     expect(completeProblem(set(0, null), 'seconds')).toBe('Enter seconds first')
     expect(completeProblem(set(0, 0), 'seconds')).toBe('Seconds must be a whole number (1+)')
+  })
+})
+
+describe('fillEmptySets', () => {
+  const set = (weightLb: number | null, reps: number | null, done = false): LoggedSet => ({ weightLb, reps, done, restSec: 90 })
+  it('fills every other blank set with the completed set, left not done', () => {
+    const out = fillEmptySets([set(100, 6, true), set(null, null), set(null, null), set(null, null)], 0)
+    expect(out.slice(1)).toEqual([
+      { weightLb: 100, reps: 6, done: false, restSec: 90 },
+      { weightLb: 100, reps: 6, done: false, restSec: 90 },
+      { weightLb: 100, reps: 6, done: false, restSec: 90 },
+    ])
+  })
+  it('fills only empty fields, keeping coach-prefilled reps', () => {
+    const out = fillEmptySets([set(30, 10, true), set(null, 10), set(null, 10)], 0)
+    expect(out[1]).toEqual({ weightLb: 30, reps: 10, done: false, restSec: 90 })
+    expect(out[2]).toEqual({ weightLb: 30, reps: 10, done: false, restSec: 90 })
+  })
+  it('never overwrites an already-entered value', () => {
+    expect(fillEmptySets([set(100, 6, true), set(95, null)], 0)[1])
+      .toEqual({ weightLb: 95, reps: 6, done: false, restSec: 90 })
+  })
+  it('leaves already-done sets untouched', () => {
+    expect(fillEmptySets([set(100, 6, true), set(50, 8, true)], 0)[1])
+      .toEqual({ weightLb: 50, reps: 8, done: true, restSec: 90 })
+  })
+  it('is a no-op (same ref) when the source set has a null field', () => {
+    const sets = [set(null, 6, true), set(null, null)]
+    expect(fillEmptySets(sets, 0)).toBe(sets)
+  })
+  it('does not mutate the input array', () => {
+    const sets = [set(100, 6, true), set(null, null)]
+    const before = JSON.parse(JSON.stringify(sets))
+    fillEmptySets(sets, 0)
+    expect(sets).toEqual(before)
   })
 })

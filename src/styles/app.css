@@ -26,6 +26,24 @@
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.error{border-color:rgba(226,59,59,.6);color:#ff9a9a}
 .toast.info{border-color:rgba(39,230,180,.5);color:var(--mint)}
+/* Persistent "active workout" bar (fixed bottom, mint) — tap to resume the logger. */
+.active-bar{position:fixed;left:0;right:0;bottom:0;z-index:35;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;cursor:pointer;background:rgba(10,16,28,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-top:1px solid rgba(39,230,180,.4);padding:13px 18px calc(13px + env(safe-area-inset-bottom))}
+.active-bar .ab-label{color:var(--mint);font-weight:800;font-size:14px}
+.active-bar .ab-time{color:var(--mint);font-weight:800;font-size:14px}
+body.has-active-bar .screen{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+/* Centered, non-blocking "rest complete" notice — fades + scales in, then out. */
+.toast-center{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%) scale(.9);z-index:55;
+  pointer-events:none;opacity:0;padding:14px 24px;border-radius:14px;font-size:16px;font-weight:800;
+  color:var(--mint);background:rgba(10,16,28,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(39,230,180,.5);box-shadow:0 12px 44px rgba(0,0,0,.5);
+  transition:opacity .25s ease,transform .35s cubic-bezier(.2,.8,.3,1)}
+.toast-center.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+@media (prefers-reduced-motion: reduce){
+  .toast-center{transition:opacity .2s ease;transform:translate(-50%,-50%)}
+  .toast-center.show{transform:translate(-50%,-50%)}
+}
 .stats{display:flex;gap:10px;margin-bottom:8px}
 .chip{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
 .chip .n{font-size:20px;font-weight:800}
@@ -66,6 +84,7 @@
 .tag{display:inline-block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);
   background:rgba(39,230,180,.1);border:1px solid rgba(39,230,180,.3);padding:3px 8px;border-radius:20px}
 .changed-badge{font-size:11px;color:#e3b341;background:rgba(227,179,65,.12);border:1px solid rgba(227,179,65,.4);border-radius:8px;padding:6px 10px;margin:8px 0 0;display:inline-block}
+.skip-badge{font-size:11px;color:var(--mint);background:rgba(39,230,180,.12);border:1px solid rgba(39,230,180,.4);border-radius:8px;padding:6px 10px;margin:0 0 8px;display:block;text-align:center}
 .exname{font-size:20px;font-weight:800;line-height:1.15;letter-spacing:-.01em;margin-top:8px}
 .exru{font-size:12px;color:var(--dim);margin-top:3px}
 .hero{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0;text-align:center}
@@ -82,7 +101,7 @@
 .rend{font-family:var(--mono);font-size:13px;color:var(--dim);font-weight:700}
 .rslider{flex:1;max-width:220px;height:4px;accent-color:var(--mint);cursor:pointer}
 .pside{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-top:12px}
-.pl{display:inline-block;background:rgba(39,230,180,.14);color:var(--mint);border-radius:5px;padding:2px 6px;margin-left:4px;font-weight:700;font-size:10px}
+.pl{display:inline-block;background:rgba(39,230,180,.14);color:var(--mint);border-radius:5px;padding:2px 6px;margin-left:6px;font-weight:700;font-size:10px}
 .pl.bar{background:rgba(255,255,255,.14);color:#eef3f8;border:1px solid rgba(255,255,255,.45)}
 .reps{display:flex;gap:8px;margin:12px 0}
 .reps .b{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
@@ -153,6 +172,8 @@
 .lg-start{display:block;width:100%;text-align:center;margin-top:18px;padding:15px;border-radius:13px;border:none;
   cursor:pointer;font-weight:800;font-size:15px;background:linear-gradient(160deg,var(--mint),#159c79);color:#04210f;text-decoration:none}
 .lg-start.resume{background:rgba(94,168,255,.14);color:var(--blue)}
+.lg-start:disabled{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--dim);
+  font-weight:600;font-size:13px;cursor:default}
 .btn-add{margin-top:6px;width:100%;text-align:center;font-weight:700;font-size:13px;padding:12px;border-radius:11px;
   border:none;background:rgba(94,168,255,.14);color:var(--blue);cursor:pointer}
 .btn-cancel{margin-top:9px;width:100%;text-align:center;font-weight:700;font-size:13px;padding:12px;border-radius:11px;
@@ -161,10 +182,16 @@
 .lg-pause{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.06);
   color:var(--ink);font-size:13px;cursor:pointer;display:grid;place-items:center;padding:0}
 .lg-elapsed.paused{color:var(--dim)}
-.lg-rest{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;justify-content:center;
-  background:rgba(94,168,255,.16);border:1px solid rgba(94,168,255,.45);border-radius:12px;padding:9px 12px;margin:0 0 12px}
-.lg-rest-time{font-size:18px;font-weight:800;color:var(--blue);min-width:54px;text-align:center}
-.lg-rest-adj{border:1px solid rgba(94,168,255,.4);background:rgba(255,255,255,.05);color:var(--blue);
+/* Rest timer: a fixed bar pinned to the bottom of the viewport, visible through
+   scroll while a rest runs. Only rendered while resting; `.lg.resting` reserves
+   matching bottom space so it never hides the last set / coach message. */
+.lg-rest{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:10px;justify-content:center;
+  background:rgba(10,16,28,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-top:1px solid rgba(39,230,180,.4);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));margin:0}
+.lg.resting{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+.lg-rest-time{font-size:18px;font-weight:800;color:var(--mint);min-width:54px;text-align:center}
+.lg-rest-adj{border:1px solid rgba(39,230,180,.4);background:rgba(255,255,255,.05);color:var(--mint);
   border-radius:8px;padding:6px 10px;font-weight:700;font-size:12px;cursor:pointer}
 .lg-rest-skip{margin-left:auto;border:none;background:none;color:var(--dim);font-weight:700;font-size:12px;cursor:pointer}
 .lg-msg-l{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:14px 0 6px}
@@ -194,9 +221,12 @@
   background:rgba(226,59,59,.12);color:#ff7a7a;font-size:12px;cursor:pointer;padding:0}
 .trainer-btn{display:block;width:100%;text-align:center;margin-top:10px;padding:13px;border-radius:13px;border:none;
   cursor:pointer;font-weight:700;font-size:14px;background:rgba(94,168,255,.14);color:var(--blue)}
+.delete-btn{display:block;width:100%;text-align:center;margin-top:10px;padding:11px;border-radius:13px;cursor:pointer;
+  font-weight:700;font-size:13px;background:rgba(226,59,59,.10);border:1px solid rgba(226,59,59,.35);color:#ff9a9a}
 .exmini-pl{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin-top:6px}
 .exmini-side{font-size:9px;color:var(--dim);margin-left:6px}
-.lg-plates{display:flex;align-items:center;flex-wrap:wrap;gap:0;padding:1px 0 7px 34px}
-.lg-plates-side{font-size:9px;color:var(--dim);margin-left:6px}
+.lg-plates{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:1px 0 7px 34px}
+.lg-plates .pl{margin-left:0} /* spacing comes from the flex gap above, uniform */
+.lg-plates-side{font-size:9px;color:var(--dim)}
 .lg-plates-empty{font-size:10px;color:var(--dim)}
 .lg-plates:empty{display:none}

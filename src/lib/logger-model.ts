@@ -2,7 +2,7 @@
 // pass `now` in so these stay deterministic and unit-testable.
 import type { Equipment, Exercise, Session, Weight } from '../data/types'
 import type { CatalogExercise } from '../data/catalog-types'
-import { kgToLb, KG_TO_LB, BAR_LB } from './load'
+import { kgToLb, KG_TO_LB, BAR_LB, computeBarbellLoad, roundToStep } from './load'
 import type { LoggedSet, Workout, WorkoutExercise } from './logger-types'
 
 export type Unit = 'kg' | 'lb'
@@ -109,9 +109,15 @@ function buildOne(e: Exercise): WorkoutExercise {
   const isTimed = secs !== null
   const sets: LoggedSet[] = Array.from({ length: count }, (_, i) => {
     const kg = coachKgForSet(e.weight, i)
-    const totalLb = kg !== null ? Math.round(kgToLb(kg)) : null
+    // Barbell: pre-fill the nearest LOADABLE plate weight that meets the coach's kg —
+    // round UP via computeBarbellLoad (same total the schedule screen shows), then
+    // drop the bar. This keeps the pre-fill a real plate config (chips sum exactly)
+    // and makes the coach-facing kg ≥ the prescription (never less). Others: as-is.
+    const weightLb = kg === null ? null
+      : isBarbell ? computeBarbellLoad(kg).totalLb - BAR_LB
+      : roundToStep(kgToLb(kg), 5) // dumbbell/machine/cable: round to the nearest fixed 5 lb size
     return {
-      weightLb: totalLb === null ? null : isBarbell ? Math.max(0, totalLb - BAR_LB) : totalLb,
+      weightLb,
       reps: isTimed ? secs : coachRepsForSet(e, i),
       done: false,
       restSec: rest,
@@ -232,6 +238,23 @@ export function withLastActual(we: WorkoutExercise, last: LoggedSet[] | null): W
 /** A fresh empty (not-done) set carrying the given rest default. */
 export function blankSet(restSec: number): LoggedSet {
   return { weightLb: null, reps: null, done: false, restSec }
+}
+
+/**
+ * Fill-down on complete: when set `srcIdx` is marked done, copy its weight/reps into
+ * every OTHER set's empty (null) fields, so the remaining sets pre-fill to the same
+ * numbers. Filled sets stay NOT done — the user still confirms (or tweaks) each.
+ * Never overwrites an entered value or touches an already-done set. Returns a new
+ * array (no mutation); a no-op if the source set itself has a null field.
+ */
+export function fillEmptySets(sets: LoggedSet[], srcIdx: number): LoggedSet[] {
+  const src = sets[srcIdx]
+  if (!src || src.weightLb === null || src.reps === null) return sets
+  return sets.map((s, i) =>
+    i === srcIdx || s.done || (s.weightLb !== null && s.reps !== null)
+      ? s
+      : { ...s, weightLb: s.weightLb ?? src.weightLb, reps: s.reps ?? src.reps },
+  )
 }
 
 /** Turn a catalog pick into a non-coach WorkoutExercise with one blank set. */

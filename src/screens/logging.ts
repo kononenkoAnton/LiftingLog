@@ -5,13 +5,14 @@
 // .value property.
 import type { WorkoutExercise, LoggedSet, Workout } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts, updateFinishedWorkout } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant, fillEmptySets } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
 import { platesForPlateLb, fullBarLb } from '../lib/load'
 import { PLATE_COLOR } from '../components/barbell-svg'
-import { toast } from '../lib/toast'
+import { toast, restCompleteToast } from '../lib/toast'
+import { unlockAudio, playRestDone } from '../lib/sound'
 
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
 let restTimer: ReturnType<typeof setInterval> | null = null
@@ -92,7 +93,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     const history = listWorkouts()
 
     el.innerHTML = `
-      <div class="screen lg">
+      <div class="screen lg${!edit && rest ? ' resting' : ''}">
         <div class="lg-top">
           <div class="lg-clock">
             ${edit ? '<span class="lg-elapsed mono">Editing</span>'
@@ -105,7 +106,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
             <button class="lg-finish" id="lgFinish" type="button">Finish</button>
           </div>`}
         </div>
-        <a class="back" id="lgBack" href="#/">‹ Program</a>
+        <a class="back" id="lgBack" href="#/session/${w.sessionNum}">‹ Schedule</a>
         <div class="lg-day">Day ${w.sessionNum} · logging</div>
         ${!edit ? restBannerHtml() : ''}
         <div id="lgEx">${w.exercises.map((ex, i) => exerciseHtml(ex, i, lastActualFor(history, ex.exerciseRef))).join('') || '<div class="note">No exercises — add one below.</div>'}</div>
@@ -140,7 +141,9 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const remain = Math.max(0, Math.round((rest.endMs - Date.now()) / 1000))
         e.textContent = fmt(remain)
         if (remain <= 0) {
+          playRestDone() // gong
           navigator.vibrate?.(200)
+          restCompleteToast()
           rest = null
           const af = document.activeElement
           if (af instanceof HTMLInputElement && af.closest('[data-ex]')) af.blur()
@@ -159,23 +162,28 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
     el.querySelector('#lgBack')!.addEventListener('click', (ev) => {
       ev.preventDefault()
-      const msg = edit
-        ? 'Leave edit mode? Changes are already saved.'
-        : 'Leave this workout? It stays active — resume it from this day.'
-      if (confirm(msg)) {
-        clearAll()
-        location.hash = '#/'
-      }
+      // Go UP to the day's coach schedule, not the program root. Non-destructive: the
+      // workout stays active (edit changes are already saved), and the schedule offers
+      // Resume/Edit — so no confirm needed.
+      clearAll()
+      onExit()
     })
 
     el.querySelectorAll<HTMLInputElement>('.lg-inp').forEach((inp) => {
+      // Select the whole value on focus so typing replaces it (no backspacing the
+      // pre-fill). Deferred a tick so iOS's own caret placement doesn't override it.
+      inp.addEventListener('focus', () => setTimeout(() => inp.select(), 0))
       inp.addEventListener('change', () => {
         const cur = current(); if (!cur) return
         const exi = Number(inp.dataset.ex), si = Number(inp.dataset.set)
         const field = inp.dataset.field as 'weightLb' | 'reps'
         const raw = inp.value.trim()
-        const num = raw === '' ? null : Number(raw)
-        cur.exercises[exi].sets[si][field] = num !== null && Number.isFinite(num) ? num : null
+        if (raw !== '' && !Number.isFinite(Number(raw))) {
+          toast('Numbers only', 'info')
+          inp.value = cur.exercises[exi].sets[si][field]?.toString() ?? '' // revert to the last valid value
+          return
+        }
+        cur.exercises[exi].sets[si][field] = raw === '' ? null : Number(raw)
         persist(cur)
         if (field === 'weightLb') {
           const box = el.querySelector(`.lg-plates[data-ex="${exi}"][data-set="${si}"]`)
@@ -200,8 +208,13 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
           if (problem) { toast(problem, 'info'); return }
         }
         st.done = !st.done
-        if (!edit && st.done) rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }
-        else if (rest && rest.exIdx === exi && rest.setIdx === si) rest = null
+        // On complete, pre-fill the other still-blank sets with this set's weight/reps
+        // (left un-checked) so the user doesn't retype the same numbers.
+        if (st.done) cur.exercises[exi].sets = fillEmptySets(cur.exercises[exi].sets, si)
+        if (!edit && st.done) {
+          unlockAudio() // prime the gong within this tap so it can fire when rest ends
+          rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }
+        } else if (rest && rest.exIdx === exi && rest.setIdx === si) rest = null
         persist(cur)
         draw()
       })

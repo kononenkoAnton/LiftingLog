@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { kgToLb, roundUpToStep, computeBarbellLoad, platesForPlateLb, fullBarLb } from './load'
+import { kgToLb, roundUpToStep, roundToStep, computeBarbellLoad, platesForPlateLb, fullBarLb } from './load'
 
 describe('kgToLb', () => {
   it('converts kilograms to pounds', () => {
@@ -18,16 +18,22 @@ describe('roundUpToStep', () => {
   })
 })
 
+describe('roundToStep (nearest)', () => {
+  it('rounds to the nearest step, not up', () => {
+    expect(roundToStep(kgToLb(25), 5)).toBe(55) // 55.1 → 55 (not 60)
+    expect(roundToStep(kgToLb(22.5), 5)).toBe(50) // 49.6 → 50
+    expect(roundToStep(kgToLb(30), 5)).toBe(65) // 66.1 → 65
+  })
+})
+
 describe('computeBarbellLoad', () => {
-  it('rounds total up and breaks plates per side (75kg)', () => {
-    const r = computeBarbellLoad(75)
-    expect(r.totalLb).toBe(170)
-    expect(r.perSideLb).toBe(62.5)
+  it('rounds per side up to 5 lb and breaks plates per side (75kg)', () => {
+    const r = computeBarbellLoad(75) // 165.35 lb → per side 60.17 → 65 → 175 total
+    expect(r.totalLb).toBe(175)
+    expect(r.perSideLb).toBe(65)
     expect(r.plates).toEqual([
       { plate: 45, count: 1 },
-      { plate: 10, count: 1 },
-      { plate: 5, count: 1 },
-      { plate: 2.5, count: 1 },
+      { plate: 10, count: 2 },
     ])
   })
 
@@ -56,9 +62,9 @@ describe('platesForPlateLb', () => {
   it('splits a plate weight evenly per side (220 plates -> 110/side)', () => {
     expect(platesForPlateLb(220)).toEqual([{ plate: 45, count: 2 }, { plate: 10, count: 2 }])
   })
-  it('handles a 100kg-equivalent plate load (175 -> 87.5/side)', () => {
-    expect(platesForPlateLb(175)).toEqual([
-      { plate: 45, count: 1 }, { plate: 35, count: 1 }, { plate: 5, count: 1 }, { plate: 2.5, count: 1 },
+  it('splits a loadable plate weight (150 -> 75/side)', () => {
+    expect(platesForPlateLb(150)).toEqual([
+      { plate: 45, count: 1 }, { plate: 25, count: 1 }, { plate: 5, count: 1 },
     ])
   })
   it('is empty for a bare bar (0 plates)', () => {

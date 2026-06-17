@@ -1,11 +1,11 @@
 import { getSession, program } from '../data/program'
 import type { Exercise, Weight } from '../data/types'
-import { computeBarbellLoad, kgToLb } from '../lib/load'
+import { computeBarbellLoad, kgToLb, roundToStep } from '../lib/load'
 import { mountBarbell } from '../components/barbell'
 import { PLATE_COLOR } from '../components/barbell-svg'
-import { isFinished, getSnapshot, finish, unfinish } from '../lib/progress'
+import { isFinished, getSnapshot, unfinish } from '../lib/progress'
 import { gsap } from 'gsap'
-import { getActiveWorkout, startWorkout, getFinishedForSession } from '../lib/workouts'
+import { getActiveWorkout, startWorkout, getFinishedForSession, deleteWorkout } from '../lib/workouts'
 import { renderLogging } from './logging'
 import { trainerLog } from '../lib/logger-model'
 import { toast } from '../lib/toast'
@@ -62,7 +62,7 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
           <input class="rslider" id="rangeSlider" type="range" min="${w.minKg}" max="${w.maxKg}" step="2.5" value="${selKg}" aria-label="Weight within range">
           <span class="rend">${w.maxKg}</span>
         </div>
-        <div class="conv mono" id="rangeConv">= ${kgToLb(selKg).toFixed(0)} lb → ${load.totalLb} lb total</div>
+        <div class="conv mono" id="rangeConv">= ${load.totalLb} lb total</div>
         <div id="bb"></div>
         <div class="pside"><span style="color:var(--dim)">Per side · lb</span>
           <span class="mono" id="rangePside"><span class="pl bar">45 bar</span> ${platesText(load.plates)}</span></div>
@@ -80,27 +80,56 @@ function heroFor(e: Exercise, steps: number[] | null, stepIdx: number, selKg: nu
     return `
       <div class="hero">
         ${headline}
-        <div class="conv mono">= ${kgToLb(selKg).toFixed(0)} lb → ${load.totalLb} lb total</div>
+        <div class="conv mono">= ${load.totalLb} lb total</div>
         <div id="bb"></div>
         <div class="pside"><span style="color:var(--dim)">Per side · lb</span>
           <span class="mono"><span class="pl bar">45 bar</span> ${platesText(load.plates)}</span></div>
+      </div>`
+  }
+  if (e.weight.kind === 'range' && selKg !== null) {
+    // Non-barbell range (e.g. dumbbells): same slider, but no plates to load — just
+    // the picked weight and its lb conversion.
+    const w = e.weight
+    const each = e.perImplement ? ' each' : ''
+    return `
+      <div class="hero">
+        <div class="big" id="rangeVal">${selKg} kg${each}</div>
+        <div class="rangerow">
+          <span class="rend">${w.minKg}</span>
+          <input class="rslider" id="rangeSlider" type="range" min="${w.minKg}" max="${w.maxKg}" step="2.5" value="${selKg}" aria-label="Weight within range">
+          <span class="rend">${w.maxKg}</span>
+        </div>
+        <div class="conv mono" id="rangeConv">= ${roundToStep(kgToLb(selKg), 5)} lb${each}</div>
       </div>`
   }
   const kg = primaryKg(e.weight)
   return `
     <div class="hero">
       <div class="big">${weightLabel(e.weight, e.perImplement)}</div>
-      <div class="conv mono">${kg !== null ? '= ' + kgToLb(kg).toFixed(0) + ' lb' + (e.perImplement ? ' each' : '') : ''}</div>
+      <div class="conv mono">${kg !== null ? '= ' + roundToStep(kgToLb(kg), 5) + ' lb' + (e.perImplement ? ' each' : '') : ''}</div>
     </div>`
 }
+
+// One-shot request (set by the persistent active-workout bar) to drop straight into
+// the logger on the next render of the active day, instead of showing its schedule.
+let enterLogger = false
+export function requestEnterLogger() { enterLogger = true }
 
 export function renderSession(el: HTMLElement, n: number) {
   const s = getSession(n)
   if (!s) { el.innerHTML = '<div class="screen">Session not found · <a href="#/">back</a></div>'; return }
 
+  // A workout active for THIS day no longer auto-enters logging — the day shows its
+  // coach schedule with a "Resume workout" button, so the logger's back link can
+  // land here (one level up) instead of the program root.
   const active = getActiveWorkout()
-  if (active && active.sessionNum === n) { renderLogging(el, n, () => renderSession(el, n)); return }
+  const activeThisDay = active && active.sessionNum === n ? active : null
   const otherActive = active && active.sessionNum !== n ? active : null
+
+  // Resume bar tapped → go straight into the logger (consume the flag either way).
+  const wantLogger = enterLogger
+  enterLogger = false
+  if (activeThisDay && wantLogger) { renderLogging(el, n, () => renderSession(el, n)); return }
 
   let focusIdx = s.exercises.findIndex((e) => e.equipment === 'barbell')
   if (focusIdx < 0) focusIdx = 0
@@ -110,13 +139,15 @@ export function renderSession(el: HTMLElement, n: number) {
     const logged = getFinishedForSession(s.num)
     // Finished days render their locked snapshot; unfinished show the latest parse.
     const snap = isFinished(s.num) ? getSnapshot(s.num) : null
-    const exercises = snap ?? s.exercises
-    const changed = !!snap && JSON.stringify(snap) !== JSON.stringify(s.exercises)
+    // Fall back to the live parse if the snapshot is missing/empty (skipped days
+    // store the day's exercises, but guard against an empty/old entry).
+    const exercises = snap && snap.length ? snap : s.exercises
+    const changed = !!snap && snap.length > 0 && JSON.stringify(snap) !== JSON.stringify(s.exercises)
     const e = exercises[focusIdx]
     const steps = e.equipment === 'barbell' ? stepWeightsOf(e.weight) : null
     if (steps && stepIdx >= steps.length) stepIdx = 0
-    // range lifts default to the lighter end (the slider takes it from there)
-    const selKg = e.equipment === 'barbell' && e.weight.kind === 'range'
+    // range lifts (barbell OR dumbbell) default to the lighter end (the slider takes it from there)
+    const selKg = e.weight.kind === 'range'
       ? e.weight.minKg
       : steps ? steps[stepIdx] : primaryKg(e.weight)
     // per-set schemes carry their own reps; otherwise use the exercise reps
@@ -126,7 +157,6 @@ export function renderSession(el: HTMLElement, n: number) {
       <div class="screen">
         <div class="shead">
           <a class="back" href="#/">‹ Program · ${s.dateLabel}</a>
-          <button class="finish-pill ${isFinished(s.num) ? 'done' : ''}" id="finishBtn" type="button">${isFinished(s.num) ? '✓ Finished' : 'Mark finished'}</button>
         </div>
         <div class="daynav">
           <button class="daybtn" id="prevDay" type="button" aria-label="Previous day" ${getSession(s.num - 1) ? '' : 'disabled'}>‹</button>
@@ -145,20 +175,19 @@ export function renderSession(el: HTMLElement, n: number) {
         <div class="note">${e.descEn}<br><span style="opacity:.7">${e.descRu}</span>
           ${e.notesEn ? `<br><br>${e.notesEn}<br><span style="opacity:.7">${e.notesRu ?? ''}</span>` : ''}</div>
         <div style="margin-top:14px" id="mini"></div>
-        ${otherActive
-          ? `<a class="lg-start resume" href="#/session/${otherActive.sessionNum}">Resume active workout · Day ${otherActive.sessionNum} ›</a>`
-          : logged
-            ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
-            : `<button class="lg-start" id="startBtn" type="button">▶ Start Session</button>`}
+        ${isFinished(s.num) && !logged && !activeThisDay && !otherActive
+          ? '<div class="skip-badge">✓ Skipped · no workout logged</div>'
+          : ''}
+        ${activeThisDay
+          ? '' /* the persistent bottom bar is the resume affordance for the active day */
+          : otherActive
+            ? `<button class="lg-start" type="button" disabled>Finish your Day ${otherActive.sessionNum} workout to start another</button>`
+            : logged
+              ? `<button class="lg-start" id="editBtn" type="button">✎ Edit workout</button>`
+              : `<button class="lg-start" id="startBtn" type="button">▶ ${isFinished(s.num) ? 'Log this day' : 'Start Session'}</button>`}
         ${logged ? `<button class="trainer-btn" id="trainerBtn" type="button">📋 Copy for trainer</button>` : ''}
+        ${logged ? `<button class="delete-btn" id="delWorkoutBtn" type="button">🗑 Delete workout</button>` : ''}
       </div>`
-
-    const finishBtn = el.querySelector<HTMLButtonElement>('#finishBtn')!
-    finishBtn.addEventListener('click', async () => {
-      if (isFinished(s.num)) await unfinish(s.num)
-      else await finish(s.num, s.exercises) // snapshot the canonical content now
-      draw(false)
-    })
 
     const startBtn = el.querySelector<HTMLButtonElement>('#startBtn')
     if (startBtn) startBtn.addEventListener('click', () => { startWorkout(s); renderLogging(el, n, () => renderSession(el, n)) })
@@ -173,6 +202,15 @@ export function renderSession(el: HTMLElement, n: number) {
       catch { toast(text, 'info') }
     })
 
+    const delBtn = el.querySelector<HTMLButtonElement>('#delWorkoutBtn')
+    if (delBtn && logged) delBtn.addEventListener('click', async () => {
+      if (!confirm(`Delete the logged workout for Day ${s.num}? This permanently removes it and can't be undone.`)) return
+      await deleteWorkout(logged.id)
+      await unfinish(s.num) // the day's "done" came from this log → revert it to not done
+      toast('Workout deleted', 'info')
+      draw(false)
+    })
+
     const go = (num: number) => { if (getSession(num)) location.hash = `#/session/${num}` }
     el.querySelector('#prevDay')!.addEventListener('click', () => go(s.num - 1))
     el.querySelector('#nextDay')!.addEventListener('click', () => go(s.num + 1))
@@ -182,17 +220,24 @@ export function renderSession(el: HTMLElement, n: number) {
       btn.addEventListener('click', () => { stepIdx = Number(btn.dataset.step); draw(false) })
     })
 
-    // range slider: live-update the bar/conversion/plates without re-rendering
+    // range slider: live-update the conversion (and the bar/plates for barbell) without re-rendering
     const slider = el.querySelector<HTMLInputElement>('#rangeSlider')
     if (slider) {
+      const isBarbell = e.equipment === 'barbell'
+      const each = e.perImplement ? ' each' : ''
       slider.addEventListener('input', () => {
         const val = Number(slider.value)
-        const load = computeBarbellLoad(val)
-        el.querySelector('#rangeVal')!.textContent = `${val} kg`
-        el.querySelector('#rangeConv')!.textContent = `= ${kgToLb(val).toFixed(0)} lb → ${load.totalLb} lb total`
-        el.querySelector('#rangePside')!.innerHTML = `<span class="pl bar">45 bar</span> ${platesText(load.plates)}`
-        const bbEl = el.querySelector<HTMLElement>('#bb')
-        if (bbEl) mountBarbell(bbEl, load.plates)
+        if (isBarbell) {
+          const load = computeBarbellLoad(val)
+          el.querySelector('#rangeVal')!.textContent = `${val} kg`
+          el.querySelector('#rangeConv')!.textContent = `= ${load.totalLb} lb total`
+          el.querySelector('#rangePside')!.innerHTML = `<span class="pl bar">45 bar</span> ${platesText(load.plates)}`
+          const bbEl = el.querySelector<HTMLElement>('#bb')
+          if (bbEl) mountBarbell(bbEl, load.plates)
+        } else {
+          el.querySelector('#rangeVal')!.textContent = `${val} kg${each}`
+          el.querySelector('#rangeConv')!.textContent = `= ${roundToStep(kgToLb(val), 5)} lb${each}`
+        }
       })
     }
 
