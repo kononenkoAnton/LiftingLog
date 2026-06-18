@@ -263,3 +263,7 @@ body.has-active-bar .screen{padding-bottom:calc(82px + env(safe-area-inset-botto
 .ex-sub{font-size:12px;color:var(--dim);margin:-6px 0 12px}
 .exh-card{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:11px 13px}
 .exh-date{font-size:12px;font-weight:800;color:var(--mint);margin-bottom:6px}
+
+/* History volume (weight lifted) */
+.hist-total{font-family:var(--mono);font-size:13px;font-weight:800;color:var(--mint);margin:2px 0 12px}
+.hist-exvol{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dim);margin:5px 0 2px}
