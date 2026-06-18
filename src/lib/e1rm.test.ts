@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { epley1rm, bestE1rmKg, bestE1rmLb } from './e1rm'
+import { epley1rm, bestE1rmKg, bestE1rmLb, e1rmSeries } from './e1rm'
 import type { Workout, WorkoutExercise, LoggedSet } from './logger-types'
 import type { Equipment } from '../data/types'
 
@@ -77,5 +77,57 @@ describe('bestE1rmLb', () => {
     const w = wk({ exercises: [ex('Back Squat', 'barbell', [set(140, 5)])] })
     expect(bestE1rmLb([w], /squat/i)).toBe(216)
     expect(bestE1rmKg([w], /squat/i)).toBe(98)
+  })
+})
+
+describe('e1rmSeries', () => {
+  it('returns [] when nothing qualifies', () => {
+    expect(e1rmSeries([], /squat/i)).toEqual([])
+  })
+
+  it('emits one point per finished workout: date + driving set (plates) + precise full e1RM', () => {
+    const w = wk({ startedAt: '2026-06-01T00:00:00.000Z', exercises: [ex('Back Squat', 'barbell', [set(140, 5)])] })
+    const s = e1rmSeries([w], /squat/i)
+    expect(s).toHaveLength(1)
+    expect(s[0].dateIso).toBe('2026-06-01T00:00:00.000Z')
+    expect(s[0].weightLb).toBe(140)   // plates only — bar added back inside the e1RM
+    expect(s[0].reps).toBe(5)
+    expect(s[0].e1rmFullLb).toBeCloseTo(215.833, 3) // (140+45)*(1+5/30)
+  })
+
+  it("picks the workout's BEST-e1RM set, not its heaviest", () => {
+    // 1x150 plates → (195)*(1+1/30)=201.5 ; 5x140 plates → 215.83 → best is the 5x140
+    const w = wk({ exercises: [ex('Back Squat', 'barbell', [set(150, 1), set(140, 5)])] })
+    const s = e1rmSeries([w], /squat/i)
+    expect(s).toHaveLength(1)
+    expect(s[0].weightLb).toBe(140)
+    expect(s[0].reps).toBe(5)
+    expect(s[0].e1rmFullLb).toBeCloseTo(215.833, 3)
+  })
+
+  it('sorts points ascending by date regardless of input order', () => {
+    const later = wk({ id: 'a', startedAt: '2026-06-10T00:00:00.000Z', exercises: [ex('Back Squat', 'barbell', [set(150, 5)])] })
+    const earlier = wk({ id: 'b', startedAt: '2026-06-01T00:00:00.000Z', exercises: [ex('Back Squat', 'barbell', [set(140, 5)])] })
+    const s = e1rmSeries([later, earlier], /squat/i)
+    expect(s.map((p) => p.dateIso)).toEqual(['2026-06-01T00:00:00.000Z', '2026-06-10T00:00:00.000Z'])
+    expect(s.map((p) => p.weightLb)).toEqual([140, 150])
+  })
+
+  it('skips unfinished workouts and workouts with no qualifying set', () => {
+    const finishedNoSquat = wk({ id: 'a', exercises: [ex('Bench Press', 'barbell', [set(200, 5)])] })
+    const active = wk({ id: 'b', status: 'active', exercises: [ex('Back Squat', 'barbell', [set(999, 5)])] })
+    const invalidReps = wk({ id: 'c', exercises: [ex('Back Squat', 'barbell', [set(100, 0)])] })
+    expect(e1rmSeries([finishedNoSquat, active, invalidReps], /squat/i)).toEqual([])
+  })
+
+  it('ignores non-barbell, non-matching, and not-done sets within a counted workout', () => {
+    const w = wk({ exercises: [
+      ex('Goblet Squat', 'dumbbell', [set(300, 5)]),               // non-barbell
+      ex('Back Squat', 'barbell', [set(135, 5), set(999, 5, false)]), // 2nd not done
+    ] })
+    const s = e1rmSeries([w], /squat/i)
+    expect(s).toHaveLength(1)
+    expect(s[0].weightLb).toBe(135)
+    expect(s[0].reps).toBe(5)
   })
 })

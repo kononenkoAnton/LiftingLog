@@ -7,6 +7,7 @@ import { mountActiveBar } from './components/active-bar'
 import { renderLogin } from './screens/login'
 import { renderExercises } from './screens/exercises'
 import { renderHistory } from './screens/history'
+import { renderProgress, renderProgressDetail } from './screens/progress'
 import { loadProgress } from './lib/progress'
 import { loadWorkouts } from './lib/workouts'
 import { supabase } from './lib/supabase'
@@ -15,6 +16,8 @@ route('/', (el) => renderList(el))
 route('/session/:n', (el, p) => renderSession(el, Number(p.n)))
 route('/exercises', (el) => renderExercises(el))
 route('/history', (el) => renderHistory(el))
+route('/progress', (el) => renderProgress(el))
+route('/progress/:lift', (el, p) => renderProgressDetail(el, p.lift))
 
 const app = document.querySelector<HTMLElement>('#app')!
 

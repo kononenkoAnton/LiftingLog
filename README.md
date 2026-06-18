@@ -67,7 +67,8 @@ targets, sets/reps, names, and notes — no math to redo.
 - `src/lib/load.ts` — kg→lb + plate math (pure, tested)
 - `src/lib/focus.ts` — derives a session focus label ("Bench + Deadlift")
 - `src/data/` — `types.ts`, `program.json` (55 sessions), `program.ts` loader
-- `src/screens/` — `list.ts` (program), `session.ts` (detail)
+- `src/screens/` — `list.ts` (program), `session.ts` (detail), `progress.ts` (e1RM trends)
+- `src/components/sparkline-svg.ts` — pure inline-SVG sparkline (e1RM trend on `#/progress`)
 - `src/components/` — `barbell.ts` (three.js hero), `barbell-svg.ts` (fallback)
 - `src/router.ts` — hash router; `src/styles/` — Reactor theme
 

@@ -107,7 +107,7 @@ still produces 0 unknowns and type-checks.
 ## Key files
 
 - `src/lib/load.ts` — kg→lb + plate math (pure, tested)
-- `src/lib/e1rm.ts` — Epley estimated 1RM + best-e1RM-per-lift over history (pure, tested)
+- `src/lib/e1rm.ts` — Epley estimated 1RM: best-e1RM-per-lift (home chips) + `e1rmSeries` (one point per finished workout, for the Progress trend) over history (pure, tested)
 - `src/lib/focus.ts` — session focus label + main-lift tags
 - `src/lib/unit.ts` — shared kg/lb display-unit setting (localStorage `liftinglog:unit`)
 - `src/lib/progress.ts` — finished-day persistence
@@ -120,6 +120,7 @@ still produces 0 unknowns and type-checks.
 - `scripts/catalog-ru.json` — Russian-name overlay (id→nameRu) merged into the catalog by `build-catalog.mjs`
 - `src/screens/{list,session}.ts` — program list, session detail
 - `src/components/barbell-svg.ts` — 2D barbell renderer (+ `barbell.ts` wrapper)
+- `src/components/sparkline-svg.ts` — pure inline-SVG sparkline string (normalized polyline + area + end dot; tested)
 - `scripts/parse-program.mjs` — deterministic doc → program.json parser
 - `.claude/skills/update-program/` — the re-parse skill + rules
 - `docs/superpowers/` — original spec and plan
@@ -130,5 +131,6 @@ still produces 0 unknowns and type-checks.
 - `src/lib/sound.ts` — rest-timer gong cue: a preloaded `<audio>` for `public/gong.mp3`, **unlocked on the set-complete tap** (mobile blocks audio until a gesture); `playRestDone()` fires at 0
 - `scripts/make-gong.mjs` — synthesizes `public/gong.mp3` (license-clean additive synthesis; `node scripts/make-gong.mjs` then encode to mp3)
 - `src/screens/history.ts` — past finished workouts (#/history)
+- `src/screens/progress.ts` — Progress/Trends (`#/progress` + `#/progress/:lift`): e1RM sparkline per main barbell lift (squat/bench/deadlift) + per-session drill-down. Read-only over stored workouts; reuses the shared kg/lb unit. Add a lift by extending `LIFTS`.
 - `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)
 - `vite.config.ts` — Vite build + `vite-plugin-pwa` (service worker / PWA; the manifest stays hand-written in `public/manifest.webmanifest`)
