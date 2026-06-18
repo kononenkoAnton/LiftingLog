@@ -66,6 +66,18 @@ still produces 0 unknowns and type-checks.
     pre-filled sets. Add new swaps to `ALT_PATTERNS` in `logger-model.ts`.
 - **Barbell viz is a static 2D SVG** (`src/components/barbell-svg.ts`). three.js
   was removed — do not reintroduce it without reason.
+- **PWA / service worker.** The app is an installable PWA. `index.html` references a
+  hand-written `public/manifest.webmanifest` + icons (`icon-192/512`,
+  `apple-touch-icon`, `favicon-32`). The service worker is generated at build time by
+  `vite-plugin-pwa` (`vite.config.ts`) with **`manifest: false`** (the plugin owns
+  ONLY the SW — the manifest stays hand-written, single source of truth) and
+  `registerType: 'autoUpdate'` (a new deploy takes over on next load, no reload
+  prompt). It precaches the built app shell (`workbox.globPatterns`) so the app loads
+  offline and Chrome/Android show the Install prompt; iOS add-to-home works via the
+  apple meta tags. **It does NOT cache Supabase API calls** — they're cross-origin and
+  pass straight to the network, so the SW never serves stale auth/data. Don't add
+  Supabase runtime caching without handling auth/staleness. The SW only runs in the
+  production build (`vite build` → `dist/sw.js`), not `npm run dev`.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as
   `{ finished: {...} }`. Other keys: `liftinglog:workouts` + `liftinglog:activeWorkout`
   (logger), `liftinglog:unit` (shared History + home kg/lb display toggle, defaults to kg).
@@ -119,3 +131,4 @@ still produces 0 unknowns and type-checks.
 - `scripts/make-gong.mjs` — synthesizes `public/gong.mp3` (license-clean additive synthesis; `node scripts/make-gong.mjs` then encode to mp3)
 - `src/screens/history.ts` — past finished workouts (#/history)
 - `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)
+- `vite.config.ts` — Vite build + `vite-plugin-pwa` (service worker / PWA; the manifest stays hand-written in `public/manifest.webmanifest`)

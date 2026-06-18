@@ -16,6 +16,19 @@ Built with Vite + TypeScript, GSAP, and a three.js barbell hero.
 `dist/` is static; deploy to Netlify, Vercel, or GitHub Pages. `base: './'` in
 `vite.config.ts` makes it path-independent.
 
+## PWA / install
+The app is an installable PWA. `index.html` references a hand-written
+`public/manifest.webmanifest` plus icons (`icon-192/512`, `apple-touch-icon`,
+`favicon-32`). A service worker is generated at build time by
+[`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/) (`vite.config.ts`, configured
+with `manifest: false` so the plugin owns only the SW, not the manifest). It
+precaches the built app shell, so the app loads offline and Chrome/Android show the
+"Install" prompt (iOS "Add to Home Screen" works via the apple meta tags).
+`registerType: 'autoUpdate'` means a new deploy takes over on the next load — no
+reload prompt. Supabase API calls are cross-origin and pass straight to the network,
+so the SW never serves stale auth/data. The SW only runs in the production build
+(`npm run build` → `dist/sw.js`), not `npm run dev`.
+
 ## Plates & bar
 Bar = 45 lb. Plates per side = 45, 35, 25, 10, 5 lb — **no 2.5 lb microplates** (rarely
 stocked). Targets round UP **per side to the nearest 5 lb** (the smallest plate) — the
