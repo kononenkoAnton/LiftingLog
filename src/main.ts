@@ -8,6 +8,7 @@ import { renderLogin } from './screens/login'
 import { renderExercises } from './screens/exercises'
 import { renderHistory } from './screens/history'
 import { renderProgress, renderProgressDetail } from './screens/progress'
+import { renderExerciseHistory } from './screens/exercise-history'
 import { loadProgress } from './lib/progress'
 import { loadWorkouts } from './lib/workouts'
 import { supabase } from './lib/supabase'
@@ -18,6 +19,7 @@ route('/exercises', (el) => renderExercises(el))
 route('/history', (el) => renderHistory(el))
 route('/progress', (el) => renderProgress(el))
 route('/progress/:lift', (el, p) => renderProgressDetail(el, p.lift))
+route('/exercise/:ref', (el, p) => renderExerciseHistory(el, decodeURIComponent(p.ref)))
 
 const app = document.querySelector<HTMLElement>('#app')!
 
