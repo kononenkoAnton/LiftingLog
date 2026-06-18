@@ -245,6 +245,33 @@ export function allSetsForRef(history: Workout[], exerciseRef: string): Exercise
     .sort((a, b) => Date.parse(b.dateIso) - Date.parse(a.dateIso))
 }
 
+/** Full lifted lb for one set: barbell adds the 45 lb bar, other equipment as-is; null plates → 0. */
+function setLoadLb(weightLb: number | null, equipment: Equipment): number {
+  const w = weightLb ?? 0
+  return equipment === 'barbell' ? w + BAR_LB : w
+}
+
+/**
+ * Total weight lifted (Σ full-weight × reps) over an exercise's DONE sets, in lb.
+ * Barbell includes the 45 lb bar; dumbbell/machine/cable count the weight as-is; bodyweight
+ * counts only added load. Timed holds → 0 (weight × seconds isn't volume); sets with null /
+ * non-integer / <1 reps are skipped; null plates count as 0 (an empty bar still = 45 lb).
+ */
+export function exerciseVolumeLb(ex: WorkoutExercise): number {
+  if (ex.isTimed) return 0
+  let v = 0
+  for (const s of ex.sets) {
+    if (!s.done || s.reps === null || !Number.isInteger(s.reps) || s.reps < 1) continue
+    v += setLoadLb(s.weightLb, ex.equipment) * s.reps
+  }
+  return v
+}
+
+/** Total weight lifted across all of a workout's exercises, in lb. */
+export function workoutVolumeLb(w: Workout): number {
+  return w.exercises.reduce((sum, ex) => sum + exerciseVolumeLb(ex), 0)
+}
+
 /**
  * Pre-fill a WorkoutExercise from the user's last actual sets for it.
  * Added (non-coach) exercises adopt last session's full sets; coach exercises only

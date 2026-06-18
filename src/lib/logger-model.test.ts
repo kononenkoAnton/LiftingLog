@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets, allSetsForRef } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets, allSetsForRef, exerciseVolumeLb, workoutVolumeLb } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout, LoggedSet, WorkoutExercise } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -452,5 +452,50 @@ describe('allSetsForRef', () => {
     const w = wk({ exercises: [wex({ exerciseRef: 'coach:plank', nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isTimed: true, sets: [set(0, 45)] })] })
     const out = allSetsForRef([w], 'coach:plank')
     expect(out[0]).toMatchObject({ nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isTimed: true })
+  })
+})
+
+describe('exerciseVolumeLb / workoutVolumeLb', () => {
+  const set = (weightLb: number | null, reps: number | null, done = true): LoggedSet => ({ weightLb, reps, done, restSec: 90 })
+  const wex = (over: Partial<WorkoutExercise> & { sets: LoggedSet[] }): WorkoutExercise => ({
+    exerciseRef: 'r', nameEn: 'X', nameRu: 'X', equipment: 'barbell', isCoachPrescribed: false, coachTarget: '', ...over,
+  })
+  const wk = (exercises: WorkoutExercise[]): Workout => ({
+    id: 'x', sessionNum: 1, startedAt: '2026-06-01T00:00:00.000Z', endedAt: null,
+    pausedMs: 0, pausedAt: null, status: 'finished', coachMessage: '', exercises,
+  })
+
+  it('sums full weight × reps for a barbell lift, including the 45 lb bar', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'barbell', sets: [set(135, 5), set(135, 5)] }))).toBe((135 + 45) * 5 * 2) // 1800
+  })
+
+  it('uses the weight as-is for non-barbell (no bar added)', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'dumbbell', sets: [set(50, 10)] }))).toBe(500)
+  })
+
+  it('counts only added weight for bodyweight (plain BW contributes 0)', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'bodyweight', sets: [set(0, 15), set(25, 8)] }))).toBe(25 * 8) // 200
+  })
+
+  it('skips not-done, null-rep, and non-integer-rep sets', () => {
+    const ex = wex({ equipment: 'barbell', sets: [set(100, 5, false), set(100, null), set(100, 2.5), set(100, 3)] })
+    expect(exerciseVolumeLb(ex)).toBe((100 + 45) * 3) // only the 3-rep done set
+  })
+
+  it('counts an empty-bar barbell set as the bar weight (null/0 plates → 45)', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'barbell', sets: [set(0, 5), set(null, 5)] }))).toBe(45 * 5 + 45 * 5) // 450
+  })
+
+  it('returns 0 for a timed hold (weight × seconds is not volume)', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'bodyweight', isTimed: true, sets: [set(0, 45)] }))).toBe(0)
+  })
+
+  it('workoutVolumeLb sums volume across all exercises', () => {
+    const w = wk([
+      wex({ equipment: 'barbell', sets: [set(135, 5)] }),   // 180 * 5 = 900
+      wex({ equipment: 'dumbbell', sets: [set(40, 10)] }),  // 400
+      wex({ equipment: 'bodyweight', isTimed: true, sets: [set(0, 45)] }), // 0
+    ])
+    expect(workoutVolumeLb(w)).toBe(900 + 400)
   })
 })
