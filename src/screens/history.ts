@@ -1,13 +1,19 @@
 // Past finished workouts. SECURITY: workout/exercise names are trusted, but the
 // coach message is USER TEXT — rendered via textContent only.
 import { listWorkouts } from '../lib/workouts'
-import { workoutDurationSec, trainerLog, setWeightDisplay, type Unit } from '../lib/logger-model'
+import { workoutDurationSec, trainerLog, setWeightDisplay, exerciseVolumeLb, workoutVolumeLb, type Unit } from '../lib/logger-model'
 import { getUnit, setUnit } from '../lib/unit'
+import { KG_TO_LB } from '../lib/load'
 import type { Workout } from '../lib/logger-types'
 import { toast } from '../lib/toast'
 
 const fmtDur = (sec: number) => `${Math.floor(sec / 60)}m`
 const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+// Total weight lifted (lb) → the chosen unit, with thousands separators.
+const fmtVol = (lb: number, unit: Unit): string => {
+  const v = unit === 'kg' ? Math.round(lb / KG_TO_LB) : Math.round(lb)
+  return `${v.toLocaleString()} ${unit}`
+}
 
 let openId: string | null = null
 
@@ -57,12 +63,17 @@ export function renderHistory(el: HTMLElement) {
     if (openId === w.id) {
       const body = document.createElement('div')
       body.className = 'hist-body'
+      const total = document.createElement('div')
+      total.className = 'hist-total'
+      total.textContent = `Total lifted · ${fmtVol(workoutVolumeLb(w), unit)}`
+      body.appendChild(total)
       for (const ex of w.exercises) {
         const exEl = document.createElement('div')
         exEl.className = 'hist-ex'
-        const nm = document.createElement('div')
-        nm.className = 'hist-exname'
+        const nm = document.createElement('a')
+        nm.className = 'hist-exname hist-exlink'
         nm.textContent = ex.nameEn
+        nm.href = `#/exercise/${encodeURIComponent(ex.exerciseRef)}`
         exEl.appendChild(nm)
         for (const s of ex.sets) {
           const row = document.createElement('div')
@@ -71,6 +82,13 @@ export function renderHistory(el: HTMLElement) {
           const repStr = s.reps === null ? '–' : `${s.reps}${ex.isTimed ? 's' : ''}`
           row.textContent = `${done} ${setWeightDisplay(s.weightLb, ex.equipment, unit)} × ${repStr}`
           exEl.appendChild(row)
+        }
+        const vol = exerciseVolumeLb(ex)
+        if (vol > 0) {
+          const v = document.createElement('div')
+          v.className = 'hist-exvol'
+          v.textContent = `Volume · ${fmtVol(vol, unit)}`
+          exEl.appendChild(v)
         }
         body.appendChild(exEl)
       }
