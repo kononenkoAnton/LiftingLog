@@ -124,13 +124,14 @@ still produces 0 unknowns and type-checks.
 - `scripts/parse-program.mjs` — deterministic doc → program.json parser
 - `.claude/skills/update-program/` — the re-parse skill + rules
 - `docs/superpowers/` — original spec and plan
-- `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; tested)
+- `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; `allSetsForRef` = all done sets for an exerciseRef over time, the all-time generalization of `lastActualFor`; tested)
 - `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
 - `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
 - `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel). Rest timer is a **fixed bottom bar** (`.lg-rest` is `position:fixed`; `.lg.resting` reserves space) and plays a gong + vibrates at 0
 - `src/lib/sound.ts` — rest-timer gong cue: a preloaded `<audio>` for `public/gong.mp3`, **unlocked on the set-complete tap** (mobile blocks audio until a gesture); `playRestDone()` fires at 0
 - `scripts/make-gong.mjs` — synthesizes `public/gong.mp3` (license-clean additive synthesis; `node scripts/make-gong.mjs` then encode to mp3)
-- `src/screens/history.ts` — past finished workouts (#/history)
+- `src/screens/history.ts` — past finished workouts (#/history). Exercise names link to the per-exercise history (`#/exercise/<encoded ref>`).
 - `src/screens/progress.ts` — Progress/Trends (`#/progress` + `#/progress/:lift`): e1RM sparkline per main barbell lift (squat/bench/deadlift) + per-session drill-down. Read-only over stored workouts; reuses the shared kg/lb unit. Add a lift by extending `LIFTS`.
+- `src/screens/exercise-history.ts` — per-exercise history (`#/exercise/:ref`): all done sets for one exercise (exact `exerciseRef`) over time, newest first. Companion to Progress; reuses `setWeightDisplay` + the shared kg/lb unit. Reached by tapping an exercise name in History.
 - `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)
 - `vite.config.ts` — Vite build + `vite-plugin-pwa` (service worker / PWA; the manifest stays hand-written in `public/manifest.webmanifest`)

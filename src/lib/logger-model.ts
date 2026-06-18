@@ -216,6 +216,35 @@ export function lastActualFor(history: Workout[], exerciseRef: string): LoggedSe
   return null
 }
 
+/** One finished workout's done sets for an exercise — the per-exercise history view. */
+export interface ExerciseOccurrence {
+  dateIso: string            // workout.startedAt
+  nameEn: string
+  nameRu: string
+  equipment: Equipment
+  isTimed: boolean
+  sets: LoggedSet[]          // that workout's DONE sets for the ref
+}
+
+/**
+ * Every finished workout's DONE sets for `exerciseRef`, newest first — the all-time
+ * generalization of `lastActualFor` (which returns only the latest). Matches the exact
+ * ref (per-variant); skips workouts with no done set for it.
+ */
+export function allSetsForRef(history: Workout[], exerciseRef: string): ExerciseOccurrence[] {
+  return history
+    .filter((w) => w.status === 'finished')
+    .map((w) => {
+      const ex = w.exercises.find((x) => x.exerciseRef === exerciseRef)
+      if (!ex) return null
+      const sets = ex.sets.filter((s) => s.done)
+      if (!sets.length) return null
+      return { dateIso: w.startedAt, nameEn: ex.nameEn, nameRu: ex.nameRu, equipment: ex.equipment, isTimed: !!ex.isTimed, sets }
+    })
+    .filter((o): o is ExerciseOccurrence => o !== null)
+    .sort((a, b) => Date.parse(b.dateIso) - Date.parse(a.dateIso))
+}
+
 /**
  * Pre-fill a WorkoutExercise from the user's last actual sets for it.
  * Added (non-coach) exercises adopt last session's full sets; coach exercises only

@@ -60,9 +60,10 @@ export function renderHistory(el: HTMLElement) {
       for (const ex of w.exercises) {
         const exEl = document.createElement('div')
         exEl.className = 'hist-ex'
-        const nm = document.createElement('div')
-        nm.className = 'hist-exname'
+        const nm = document.createElement('a')
+        nm.className = 'hist-exname hist-exlink'
         nm.textContent = ex.nameEn
+        nm.href = `#/exercise/${encodeURIComponent(ex.exerciseRef)}`
         exEl.appendChild(nm)
         for (const s of ex.sets) {
           const row = document.createElement('div')

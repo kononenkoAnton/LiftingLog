@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets, allSetsForRef } from './logger-model'
 import type { Session, Exercise } from '../data/types'
-import type { Workout, LoggedSet } from './logger-types'
+import type { Workout, LoggedSet, WorkoutExercise } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
 
 const mkSession = (exercises: Exercise[]): Session => ({
@@ -400,5 +400,57 @@ describe('fillEmptySets', () => {
     const before = JSON.parse(JSON.stringify(sets))
     fillEmptySets(sets, 0)
     expect(sets).toEqual(before)
+  })
+})
+
+describe('allSetsForRef', () => {
+  const set = (weightLb: number | null, reps: number | null, done = true): LoggedSet => ({ weightLb, reps, done, restSec: 90 })
+  const wex = (over: Partial<WorkoutExercise> & { exerciseRef: string; sets: LoggedSet[] }): WorkoutExercise => ({
+    nameEn: 'Back Squat', nameRu: 'Присед', equipment: 'barbell', isCoachPrescribed: true, coachTarget: '', ...over,
+  })
+  const wk = (over: Partial<Workout>): Workout => ({
+    id: 'x', sessionNum: 1, startedAt: '2026-06-01T00:00:00.000Z', endedAt: null,
+    pausedMs: 0, pausedAt: null, status: 'finished', coachMessage: '', exercises: [], ...over,
+  })
+
+  it('returns [] when no finished workout has the ref', () => {
+    expect(allSetsForRef([], 'coach:back-squat')).toEqual([])
+  })
+
+  it('returns one entry per finished workout with the ref, newest first', () => {
+    const older = wk({ id: 'a', startedAt: '2026-06-01T00:00:00.000Z', exercises: [wex({ exerciseRef: 'coach:back-squat', sets: [set(135, 5)] })] })
+    const newer = wk({ id: 'b', startedAt: '2026-06-10T00:00:00.000Z', exercises: [wex({ exerciseRef: 'coach:back-squat', sets: [set(145, 5)] })] })
+    const out = allSetsForRef([older, newer], 'coach:back-squat')
+    expect(out.map((o) => o.dateIso)).toEqual(['2026-06-10T00:00:00.000Z', '2026-06-01T00:00:00.000Z'])
+    expect(out[0].sets[0].weightLb).toBe(145)
+  })
+
+  it('includes only DONE sets and skips workouts with none done', () => {
+    const mixed = wk({ exercises: [wex({ exerciseRef: 'coach:back-squat', sets: [set(135, 5, true), set(155, 3, false)] })] })
+    const noneDone = wk({ id: 'z', startedAt: '2026-05-01T00:00:00.000Z', exercises: [wex({ exerciseRef: 'coach:back-squat', sets: [set(200, 5, false)] })] })
+    const out = allSetsForRef([mixed, noneDone], 'coach:back-squat')
+    expect(out).toHaveLength(1)
+    expect(out[0].sets.map((s) => s.weightLb)).toEqual([135])
+  })
+
+  it('matches the exact ref only (a different variant ref is excluded)', () => {
+    const w = wk({ exercises: [
+      wex({ exerciseRef: 'coach:bench-press', sets: [set(135, 5)] }),
+      wex({ exerciseRef: 'coach:bench-press-1s-pause-on-chest', nameEn: 'Bench Press, 1s pause on chest', sets: [set(115, 5)] }),
+    ] })
+    const out = allSetsForRef([w], 'coach:bench-press')
+    expect(out).toHaveLength(1)
+    expect(out[0].sets[0].weightLb).toBe(135)
+  })
+
+  it('skips unfinished workouts', () => {
+    const active = wk({ status: 'active', exercises: [wex({ exerciseRef: 'coach:back-squat', sets: [set(225, 5)] })] })
+    expect(allSetsForRef([active], 'coach:back-squat')).toEqual([])
+  })
+
+  it('carries the exercise metadata (name, equipment, isTimed)', () => {
+    const w = wk({ exercises: [wex({ exerciseRef: 'coach:plank', nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isTimed: true, sets: [set(0, 45)] })] })
+    const out = allSetsForRef([w], 'coach:plank')
+    expect(out[0]).toMatchObject({ nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isTimed: true })
   })
 })
