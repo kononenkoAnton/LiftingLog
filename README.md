@@ -29,6 +29,11 @@ reload prompt. Supabase API calls are cross-origin and pass straight to the netw
 so the SW never serves stale auth/data. The SW only runs in the production build
 (`npm run build` → `dist/sw.js`), not `npm run dev`.
 
+The rest timer keeps a near-silent audio loop playing during rest so the end-of-rest
+gong fires even when the phone is locked (best-effort); on return it catches up from
+the wall clock. Note: an iPhone's physical mute switch silences web audio, and iOS has
+no web vibration — in those cases the timer still shows the correct time on return.
+
 ## Plates & bar
 Bar = 45 lb. Plates per side = 45, 35, 25, 10, 5 lb — **no 2.5 lb microplates** (rarely
 stocked). Targets round UP **per side to the nearest 5 lb** (the smallest plate) — the
