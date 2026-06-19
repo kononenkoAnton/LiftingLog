@@ -189,6 +189,10 @@ export function workoutDurationSec(
   return Math.max(0, Math.round((end - Date.parse(w.startedAt) - w.pausedMs) / 1000))
 }
 
+/** Has a rest period ending at `endMs` elapsed by `nowMs`? Wall-clock; used by the
+ *  logger's visibility catch-up after the page was suspended (iOS screen-lock). */
+export const isRestElapsed = (endMs: number, nowMs: number): boolean => nowMs >= endMs
+
 /** Toggle pause: pausing stamps pausedAt; resuming folds the gap into pausedMs. */
 export function togglePause(w: Workout, nowMs: number): Workout {
   if (w.pausedAt) {

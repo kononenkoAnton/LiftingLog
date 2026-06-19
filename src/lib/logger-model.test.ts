@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets, allSetsForRef, exerciseVolumeLb, workoutVolumeLb } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets, allSetsForRef, exerciseVolumeLb, workoutVolumeLb, isRestElapsed } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout, LoggedSet, WorkoutExercise } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -498,4 +498,10 @@ describe('exerciseVolumeLb / workoutVolumeLb', () => {
     ])
     expect(workoutVolumeLb(w)).toBe(900 + 400)
   })
+})
+
+describe('isRestElapsed', () => {
+  it('is false before the end', () => { expect(isRestElapsed(1000, 999)).toBe(false) })
+  it('is true at the exact end', () => { expect(isRestElapsed(1000, 1000)).toBe(true) })
+  it('is true after the end', () => { expect(isRestElapsed(1000, 1001)).toBe(true) })
 })
