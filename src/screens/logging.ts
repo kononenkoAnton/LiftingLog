@@ -18,6 +18,7 @@ import { startKeepAlive, stopKeepAlive } from '../lib/keepalive'
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
 let restTimer: ReturnType<typeof setInterval> | null = null
 let rest: { exIdx: number; setIdx: number; endMs: number } | null = null
+let removeVisibility: (() => void) | null = null
 
 const clearElapsed = () => { if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null } }
 const clearRest = () => { if (restTimer) { clearInterval(restTimer); restTimer = null } }
@@ -338,14 +339,23 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
   // reach 0. On return, if the rest already elapsed (wall-clock), fire the cue now;
   // otherwise refresh the displayed remaining time (the interval may have been throttled).
   const onVisible = () => {
-    if (document.visibilityState !== 'visible' || edit || !rest) return
+    if (document.visibilityState !== 'visible') return
+    // Self-heal: navigating away via browser/gesture back bypasses the in-app exit
+    // buttons (and their teardown). If the logger DOM is gone from `el`, drop this
+    // document-level listener so it can't fire the cue against a stale screen. Mirrors
+    // the rest interval's `!e` self-clean.
+    if (!el.querySelector('#lgEx')) { document.removeEventListener('visibilitychange', onVisible); return }
+    if (edit || !rest) return
     if (isRestElapsed(rest.endMs, Date.now())) { fireRestDone(); return }
     const e = el.querySelector('#lgRestTime')
     if (e) e.textContent = fmt(Math.max(0, Math.round((rest.endMs - Date.now()) / 1000)))
   }
+  // Keep at most one visibility listener, even if a prior renderLogging leaked one
+  // (browser-back without teardown): remove any previous one before registering.
+  removeVisibility?.()
   document.addEventListener('visibilitychange', onVisible)
-  // Remove the document-level listener on every exit so it can't leak/double-fire across screens.
-  const teardown = () => { document.removeEventListener('visibilitychange', onVisible); clearAll() }
+  removeVisibility = () => document.removeEventListener('visibilitychange', onVisible)
+  const teardown = () => { removeVisibility?.(); removeVisibility = null; clearAll() }
 
   draw()
 }
