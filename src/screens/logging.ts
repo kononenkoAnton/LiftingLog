@@ -5,7 +5,7 @@
 // .value property.
 import type { WorkoutExercise, LoggedSet, Workout } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts, updateFinishedWorkout } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant, fillEmptySets } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant, fillEmptySets, isRestElapsed } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
@@ -91,7 +91,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
   const draw = () => {
     const w = current()
-    if (!w) { clearAll(); onExit(); return }
+    if (!w) { teardown(); onExit(); return }
     const paused = !!w.pausedAt
     const history = listWorkouts()
 
@@ -160,7 +160,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       // Go UP to the day's coach schedule, not the program root. Non-destructive: the
       // workout stays active (edit changes are already saved), and the schedule offers
       // Resume/Edit — so no confirm needed.
-      clearAll()
+      teardown()
       onExit()
     })
 
@@ -304,7 +304,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
           .map((ex) => ({ ...ex, sets: ex.sets.filter((s) => s.done) }))
           .filter((ex) => ex.sets.length > 0),
       }
-      clearAll()
+      teardown()
       await finishWorkout(finished, cur.coachMessage, new Date().toISOString())
       const s = getSession(sessionNum)
       if (s) await markDayFinished(sessionNum, s.exercises)
@@ -313,12 +313,12 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
     el.querySelector('#lgCancel')?.addEventListener('click', async () => {
       if (!confirm('Cancel this workout? All progress will be lost.')) return
-      clearAll()
+      teardown()
       await cancelWorkout()
       onExit()
     })
 
-    el.querySelector('#lgDone')?.addEventListener('click', () => { clearAll(); onExit() })
+    el.querySelector('#lgDone')?.addEventListener('click', () => { teardown(); onExit() })
   }
 
   // Fire the end-of-rest cue exactly once: stop the keep-alive loop, play the gong,
@@ -333,6 +333,19 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     if (af instanceof HTMLInputElement && af.closest('[data-ex]')) af.blur()
     draw()
   }
+
+  // Catch-up safety net: iOS suspends JS on screen-lock, so the rest interval may never
+  // reach 0. On return, if the rest already elapsed (wall-clock), fire the cue now;
+  // otherwise refresh the displayed remaining time (the interval may have been throttled).
+  const onVisible = () => {
+    if (document.visibilityState !== 'visible' || edit || !rest) return
+    if (isRestElapsed(rest.endMs, Date.now())) { fireRestDone(); return }
+    const e = el.querySelector('#lgRestTime')
+    if (e) e.textContent = fmt(Math.max(0, Math.round((rest.endMs - Date.now()) / 1000)))
+  }
+  document.addEventListener('visibilitychange', onVisible)
+  // Remove the document-level listener on every exit so it can't leak/double-fire across screens.
+  const teardown = () => { document.removeEventListener('visibilitychange', onVisible); clearAll() }
 
   draw()
 }
