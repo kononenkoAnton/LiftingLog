@@ -48,7 +48,7 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
           <div class="picker-check">${picked.has(e.id) ? '✓' : ''}</div>
         </div>`
       const frequentHtml = frequent.length
-        ? `<div class="picker-letter picker-freq">Frequently used</div>${frequent.map((e) => rowHtml(e, usage[e.id].count)).join('')}`
+        ? `<div class="picker-letter picker-freq">Frequently used</div>${frequent.map((e) => rowHtml(e, usage[e.id]?.count)).join('')}`
         : ''
       const groupsHtml = groups.map((g) => `
         <div class="picker-letter">${g.letter}</div>
