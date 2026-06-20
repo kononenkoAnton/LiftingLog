@@ -249,6 +249,39 @@ export function allSetsForRef(history: Workout[], exerciseRef: string): Exercise
     .sort((a, b) => Date.parse(b.dateIso) - Date.parse(a.dateIso))
 }
 
+/** Per-catalog-id usage rolled up from finished workouts (for the picker's "frequently used"). */
+export interface ExerciseUsage {
+  count: number        // total occurrences across finished workouts (same lift twice in one ⇒ +2)
+  lastUsedAt: string   // ISO of the most recent finished workout that used it
+}
+
+/**
+ * Tally how often each exercise was used across FINISHED workouts. `keyOf` maps a logged
+ * exercise to a stable key (the catalog id, via `makeUsageResolver`) or null to skip it.
+ * Every occurrence counts, so the same exercise twice in one workout adds 2. `lastUsedAt`
+ * keeps the latest `endedAt ?? startedAt` (ISO-8601 strings compare chronologically).
+ */
+export function tallyUsage(
+  history: Workout[],
+  keyOf: (we: WorkoutExercise) => string | null,
+): Record<string, ExerciseUsage> {
+  const out: Record<string, ExerciseUsage> = {}
+  for (const w of history) {
+    if (w.status !== 'finished') continue
+    const at = w.endedAt ?? w.startedAt
+    for (const ex of w.exercises) {
+      const k = keyOf(ex)
+      if (!k) continue
+      const prev = out[k]
+      out[k] = {
+        count: (prev?.count ?? 0) + 1,
+        lastUsedAt: prev && prev.lastUsedAt > at ? prev.lastUsedAt : at,
+      }
+    }
+  }
+  return out
+}
+
 /** Full lifted lb for one set: barbell adds the 45 lb bar, other equipment as-is; null plates → 0. */
 function setLoadLb(weightLb: number | null, equipment: Equipment): number {
   const w = weightLb ?? 0

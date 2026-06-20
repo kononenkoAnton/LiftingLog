@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets, allSetsForRef, exerciseVolumeLb, workoutVolumeLb, isRestElapsed } from './logger-model'
+import { restDefaultFor, workoutDurationSec, buildWorkoutExercises, coachTargetText, lastActualFor, catalogToWorkoutExercise, blankSet, togglePause, withLastActual, trainerLog, setWeightDisplay, completeProblem, canComplete, timedSeconds, altFromNotes, swapVariant, fillEmptySets, allSetsForRef, exerciseVolumeLb, workoutVolumeLb, isRestElapsed, tallyUsage } from './logger-model'
 import type { Session, Exercise } from '../data/types'
 import type { Workout, LoggedSet, WorkoutExercise } from './logger-types'
 import type { CatalogExercise } from '../data/catalog-types'
@@ -504,4 +504,43 @@ describe('isRestElapsed', () => {
   it('is false before the end', () => { expect(isRestElapsed(1000, 999)).toBe(false) })
   it('is true at the exact end', () => { expect(isRestElapsed(1000, 1000)).toBe(true) })
   it('is true after the end', () => { expect(isRestElapsed(1000, 1001)).toBe(true) })
+})
+
+describe('tallyUsage', () => {
+  const ex = (ref: string) => ({ exerciseRef: ref, nameEn: 'X', nameRu: 'X', equipment: 'barbell' as const, isCoachPrescribed: false, coachTarget: '', sets: [doneSet(100, 5)] })
+  const keyOf = (we: WorkoutExercise) => we.exerciseRef
+
+  it('returns {} for empty history', () => {
+    expect(tallyUsage([], keyOf)).toEqual({})
+  })
+  it('counts one occurrence per finished workout that has the exercise', () => {
+    const w1 = wk({ id: 'a', endedAt: '2026-06-01T00:00:00.000Z', exercises: [ex('bench')] })
+    const w2 = wk({ id: 'b', endedAt: '2026-06-08T00:00:00.000Z', exercises: [ex('bench')] })
+    expect(tallyUsage([w1, w2], keyOf)['bench'].count).toBe(2)
+  })
+  it('adds the amount when the same exercise appears twice in one workout', () => {
+    const w = wk({ exercises: [ex('bench'), ex('bench')] })
+    expect(tallyUsage([w], keyOf)['bench'].count).toBe(2)
+  })
+  it('ignores active and cancelled workouts', () => {
+    const active = wk({ status: 'active', exercises: [ex('bench')] })
+    const cancelled = wk({ status: 'cancelled', exercises: [ex('bench')] })
+    const finished = wk({ status: 'finished', exercises: [ex('bench')] })
+    expect(tallyUsage([active, cancelled, finished], keyOf)['bench'].count).toBe(1)
+  })
+  it('tracks lastUsedAt as the most recent endedAt', () => {
+    const older = wk({ id: 'a', endedAt: '2026-06-01T00:00:00.000Z', exercises: [ex('bench')] })
+    const newer = wk({ id: 'b', endedAt: '2026-06-20T00:00:00.000Z', exercises: [ex('bench')] })
+    expect(tallyUsage([newer, older], keyOf)['bench'].lastUsedAt).toBe('2026-06-20T00:00:00.000Z')
+  })
+  it('falls back to startedAt when endedAt is null', () => {
+    const w = wk({ endedAt: null, startedAt: '2026-06-05T00:00:00.000Z', exercises: [ex('bench')] })
+    expect(tallyUsage([w], keyOf)['bench'].lastUsedAt).toBe('2026-06-05T00:00:00.000Z')
+  })
+  it('skips exercises whose key resolves to null', () => {
+    const w = wk({ exercises: [ex('bench'), ex('coach:unknown')] })
+    const out = tallyUsage([w], (we) => (we.exerciseRef === 'coach:unknown' ? null : we.exerciseRef))
+    expect(out['coach:unknown']).toBeUndefined()
+    expect(out['bench'].count).toBe(1)
+  })
 })
