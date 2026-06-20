@@ -55,3 +55,30 @@ export function groupAlphabetical(list: CatalogExercise[], lang: 'en' | 'ru'): A
   }
   return groups
 }
+
+/**
+ * Build a resolver mapping a logged exercise → the catalog id it belongs to (or null).
+ * Tries exact `exerciseRef` (picker-added lifts store the catalog id), then a normalized
+ * name match on nameEn, then nameRu, across every name + alias — so coach-prescribed lifts
+ * (which use a `coach:<slug>` ref, not a catalog id) still resolve. First catalog entry
+ * wins on a duplicate normalized name. Structural param keeps this decoupled from the
+ * logger types.
+ */
+export function makeUsageResolver(
+  catalog: CatalogExercise[],
+): (we: { exerciseRef: string; nameEn: string; nameRu: string }) => string | null {
+  const ids = new Set(catalog.map((e) => e.id))
+  const byName = new Map<string, string>()
+  for (const e of catalog) {
+    for (const n of [e.nameEn, e.nameRu, ...e.aliasesEn, ...e.aliasesRu]) {
+      const key = normalizeForSearch(n)
+      if (key && !byName.has(key)) byName.set(key, e.id)
+    }
+  }
+  return (we) => {
+    if (ids.has(we.exerciseRef)) return we.exerciseRef
+    return byName.get(normalizeForSearch(we.nameEn))
+      ?? byName.get(normalizeForSearch(we.nameRu))
+      ?? null
+  }
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { searchCatalog, filterCatalog, groupAlphabetical, normalizeForSearch } from './catalog'
+import { searchCatalog, filterCatalog, groupAlphabetical, normalizeForSearch, makeUsageResolver } from './catalog'
 import type { CatalogExercise } from '../data/catalog-types'
 
 const FX: CatalogExercise[] = [
@@ -56,5 +56,34 @@ describe('groupAlphabetical', () => {
   })
   it('returns an empty array for an empty list', () => {
     expect(groupAlphabetical([], 'en')).toEqual([])
+  })
+})
+
+describe('makeUsageResolver', () => {
+  const resolve = makeUsageResolver(FX)
+  it('matches an exact catalog id (picker-added lift)', () => {
+    expect(resolve({ exerciseRef: 'leg-press', nameEn: 'whatever', nameRu: 'нечто' })).toBe('leg-press')
+  })
+  it('falls back to the English name for a coach ref', () => {
+    expect(resolve({ exerciseRef: 'coach:bench', nameEn: 'Bench Press (Barbell)', nameRu: '' })).toBe('bench-press-barbell')
+  })
+  it('falls back to the Russian name', () => {
+    expect(resolve({ exerciseRef: 'coach:bench', nameEn: 'no-match', nameRu: 'Жим лёжа' })).toBe('bench-press-barbell')
+  })
+  it('matches across the ё/е spelling drift', () => {
+    expect(resolve({ exerciseRef: 'coach:bench', nameEn: 'no-match', nameRu: 'жим лежа' })).toBe('bench-press-barbell')
+  })
+  it('matches an alias', () => {
+    expect(resolve({ exerciseRef: 'coach:sq', nameEn: 'back squat', nameRu: '' })).toBe('squat-barbell')
+  })
+  it('returns null on no match', () => {
+    expect(resolve({ exerciseRef: 'coach:unknown', nameEn: 'Nordic Curl', nameRu: '' })).toBeNull()
+  })
+  it('first catalog entry wins on a duplicate normalized name', () => {
+    const dup: CatalogExercise[] = [
+      { id: 'curl-a', nameEn: 'Curl', nameRu: 'Сгибание', ruIsFallback: false, equipment: 'dumbbell', bodyPart: 'Arms', aliasesEn: [], aliasesRu: [], defaultRestSec: 60 },
+      { id: 'curl-b', nameEn: 'Curl', nameRu: 'Сгибание', ruIsFallback: false, equipment: 'cable', bodyPart: 'Arms', aliasesEn: [], aliasesRu: [], defaultRestSec: 60 },
+    ]
+    expect(makeUsageResolver(dup)({ exerciseRef: 'coach:curl', nameEn: 'Curl', nameRu: '' })).toBe('curl-a')
   })
 })
