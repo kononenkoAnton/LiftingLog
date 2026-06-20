@@ -92,6 +92,7 @@ export function renderList(el: HTMLElement) {
         <div class="hero-actions">
           <a class="hist-link" href="#/history" aria-label="History">History</a>
           <a class="hist-link" href="#/progress" aria-label="Progress">Progress</a>
+          <a class="hist-link" href="#/bodyweight" aria-label="Bodyweight">Bodyweight</a>
           <span class="lang">EN · RU</span>
           ${supabase ? '<button class="signout" id="signout" type="button" aria-label="Sign out">⎋</button>' : ''}
         </div>

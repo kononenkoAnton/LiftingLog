@@ -60,6 +60,14 @@ where wger provides them, otherwise they fall back to English (flagged
 `ruIsFallback`). Hand-authored entries/overrides live in
 `scripts/catalog-extras.json` and are merged on top during the build.
 
+## Bodyweight
+A dedicated `#/bodyweight` screen records the lifter's actual bodyweight over time —
+one entry per day (re-logging overwrites), shown as a sparkline trend with an
+editable history. Stored as kilograms (Supabase `bodyweight` table + a localStorage
+mirror), displayed in the shared kg/lb unit. This is separate from the `bodyweight`
+*equipment type*, which logs only added load. Run `supabase/bodyweight.sql` once in
+the Supabase SQL editor to create the table.
+
 ## Updating the program (re-parse)
 Source: the trainer's Google Doc. The app reads `src/data/program.json`. When the
 trainer adds sessions, regenerate that file by re-parsing the Doc — translate +

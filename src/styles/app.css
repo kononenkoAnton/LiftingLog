@@ -267,3 +267,21 @@ body.has-active-bar .screen{padding-bottom:calc(82px + env(safe-area-inset-botto
 /* History volume (weight lifted) */
 .hist-total{font-family:var(--mono);font-size:13px;font-weight:800;color:var(--mint);margin:2px 0 12px}
 .hist-exvol{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dim);margin:5px 0 2px}
+
+/* Bodyweight screen */
+.bw-add{display:flex;align-items:center;gap:8px;margin:14px 0 4px}
+.bw-add .lg-inp{flex:1 1 auto}
+.bw-unit{color:var(--dim);font-size:14px;flex:0 0 auto}
+.bw-log{flex:0 0 auto;background:#2ea043;color:#fff;border:none;border-radius:8px;
+  padding:10px 14px;font-weight:700;font-size:15px;font-family:var(--sans);cursor:pointer}
+.bw-err{color:#e23b3b;font-size:13px;margin:2px 0 6px}
+.bw-list{margin-top:14px;display:flex;flex-direction:column}
+.bw-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.bw-date{flex:0 0 auto;color:var(--dim);font-size:14px;min-width:64px}
+.bw-weight{flex:1 1 auto;font-weight:700}
+.bw-row .bw-row-inp{flex:1 1 auto}
+.bw-edit,.bw-del,.bw-save,.bw-cancel{flex:0 0 auto;background:none;border:1px solid var(--line);
+  border-radius:6px;color:var(--ink);padding:6px 10px;font-size:14px;font-family:var(--sans);cursor:pointer}
+.bw-del{color:#e23b3b}
+.bw-save{background:#2ea043;color:#fff;border-color:#2ea043}
+.prog-bw-link{display:inline-block;margin-top:16px}
