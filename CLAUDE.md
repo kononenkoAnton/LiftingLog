@@ -114,8 +114,8 @@ still produces 0 unknowns and type-checks.
 - `src/data/{types,program.json,program}.ts` — schema, data, loader
 - `src/data/exercises.json` — bilingual exercise catalog (GENERATED; never hand-edit — use `scripts/catalog-extras.json` + `npm run build:catalog`)
 - `src/data/catalog-types.ts` — `CatalogExercise` schema
-- `src/lib/catalog.ts` — catalog search/filter (Cyrillic-aware, tested)
-- `src/components/exercise-picker.ts` — the add-exercise picker sheet
+- `src/lib/catalog.ts` — catalog search/filter (Cyrillic-aware, tested) + `makeUsageResolver`/`groupByUsage` for the picker's frequently-used section (exact-id then normalized-name match; frequent sorted by count→recency→name, deduped from A–Z)
+- `src/components/exercise-picker.ts` — the add-exercise picker sheet; shows a **Frequently used** section on top (usage count `(n)`, sorted by frequency then recency) and removes those items from the A–Z list (dedup); counts computed live via `tallyUsage`+`makeUsageResolver`
 - `scripts/build-catalog.mjs` — wger → exercises.json importer (run `npm run build:catalog`)
 - `scripts/catalog-ru.json` — Russian-name overlay (id→nameRu) merged into the catalog by `build-catalog.mjs`
 - `src/screens/{list,session}.ts` — program list, session detail
@@ -124,7 +124,7 @@ still produces 0 unknowns and type-checks.
 - `scripts/parse-program.mjs` — deterministic doc → program.json parser
 - `.claude/skills/update-program/` — the re-parse skill + rules
 - `docs/superpowers/` — original spec and plan
-- `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; `allSetsForRef` = all done sets for an exerciseRef over time; `exerciseVolumeLb`/`workoutVolumeLb` = total weight lifted (Σ full-weight × reps, barbell incl. the 45 lb bar, timed/null-rep sets skipped); tested)
+- `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; `allSetsForRef` = all done sets for an exerciseRef over time; `exerciseVolumeLb`/`workoutVolumeLb` = total weight lifted (Σ full-weight × reps, barbell incl. the 45 lb bar, timed/null-rep sets skipped); `tallyUsage` = per-catalog-id usage `{count,lastUsedAt}` over finished workouts (every occurrence counts; same lift twice in a session ⇒ +2); tested)
 - `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
 - `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
 - `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel). Rest timer is a **fixed bottom bar** (`.lg-rest` is `position:fixed`; `.lg.resting` reserves space) and plays a gong + vibrates at 0. Stays reliable when backgrounded via a **silent keep-alive loop** (`keepalive.ts`) plus a **`visibilitychange` catch-up** (`fireRestDone`) that fires the late cue from wall-clock on return; all rest teardown funnels through `endRest()`.
