@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { searchCatalog, filterCatalog, groupAlphabetical, normalizeForSearch, makeUsageResolver } from './catalog'
+import { searchCatalog, filterCatalog, groupAlphabetical, normalizeForSearch, makeUsageResolver, groupByUsage } from './catalog'
 import type { CatalogExercise } from '../data/catalog-types'
 
 const FX: CatalogExercise[] = [
@@ -85,5 +85,29 @@ describe('makeUsageResolver', () => {
       { id: 'curl-b', nameEn: 'Curl', nameRu: 'Сгибание', ruIsFallback: false, equipment: 'cable', bodyPart: 'Arms', aliasesEn: [], aliasesRu: [], defaultRestSec: 60 },
     ]
     expect(makeUsageResolver(dup)({ exerciseRef: 'coach:curl', nameEn: 'Curl', nameRu: '' })).toBe('curl-a')
+  })
+})
+
+describe('groupByUsage', () => {
+  it('returns no frequent and everything in A–Z when usage is empty', () => {
+    const { frequent, groups } = groupByUsage(FX, 'en', {})
+    expect(frequent).toEqual([])
+    expect(groups.map((g) => g.letter)).toEqual(['B', 'L', 'S'])
+  })
+  it('pins used items to frequent and removes them from A–Z (dedup)', () => {
+    const usage = { 'bench-press-barbell': { count: 3, lastUsedAt: '2026-06-10T00:00:00.000Z' } }
+    const { frequent, groups } = groupByUsage(FX, 'en', usage)
+    expect(frequent.map((e) => e.id)).toEqual(['bench-press-barbell'])
+    expect(groups.flatMap((g) => g.items.map((e) => e.id))).not.toContain('bench-press-barbell')
+    expect(groups.map((g) => g.letter)).toEqual(['L', 'S']) // B is gone
+  })
+  it('sorts frequent by count desc, then most-recent, then name', () => {
+    const usage = {
+      'squat-barbell': { count: 5, lastUsedAt: '2026-06-01T00:00:00.000Z' },
+      'bench-press-barbell': { count: 5, lastUsedAt: '2026-06-20T00:00:00.000Z' }, // same count, newer
+      'leg-press': { count: 2, lastUsedAt: '2026-06-20T00:00:00.000Z' },
+    }
+    const { frequent } = groupByUsage(FX, 'en', usage)
+    expect(frequent.map((e) => e.id)).toEqual(['bench-press-barbell', 'squat-barbell', 'leg-press'])
   })
 })

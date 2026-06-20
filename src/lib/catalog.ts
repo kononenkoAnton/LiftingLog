@@ -6,6 +6,7 @@
 import catalog from '../data/exercises.json'
 import type { CatalogExercise } from '../data/catalog-types'
 import type { Equipment } from '../data/types'
+import type { ExerciseUsage } from './logger-model'
 
 export type { CatalogExercise }
 
@@ -81,4 +82,30 @@ export function makeUsageResolver(
       ?? byName.get(normalizeForSearch(we.nameRu))
       ?? null
   }
+}
+
+export interface UsageGroups { frequent: CatalogExercise[]; groups: AlphaGroup[] }
+
+/**
+ * Split the catalog into a "frequently used" list (count > 0, sorted count desc →
+ * most-recent desc → name) and the alphabetical A–Z groups of everything else. Used items
+ * appear only in `frequent` (dedup). `usage` is keyed by catalog id.
+ */
+export function groupByUsage(
+  list: CatalogExercise[],
+  lang: 'en' | 'ru',
+  usage: Record<string, ExerciseUsage>,
+): UsageGroups {
+  const nameOf = (e: CatalogExercise) => (lang === 'ru' ? e.nameRu : e.nameEn)
+  const locale = lang === 'ru' ? 'ru' : 'en'
+  const used: CatalogExercise[] = []
+  const rest: CatalogExercise[] = []
+  for (const e of list) ((usage[e.id]?.count ?? 0) > 0 ? used : rest).push(e)
+  const frequent = used.sort((a, b) => {
+    const ua = usage[a.id], ub = usage[b.id]
+    return (ub.count - ua.count)
+      || ub.lastUsedAt.localeCompare(ua.lastUsedAt)
+      || nameOf(a).localeCompare(nameOf(b), locale)
+  })
+  return { frequent, groups: groupAlphabetical(rest, lang) }
 }
