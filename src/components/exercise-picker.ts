@@ -3,15 +3,18 @@
 //
 // SECURITY: catalog names are trusted static data, so innerHTML is fine here.
 // The logger's user-entered notes are NOT — those must use textContent.
-import { loadCatalog, searchCatalog, filterCatalog, groupAlphabetical } from '../lib/catalog'
+import { loadCatalog, searchCatalog, filterCatalog, groupByUsage, makeUsageResolver } from '../lib/catalog'
 import type { CatalogExercise } from '../data/catalog-types'
 import type { Equipment } from '../data/types'
+import { tallyUsage } from '../lib/logger-model'
+import { listWorkouts } from '../lib/workouts'
 
 export interface PickerOptions { lang?: 'en' | 'ru'; multi?: boolean }
 
 export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExercise[]> {
   const lang = opts.lang ?? 'en'
   const all = loadCatalog()
+  const usage = tallyUsage(listWorkouts(), makeUsageResolver(all))
   const bodyParts = [...new Set(all.map((e) => e.bodyPart))].sort()
   const equipment = [...new Set(all.map((e) => e.equipment))].sort()
 
@@ -34,9 +37,22 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
         // select values come from the catalog's own equipment set, so this cast is safe
         equipment: (fEquip || undefined) as Equipment | undefined,
       })
-      const groups = groupAlphabetical(list, lang)
+      const { frequent, groups } = groupByUsage(list, lang, usage)
       const nameOf = (e: CatalogExercise) => (lang === 'ru' ? e.nameRu : e.nameEn)
       const altOf = (e: CatalogExercise) => { const alt = lang === 'ru' ? e.nameEn : e.nameRu; return alt && alt !== nameOf(e) ? alt : '' }
+      // count is a number, names are trusted catalog data — safe in this innerHTML template.
+      const rowHtml = (e: CatalogExercise, count?: number) => `
+        <div class="picker-row ${picked.has(e.id) ? 'on' : ''}" data-id="${e.id}">
+          <div class="picker-av">${nameOf(e).charAt(0)}</div>
+          <div class="picker-meta"><div class="t">${nameOf(e)}${count ? ` <span class="picker-count">(${count})</span>` : ''}</div>${altOf(e) ? `<div class="picker-ru">${altOf(e)}</div>` : ''}<div class="s">${e.bodyPart} · ${e.equipment}</div></div>
+          <div class="picker-check">${picked.has(e.id) ? '✓' : ''}</div>
+        </div>`
+      const frequentHtml = frequent.length
+        ? `<div class="picker-letter picker-freq">Frequently used</div>${frequent.map((e) => rowHtml(e, usage[e.id]?.count)).join('')}`
+        : ''
+      const groupsHtml = groups.map((g) => `
+        <div class="picker-letter">${g.letter}</div>
+        ${g.items.map((e) => rowHtml(e)).join('')}`).join('')
 
       root.innerHTML = `
         <div class="picker-head">
@@ -50,15 +66,7 @@ export function openExercisePicker(opts: PickerOptions = {}): Promise<CatalogExe
           <select id="pkEquip"><option value="">Any equipment</option>${equipment.map((q) => `<option ${q === fEquip ? 'selected' : ''}>${q}</option>`).join('')}</select>
         </div>
         <div class="picker-list" id="pkList">
-          ${groups.map((g) => `
-            <div class="picker-letter">${g.letter}</div>
-            ${g.items.map((e) => `
-              <div class="picker-row ${picked.has(e.id) ? 'on' : ''}" data-id="${e.id}">
-                <div class="picker-av">${nameOf(e).charAt(0)}</div>
-                <div class="picker-meta"><div class="t">${nameOf(e)}</div>${altOf(e) ? `<div class="picker-ru">${altOf(e)}</div>` : ''}<div class="s">${e.bodyPart} · ${e.equipment}</div></div>
-                <div class="picker-check">${picked.has(e.id) ? '✓' : ''}</div>
-              </div>`).join('')}
-          `).join('') || '<div class="picker-empty">No matches</div>'}
+          ${(frequentHtml + groupsHtml) || '<div class="picker-empty">No matches</div>'}
         </div>`
 
       root.querySelector('#pkX')!.addEventListener('click', () => close([]))

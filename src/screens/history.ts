@@ -8,7 +8,7 @@ import type { Workout } from '../lib/logger-types'
 import { toast } from '../lib/toast'
 
 const fmtDur = (sec: number) => `${Math.floor(sec / 60)}m`
-const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: '2-digit' })
 // Total weight lifted (lb) → the chosen unit, with thousands separators.
 const fmtVol = (lb: number, unit: Unit): string => {
   const v = unit === 'kg' ? Math.round(lb / KG_TO_LB) : Math.round(lb)
@@ -17,7 +17,8 @@ const fmtVol = (lb: number, unit: Unit): string => {
 
 let openId: string | null = null
 
-export function renderHistory(el: HTMLElement) {
+export function renderHistory(el: HTMLElement, openIdParam?: string) {
+  if (openIdParam) openId = openIdParam // deep-link / post-finish: pre-expand this workout
   let unit = getUnit()
   const draw = () => {
     const finished = listWorkouts()
@@ -56,17 +57,26 @@ export function renderHistory(el: HTMLElement) {
     head.className = 'hist-head'
     head.type = 'button'
     const dur = w.endedAt ? workoutDurationSec(w, Date.parse(w.endedAt)) : 0
-    head.textContent = `Day ${w.sessionNum ?? '—'} · ${dateLabel(w.startedAt)} · ${fmtDur(dur)} · ${w.exercises.length} ex`
+    const topRow = document.createElement('div')
+    topRow.className = 'hist-head-row'
+    const meta = document.createElement('span')
+    meta.textContent = `Day ${w.sessionNum ?? '—'} · ${fmtDur(dur)} · ${w.exercises.length} ex`
+    const date = document.createElement('span')
+    date.className = 'hist-head-date'
+    date.textContent = dateLabel(w.startedAt)
+    topRow.appendChild(meta)
+    topRow.appendChild(date)
+    const vol = document.createElement('span')
+    vol.className = 'hist-head-vol'
+    vol.textContent = `Total lifted · ${fmtVol(workoutVolumeLb(w), unit)}`
+    head.appendChild(topRow)
+    head.appendChild(vol)
     head.addEventListener('click', () => { openId = openId === w.id ? null : w.id; draw() })
     root.appendChild(head)
 
     if (openId === w.id) {
       const body = document.createElement('div')
       body.className = 'hist-body'
-      const total = document.createElement('div')
-      total.className = 'hist-total'
-      total.textContent = `Total lifted · ${fmtVol(workoutVolumeLb(w), unit)}`
-      body.appendChild(total)
       for (const ex of w.exercises) {
         const exEl = document.createElement('div')
         exEl.className = 'hist-ex'

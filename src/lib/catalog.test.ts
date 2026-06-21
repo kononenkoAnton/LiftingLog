@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { searchCatalog, filterCatalog, groupAlphabetical, normalizeForSearch } from './catalog'
+import { searchCatalog, filterCatalog, groupAlphabetical, normalizeForSearch, makeUsageResolver, groupByUsage } from './catalog'
 import type { CatalogExercise } from '../data/catalog-types'
 
 const FX: CatalogExercise[] = [
@@ -56,5 +56,58 @@ describe('groupAlphabetical', () => {
   })
   it('returns an empty array for an empty list', () => {
     expect(groupAlphabetical([], 'en')).toEqual([])
+  })
+})
+
+describe('makeUsageResolver', () => {
+  const resolve = makeUsageResolver(FX)
+  it('matches an exact catalog id (picker-added lift)', () => {
+    expect(resolve({ exerciseRef: 'leg-press', nameEn: 'whatever', nameRu: 'нечто' })).toBe('leg-press')
+  })
+  it('falls back to the English name for a coach ref', () => {
+    expect(resolve({ exerciseRef: 'coach:bench', nameEn: 'Bench Press (Barbell)', nameRu: '' })).toBe('bench-press-barbell')
+  })
+  it('falls back to the Russian name', () => {
+    expect(resolve({ exerciseRef: 'coach:bench', nameEn: 'no-match', nameRu: 'Жим лёжа' })).toBe('bench-press-barbell')
+  })
+  it('matches across the ё/е spelling drift', () => {
+    expect(resolve({ exerciseRef: 'coach:bench', nameEn: 'no-match', nameRu: 'жим лежа' })).toBe('bench-press-barbell')
+  })
+  it('matches an alias', () => {
+    expect(resolve({ exerciseRef: 'coach:sq', nameEn: 'back squat', nameRu: '' })).toBe('squat-barbell')
+  })
+  it('returns null on no match', () => {
+    expect(resolve({ exerciseRef: 'coach:unknown', nameEn: 'Nordic Curl', nameRu: '' })).toBeNull()
+  })
+  it('first catalog entry wins on a duplicate normalized name', () => {
+    const dup: CatalogExercise[] = [
+      { id: 'curl-a', nameEn: 'Curl', nameRu: 'Сгибание', ruIsFallback: false, equipment: 'dumbbell', bodyPart: 'Arms', aliasesEn: [], aliasesRu: [], defaultRestSec: 60 },
+      { id: 'curl-b', nameEn: 'Curl', nameRu: 'Сгибание', ruIsFallback: false, equipment: 'cable', bodyPart: 'Arms', aliasesEn: [], aliasesRu: [], defaultRestSec: 60 },
+    ]
+    expect(makeUsageResolver(dup)({ exerciseRef: 'coach:curl', nameEn: 'Curl', nameRu: '' })).toBe('curl-a')
+  })
+})
+
+describe('groupByUsage', () => {
+  it('returns no frequent and everything in A–Z when usage is empty', () => {
+    const { frequent, groups } = groupByUsage(FX, 'en', {})
+    expect(frequent).toEqual([])
+    expect(groups.map((g) => g.letter)).toEqual(['B', 'L', 'S'])
+  })
+  it('pins used items to frequent and removes them from A–Z (dedup)', () => {
+    const usage = { 'bench-press-barbell': { count: 3, lastUsedAt: '2026-06-10T00:00:00.000Z' } }
+    const { frequent, groups } = groupByUsage(FX, 'en', usage)
+    expect(frequent.map((e) => e.id)).toEqual(['bench-press-barbell'])
+    expect(groups.flatMap((g) => g.items.map((e) => e.id))).not.toContain('bench-press-barbell')
+    expect(groups.map((g) => g.letter)).toEqual(['L', 'S']) // B is gone
+  })
+  it('sorts frequent by count desc, then most-recent, then name', () => {
+    const usage = {
+      'squat-barbell': { count: 5, lastUsedAt: '2026-06-01T00:00:00.000Z' },
+      'bench-press-barbell': { count: 5, lastUsedAt: '2026-06-20T00:00:00.000Z' }, // same count, newer
+      'leg-press': { count: 2, lastUsedAt: '2026-06-20T00:00:00.000Z' },
+    }
+    const { frequent } = groupByUsage(FX, 'en', usage)
+    expect(frequent.map((e) => e.id)).toEqual(['bench-press-barbell', 'squat-barbell', 'leg-press'])
   })
 })

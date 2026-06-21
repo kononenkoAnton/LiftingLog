@@ -6,6 +6,7 @@
 import catalog from '../data/exercises.json'
 import type { CatalogExercise } from '../data/catalog-types'
 import type { Equipment } from '../data/types'
+import type { ExerciseUsage } from './logger-model'
 
 export type { CatalogExercise }
 
@@ -54,4 +55,57 @@ export function groupAlphabetical(list: CatalogExercise[], lang: 'en' | 'ru'): A
     else last.items.push(e)
   }
   return groups
+}
+
+/**
+ * Build a resolver mapping a logged exercise → the catalog id it belongs to (or null).
+ * Tries exact `exerciseRef` (picker-added lifts store the catalog id), then a normalized
+ * name match on nameEn, then nameRu, across every name + alias — so coach-prescribed lifts
+ * (which use a `coach:<slug>` ref, not a catalog id) still resolve. First catalog entry
+ * wins on a duplicate normalized name. Structural param keeps this decoupled from the
+ * logger types.
+ */
+export function makeUsageResolver(
+  catalog: CatalogExercise[],
+): (we: { exerciseRef: string; nameEn: string; nameRu: string }) => string | null {
+  const ids = new Set(catalog.map((e) => e.id))
+  const byName = new Map<string, string>()
+  for (const e of catalog) {
+    for (const n of [e.nameEn, e.nameRu, ...e.aliasesEn, ...e.aliasesRu]) {
+      const key = normalizeForSearch(n)
+      if (key && !byName.has(key)) byName.set(key, e.id)
+    }
+  }
+  return (we) => {
+    if (ids.has(we.exerciseRef)) return we.exerciseRef
+    return byName.get(normalizeForSearch(we.nameEn))
+      ?? byName.get(normalizeForSearch(we.nameRu))
+      ?? null
+  }
+}
+
+export interface UsageGroups { frequent: CatalogExercise[]; groups: AlphaGroup[] }
+
+/**
+ * Split the catalog into a "frequently used" list (count > 0, sorted count desc →
+ * most-recent desc → name) and the alphabetical A–Z groups of everything else. Used items
+ * appear only in `frequent` (dedup). `usage` is keyed by catalog id.
+ */
+export function groupByUsage(
+  list: CatalogExercise[],
+  lang: 'en' | 'ru',
+  usage: Record<string, ExerciseUsage>,
+): UsageGroups {
+  const nameOf = (e: CatalogExercise) => (lang === 'ru' ? e.nameRu : e.nameEn)
+  const locale = lang === 'ru' ? 'ru' : 'en'
+  const used: CatalogExercise[] = []
+  const rest: CatalogExercise[] = []
+  for (const e of list) ((usage[e.id]?.count ?? 0) > 0 ? used : rest).push(e)
+  const frequent = used.sort((a, b) => {
+    const ua = usage[a.id], ub = usage[b.id]
+    return (ub.count - ua.count)
+      || ub.lastUsedAt.localeCompare(ua.lastUsedAt)
+      || nameOf(a).localeCompare(nameOf(b), locale)
+  })
+  return { frequent, groups: groupAlphabetical(rest, lang) }
 }

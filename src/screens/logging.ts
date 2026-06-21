@@ -5,7 +5,7 @@
 // .value property.
 import type { WorkoutExercise, LoggedSet, Workout } from '../lib/logger-types'
 import { getActiveWorkout, saveActiveWorkout, finishWorkout, cancelWorkout, listWorkouts, updateFinishedWorkout } from '../lib/workouts'
-import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant, fillEmptySets } from '../lib/logger-model'
+import { workoutDurationSec, togglePause, blankSet, catalogToWorkoutExercise, lastActualFor, withLastActual, canComplete, completeProblem, swapVariant, fillEmptySets, isRestElapsed } from '../lib/logger-model'
 import { openExercisePicker } from '../components/exercise-picker'
 import { getSession } from '../data/program'
 import { finish as markDayFinished } from '../lib/progress'
@@ -13,14 +13,18 @@ import { platesForPlateLb, fullBarLb } from '../lib/load'
 import { PLATE_COLOR } from '../components/barbell-svg'
 import { toast, restCompleteToast } from '../lib/toast'
 import { unlockAudio, playRestDone } from '../lib/sound'
+import { startKeepAlive, stopKeepAlive } from '../lib/keepalive'
 
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
 let restTimer: ReturnType<typeof setInterval> | null = null
 let rest: { exIdx: number; setIdx: number; endMs: number } | null = null
+let removeVisibility: (() => void) | null = null
 
 const clearElapsed = () => { if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null } }
 const clearRest = () => { if (restTimer) { clearInterval(restTimer); restTimer = null } }
-const clearAll = () => { clearElapsed(); clearRest(); rest = null }
+// End the current rest period: drop the timer state AND stop the keep-alive loop.
+const endRest = () => { rest = null; stopKeepAlive() }
+const clearAll = () => { clearElapsed(); clearRest(); endRest() }
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`
 
 function plateChips(perSide: { plate: number; count: number }[]): string {
@@ -88,7 +92,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
   const draw = () => {
     const w = current()
-    if (!w) { clearAll(); onExit(); return }
+    if (!w) { teardown(); onExit(); return }
     const paused = !!w.pausedAt
     const history = listWorkouts()
 
@@ -137,25 +141,17 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     if (!edit && rest) {
       restTimer = setInterval(() => {
         const e = el.querySelector('#lgRestTime')
-        if (!rest || !e) { rest = null; clearRest(); return }
+        if (!rest || !e) { endRest(); clearRest(); return }
         const remain = Math.max(0, Math.round((rest.endMs - Date.now()) / 1000))
         e.textContent = fmt(remain)
-        if (remain <= 0) {
-          playRestDone() // gong
-          navigator.vibrate?.(200)
-          restCompleteToast()
-          rest = null
-          const af = document.activeElement
-          if (af instanceof HTMLInputElement && af.closest('[data-ex]')) af.blur()
-          draw()
-        }
+        if (remain <= 0) fireRestDone()
       }, 1000)
     }
 
     el.querySelector('#lgPause')?.addEventListener('click', () => {
       const cur = current(); if (!cur) return
       const next = togglePause(cur, Date.now())
-      if (next.pausedAt) { rest = null; clearRest() }
+      if (next.pausedAt) { endRest(); clearRest() }
       persist(next)
       draw()
     })
@@ -165,7 +161,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       // Go UP to the day's coach schedule, not the program root. Non-destructive: the
       // workout stays active (edit changes are already saved), and the schedule offers
       // Resume/Edit — so no confirm needed.
-      clearAll()
+      teardown()
       onExit()
     })
 
@@ -212,9 +208,10 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         // (left un-checked) so the user doesn't retype the same numbers.
         if (st.done) cur.exercises[exi].sets = fillEmptySets(cur.exercises[exi].sets, si)
         if (!edit && st.done) {
-          unlockAudio() // prime the gong within this tap so it can fire when rest ends
+          unlockAudio()    // prime the gong within this tap so it can fire when rest ends
+          startKeepAlive() // hold the page alive so the gong fires even if the screen locks
           rest = { exIdx: exi, setIdx: si, endMs: Date.now() + st.restSec * 1000 }
-        } else if (rest && rest.exIdx === exi && rest.setIdx === si) rest = null
+        } else if (rest && rest.exIdx === exi && rest.setIdx === si) endRest()
         persist(cur)
         draw()
       })
@@ -228,7 +225,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const removedExercise = cur.exercises[exi].sets.length === 0
         if (removedExercise) cur.exercises.splice(exi, 1)
         if (rest) {
-          if (rest.exIdx === exi) rest = null
+          if (rest.exIdx === exi) endRest()
           else if (removedExercise && rest.exIdx > exi) rest.exIdx--
         }
         persist(cur)
@@ -257,7 +254,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const name = cur.exercises[exi]?.nameEn ?? 'this exercise'
         if (!confirm(`Remove ${name} and all its logged sets?`)) return
         cur.exercises.splice(exi, 1)
-        if (rest) { if (rest.exIdx === exi) rest = null; else if (rest.exIdx > exi) rest.exIdx-- }
+        if (rest) { if (rest.exIdx === exi) endRest(); else if (rest.exIdx > exi) rest.exIdx-- }
         persist(cur)
         draw()
       })
@@ -268,7 +265,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
         const cur = current(); if (!cur) return
         const exi = Number(btn.dataset.ex)
         cur.exercises[exi] = swapVariant(cur.exercises[exi])
-        if (rest && rest.exIdx === exi) rest = null // swapped-in variant has different sets
+        if (rest && rest.exIdx === exi) endRest() // swapped-in variant has different sets
         persist(cur)
         draw()
       })
@@ -285,7 +282,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
     }
     el.querySelector('#lgRestMinus')?.addEventListener('click', () => adjustRest(-15))
     el.querySelector('#lgRestPlus')?.addEventListener('click', () => adjustRest(15))
-    el.querySelector('#lgRestSkip')?.addEventListener('click', () => { rest = null; draw() })
+    el.querySelector('#lgRestSkip')?.addEventListener('click', () => { endRest(); draw() })
 
     el.querySelector('#lgAddEx')!.addEventListener('click', async () => {
       const chosen = await openExercisePicker({ lang: 'en', multi: true })
@@ -308,21 +305,57 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
           .map((ex) => ({ ...ex, sets: ex.sets.filter((s) => s.done) }))
           .filter((ex) => ex.sets.length > 0),
       }
-      clearAll()
+      teardown()
       await finishWorkout(finished, cur.coachMessage, new Date().toISOString())
       const s = getSession(sessionNum)
       if (s) await markDayFinished(sessionNum, s.exercises)
-      onExit()
+      location.hash = `#/history/${encodeURIComponent(finished.id)}` // land on History, this workout expanded
     })
 
     el.querySelector('#lgCancel')?.addEventListener('click', async () => {
       if (!confirm('Cancel this workout? All progress will be lost.')) return
-      clearAll()
+      teardown()
       await cancelWorkout()
       onExit()
     })
 
-    el.querySelector('#lgDone')?.addEventListener('click', () => { clearAll(); onExit() })
+    el.querySelector('#lgDone')?.addEventListener('click', () => { teardown(); onExit() })
   }
+
+  // Fire the end-of-rest cue exactly once: stop the keep-alive loop, play the gong,
+  // vibrate (no-op on iOS), toast, drop focus out of any set input, repaint. Shared by
+  // the interval tick and the visibility catch-up so a backgrounded timer completes once.
+  const fireRestDone = () => {
+    endRest()                 // stop the keep-alive first so the gong has the audio channel
+    playRestDone()            // gong
+    navigator.vibrate?.(200)  // no-op on iOS (no Vibration API)
+    restCompleteToast()
+    const af = document.activeElement
+    if (af instanceof HTMLInputElement && af.closest('[data-ex]')) af.blur()
+    draw()
+  }
+
+  // Catch-up safety net: iOS suspends JS on screen-lock, so the rest interval may never
+  // reach 0. On return, if the rest already elapsed (wall-clock), fire the cue now;
+  // otherwise refresh the displayed remaining time (the interval may have been throttled).
+  const onVisible = () => {
+    if (document.visibilityState !== 'visible') return
+    // Self-heal: navigating away via browser/gesture back bypasses the in-app exit
+    // buttons (and their teardown). If the logger DOM is gone from `el`, drop this
+    // document-level listener so it can't fire the cue against a stale screen. Mirrors
+    // the rest interval's `!e` self-clean.
+    if (!el.querySelector('#lgEx')) { document.removeEventListener('visibilitychange', onVisible); return }
+    if (edit || !rest) return
+    if (isRestElapsed(rest.endMs, Date.now())) { fireRestDone(); return }
+    const e = el.querySelector('#lgRestTime')
+    if (e) e.textContent = fmt(Math.max(0, Math.round((rest.endMs - Date.now()) / 1000)))
+  }
+  // Keep at most one visibility listener, even if a prior renderLogging leaked one
+  // (browser-back without teardown): remove any previous one before registering.
+  removeVisibility?.()
+  document.addEventListener('visibilitychange', onVisible)
+  removeVisibility = () => document.removeEventListener('visibilitychange', onVisible)
+  const teardown = () => { removeVisibility?.(); removeVisibility = null; clearAll() }
+
   draw()
 }

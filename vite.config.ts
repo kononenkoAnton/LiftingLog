@@ -15,7 +15,7 @@ export default defineConfig({
         // Precache the built app shell so it loads offline. Supabase API calls
         // are cross-origin and pass straight through to the network (no stale
         // auth/data cached). Large install-only assets aside, this stays lean.
-        globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,png,svg,webmanifest,wav,mp3}'],
         navigateFallback: 'index.html',
       },
     }),
