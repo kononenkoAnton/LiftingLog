@@ -61,7 +61,7 @@ export function renderHistory(el: HTMLElement, openIdParam?: string) {
     meta.textContent = `Day ${w.sessionNum ?? '—'} · ${dateLabel(w.startedAt)} · ${fmtDur(dur)} · ${w.exercises.length} ex`
     const vol = document.createElement('span')
     vol.className = 'hist-head-vol'
-    vol.textContent = fmtVol(workoutVolumeLb(w), unit)
+    vol.textContent = `Total lifted · ${fmtVol(workoutVolumeLb(w), unit)}`
     head.appendChild(meta)
     head.appendChild(vol)
     head.addEventListener('click', () => { openId = openId === w.id ? null : w.id; draw() })
