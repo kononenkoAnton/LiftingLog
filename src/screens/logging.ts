@@ -309,7 +309,7 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
       await finishWorkout(finished, cur.coachMessage, new Date().toISOString())
       const s = getSession(sessionNum)
       if (s) await markDayFinished(sessionNum, s.exercises)
-      onExit()
+      location.hash = `#/history/${encodeURIComponent(finished.id)}` // land on History, this workout expanded
     })
 
     el.querySelector('#lgCancel')?.addEventListener('click', async () => {
