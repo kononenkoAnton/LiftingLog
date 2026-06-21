@@ -8,7 +8,7 @@ import type { Workout } from '../lib/logger-types'
 import { toast } from '../lib/toast'
 
 const fmtDur = (sec: number) => `${Math.floor(sec / 60)}m`
-const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: '2-digit' })
 // Total weight lifted (lb) → the chosen unit, with thousands separators.
 const fmtVol = (lb: number, unit: Unit): string => {
   const v = unit === 'kg' ? Math.round(lb / KG_TO_LB) : Math.round(lb)
@@ -57,12 +57,19 @@ export function renderHistory(el: HTMLElement, openIdParam?: string) {
     head.className = 'hist-head'
     head.type = 'button'
     const dur = w.endedAt ? workoutDurationSec(w, Date.parse(w.endedAt)) : 0
+    const topRow = document.createElement('div')
+    topRow.className = 'hist-head-row'
     const meta = document.createElement('span')
-    meta.textContent = `Day ${w.sessionNum ?? '—'} · ${dateLabel(w.startedAt)} · ${fmtDur(dur)} · ${w.exercises.length} ex`
+    meta.textContent = `Day ${w.sessionNum ?? '—'} · ${fmtDur(dur)} · ${w.exercises.length} ex`
+    const date = document.createElement('span')
+    date.className = 'hist-head-date'
+    date.textContent = dateLabel(w.startedAt)
+    topRow.appendChild(meta)
+    topRow.appendChild(date)
     const vol = document.createElement('span')
     vol.className = 'hist-head-vol'
     vol.textContent = `Total lifted · ${fmtVol(workoutVolumeLb(w), unit)}`
-    head.appendChild(meta)
+    head.appendChild(topRow)
     head.appendChild(vol)
     head.addEventListener('click', () => { openId = openId === w.id ? null : w.id; draw() })
     root.appendChild(head)
