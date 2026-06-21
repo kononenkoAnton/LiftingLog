@@ -4,7 +4,14 @@
 // upper partials → a metallic gong rather than a plain beep. Partials are centered
 // in 500–1500 Hz so the cue still carries on a phone speaker (which rolls off bass).
 //
-// Run: node scripts/make-gong.mjs   → writes /tmp/gong.wav, then encode to mp3.
+// Run: node scripts/make-gong.mjs /tmp/gong.wav   (synthesize), then MASTER LOUD +
+// encode to mp3. iOS ignores HTMLAudioElement.volume, so loudness must live in the
+// asset — a brickwall limiter raises perceived loudness ~6 dB (−18.4 → −12 LUFS)
+// WITHOUT any EQ, so the timbre is unchanged (just louder):
+//   ffmpeg -y -i /tmp/gong.wav \
+//     -af "volume=8dB,alimiter=limit=0.94:attack=1:release=50:asc=1" \
+//     -c:a libmp3lame -b:a 128k public/gong.mp3
+// (The peak-normalize below stays; the limiter is what makes it loud.)
 import { writeFileSync } from 'node:fs'
 
 const SR = 44100
