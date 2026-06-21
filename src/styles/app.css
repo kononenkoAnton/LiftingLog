@@ -268,5 +268,5 @@ body.has-active-bar .screen{padding-bottom:calc(82px + env(safe-area-inset-botto
 .exh-date{font-size:12px;font-weight:800;color:var(--mint);margin-bottom:6px}
 
 /* History volume (weight lifted) */
-.hist-head-vol{display:block;margin-top:3px;color:var(--dim);font-weight:600;font-size:11px}
+.hist-head-vol{display:block;margin-top:3px;color:var(--mint);font-weight:600;font-size:11px}
 .hist-exvol{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dim);margin:5px 0 2px}
