@@ -283,10 +283,12 @@ export function tallyUsage(
   return out
 }
 
-/** Full lifted lb for one set: barbell adds the 45 lb bar, other equipment as-is; null plates → 0. */
-function setLoadLb(weightLb: number | null, equipment: Equipment): number {
+/** Full lifted lb for one set: barbell adds the 45 lb bar, other equipment as-is; null
+ *  plates → 0. A per-implement (two-dumbbell) set counts both bells (×2). */
+function setLoadLb(weightLb: number | null, equipment: Equipment, perImplement = false): number {
   const w = weightLb ?? 0
-  return equipment === 'barbell' ? w + BAR_LB : w
+  const base = equipment === 'barbell' ? w + BAR_LB : w
+  return perImplement ? base * 2 : base
 }
 
 /**
@@ -294,13 +296,14 @@ function setLoadLb(weightLb: number | null, equipment: Equipment): number {
  * Barbell includes the 45 lb bar; dumbbell/machine/cable count the weight as-is; bodyweight
  * counts only added load. Timed holds → 0 (weight × seconds isn't volume); sets with null /
  * non-integer / <1 reps are skipped; null plates count as 0 (an empty bar still = 45 lb).
+ * Per-implement (two-dumbbell) movements count both bells (×2).
  */
 export function exerciseVolumeLb(ex: WorkoutExercise): number {
   if (ex.isTimed) return 0
   let v = 0
   for (const s of ex.sets) {
     if (!s.done || s.reps === null || !Number.isInteger(s.reps) || s.reps < 1) continue
-    v += setLoadLb(s.weightLb, ex.equipment) * s.reps
+    v += setLoadLb(s.weightLb, ex.equipment, ex.perImplement) * s.reps
   }
   return v
 }

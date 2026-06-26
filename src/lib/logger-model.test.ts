@@ -498,6 +498,13 @@ describe('exerciseVolumeLb / workoutVolumeLb', () => {
     expect(exerciseVolumeLb(wex({ equipment: 'bodyweight', isTimed: true, sets: [set(0, 45)] }))).toBe(0)
   })
 
+  it('doubles the load for a per-implement (two-dumbbell) movement', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'dumbbell', perImplement: true, sets: [set(50, 10)] }))).toBe(1000)
+  })
+  it('a non-per-implement dumbbell still counts one bell', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'dumbbell', sets: [set(50, 10)] }))).toBe(500)
+  })
+
   it('workoutVolumeLb sums volume across all exercises', () => {
     const w = wk([
       wex({ equipment: 'barbell', sets: [set(135, 5)] }),   // 180 * 5 = 900
