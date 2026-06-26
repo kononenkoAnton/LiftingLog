@@ -227,6 +227,7 @@ export interface ExerciseOccurrence {
   nameRu: string
   equipment: Equipment
   isTimed: boolean
+  perImplement: boolean      // two dumbbells → display appends "each"
   sets: LoggedSet[]          // that workout's DONE sets for the ref
 }
 
