@@ -115,6 +115,12 @@ describe('buildWorkoutExercises', () => {
     expect(we.alt?.sets[0].reps).toBe(8)
     expect(we.alt?.sets[0].weightLb).toBeNull()
   })
+  it('carries the coach perImplement flag onto the WorkoutExercise', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ equipment: 'dumbbell', perImplement: true, weight: { kind: 'single', kg: 20 } })]))
+    expect(we.perImplement).toBe(true)
+    const [plain] = buildWorkoutExercises(mkSession([ex({ equipment: 'barbell' })]))
+    expect(plain.perImplement).toBeUndefined()
+  })
 })
 
 describe('altFromNotes', () => {
@@ -223,6 +229,11 @@ describe('catalogToWorkoutExercise', () => {
     expect(we.nameRu).toBe('Жим ногами')
     expect(we.sets).toHaveLength(1)
     expect(we.sets[0]).toEqual({ weightLb: null, reps: null, done: false, restSec: 90 })
+  })
+  it('carries the catalog perImplement flag', () => {
+    const db: CatalogExercise = { ...c, id: 'db-press', nameEn: 'DB Press', equipment: 'dumbbell', perImplement: true }
+    expect(catalogToWorkoutExercise(db).perImplement).toBe(true)
+    expect(catalogToWorkoutExercise(c).perImplement).toBeUndefined()
   })
 })
 
@@ -460,6 +471,12 @@ describe('allSetsForRef', () => {
     const w = wk({ exercises: [wex({ exerciseRef: 'coach:plank', nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isTimed: true, sets: [set(0, 45)] })] })
     const out = allSetsForRef([w], 'coach:plank')
     expect(out[0]).toMatchObject({ nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isTimed: true })
+  })
+  it('surfaces perImplement on the occurrence', () => {
+    const w = wk({ exercises: [wex({ exerciseRef: 'db', nameEn: 'DB Press', equipment: 'dumbbell', perImplement: true, sets: [set(40, 10)] })] })
+    expect(allSetsForRef([w], 'db')[0].perImplement).toBe(true)
+    const plain = wk({ exercises: [wex({ exerciseRef: 'bb', sets: [set(135, 5)] })] })
+    expect(allSetsForRef([plain], 'bb')[0].perImplement).toBe(false)
   })
 })
 

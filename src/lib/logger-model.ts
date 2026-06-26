@@ -131,6 +131,7 @@ function buildOne(e: Exercise): WorkoutExercise {
     isCoachPrescribed: true,
     coachTarget: coachTargetText(e),
     isTimed,
+    ...(e.perImplement ? { perImplement: true } : {}),
     sets,
   }
 }
@@ -244,7 +245,7 @@ export function allSetsForRef(history: Workout[], exerciseRef: string): Exercise
       if (!ex) return null
       const sets = ex.sets.filter((s) => s.done)
       if (!sets.length) return null
-      return { dateIso: w.startedAt, nameEn: ex.nameEn, nameRu: ex.nameRu, equipment: ex.equipment, isTimed: !!ex.isTimed, sets }
+      return { dateIso: w.startedAt, nameEn: ex.nameEn, nameRu: ex.nameRu, equipment: ex.equipment, isTimed: !!ex.isTimed, perImplement: !!ex.perImplement, sets }
     })
     .filter((o): o is ExerciseOccurrence => o !== null)
     .sort((a, b) => Date.parse(b.dateIso) - Date.parse(a.dateIso))
@@ -363,6 +364,7 @@ export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
     equipment: c.equipment,
     isCoachPrescribed: false,
     coachTarget: '',
+    ...(c.perImplement ? { perImplement: true } : {}),
     sets: [blankSet(c.defaultRestSec)],
   }
 }
