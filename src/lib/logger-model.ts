@@ -11,14 +11,14 @@ export type Unit = 'kg' | 'lb'
  * Display label for a logged set's weight in the chosen unit. Bodyweight shows "BW"
  * (or "BW +N u" for added weight). A barbell log is the PLATE weight (excl. bar), so
  * it shows "<plates> u (<full> w/ bar)". Other equipment shows the weight as-is.
- * null (no weight) → '–'.
+ * null (no weight) → '–'. A perImplement (two-dumbbell) set adds " each".
  */
-export function setWeightDisplay(lb: number | null, equipment: string, unit: Unit): string {
+export function setWeightDisplay(lb: number | null, equipment: string, unit: Unit, perImplement = false): string {
   const conv = (x: number) => (unit === 'kg' ? Math.round(x / KG_TO_LB) : x)
   if (equipment === 'bodyweight') return lb === null || lb <= 0 ? 'BW' : `BW +${conv(lb)} ${unit}`
   if (lb === null) return '–'
   if (equipment === 'barbell') return `${conv(lb)} ${unit} (${conv(lb + BAR_LB)} w/ bar)`
-  return `${conv(lb)} ${unit}`
+  return `${conv(lb)} ${unit}${perImplement ? ' each' : ''}`
 }
 
 /**

@@ -338,6 +338,14 @@ describe('setWeightDisplay', () => {
     expect(setWeightDisplay(30, 'bodyweight', 'kg')).toBe('BW +14 kg')
     expect(setWeightDisplay(30, 'bodyweight', 'lb')).toBe('BW +30 lb')
   })
+  it('appends "each" for a per-implement (two-dumbbell) set', () => {
+    expect(setWeightDisplay(44, 'dumbbell', 'kg', true)).toBe('20 kg each')
+    expect(setWeightDisplay(44, 'dumbbell', 'lb', true)).toBe('44 lb each')
+  })
+  it('omits "each" when perImplement is false/absent (regression)', () => {
+    expect(setWeightDisplay(44, 'dumbbell', 'kg', false)).toBe('20 kg')
+    expect(setWeightDisplay(44, 'dumbbell', 'kg')).toBe('20 kg')
+  })
 })
 
 describe('completeProblem / canComplete', () => {
