@@ -16,4 +16,9 @@ describe('perImplementFor', () => {
     expect(perImplementFor('Barbell Bench Press', 'barbell')).toBe(false)
     expect(perImplementFor('Goblet Squat', 'bodyweight')).toBe(false)
   })
+  it('excludes kettlebell movements (classified as dumbbell, mostly single-bell)', () => {
+    expect(perImplementFor('Kettlebell Swing', 'dumbbell')).toBe(false)
+    expect(perImplementFor('2 Handed Kettlebell Swing', 'dumbbell')).toBe(false)
+    expect(perImplementFor('Double Kettlebell Front Squat', 'dumbbell')).toBe(false)
+  })
 })

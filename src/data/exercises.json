@@ -41,8 +41,7 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90,
-    "perImplement": true
+    "defaultRestSec": 90
   },
   {
     "id": "3008-abdominal-crunch",
@@ -2050,8 +2049,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90,
-    "perImplement": true
+    "defaultRestSec": 90
   },
   {
     "id": "cycling",
@@ -2335,8 +2333,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90,
-    "perImplement": true
+    "defaultRestSec": 90
   },
   {
     "id": "double-kettlebell-front-squat",
@@ -2347,8 +2344,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300,
-    "perImplement": true
+    "defaultRestSec": 300
   },
   {
     "id": "double-leg-calf-raise",
@@ -4540,8 +4536,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300,
-    "perImplement": true
+    "defaultRestSec": 300
   },
   {
     "id": "kettlebell-one-legged-deadlift",
@@ -4552,8 +4547,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300,
-    "perImplement": true
+    "defaultRestSec": 300
   },
   {
     "id": "kettlebell-sumo-deadlift",
@@ -4564,8 +4558,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300,
-    "perImplement": true
+    "defaultRestSec": 300
   },
   {
     "id": "kettlebell-sumo-high-pull",
@@ -4576,8 +4569,7 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90,
-    "perImplement": true
+    "defaultRestSec": 90
   },
   {
     "id": "kettlebell-swing",
@@ -4588,8 +4580,7 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90,
-    "perImplement": true
+    "defaultRestSec": 90
   },
   {
     "id": "kettlebell-swings",
@@ -4600,8 +4591,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90,
-    "perImplement": true
+    "defaultRestSec": 90
   },
   {
     "id": "kickstand-rdl",
@@ -5773,8 +5763,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90,
-    "perImplement": true
+    "defaultRestSec": 90
   },
   {
     "id": "open-book",
@@ -7919,8 +7908,7 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90,
-    "perImplement": true
+    "defaultRestSec": 90
   },
   {
     "id": "single-leg-side-glute-press",

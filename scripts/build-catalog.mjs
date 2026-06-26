@@ -45,10 +45,11 @@ function restFor(nameEn) {
 
 // Two-dumbbell movement? Weight is per-dumbbell, so the logger labels it "each" and
 // doubles volume. Heuristic for USER-ADDED catalog lifts (coach lifts carry a curated
-// perImplement from program.json via parse-program.mjs). Dumbbell, minus unilateral /
-// goblet holds. Correct a misclassification by overriding the entry in catalog-extras.json.
+// perImplement from program.json via parse-program.mjs). Dumbbell, minus kettlebells
+// (mostly single-bell) and unilateral / goblet holds. Correct a misclassification by
+// overriding the entry in catalog-extras.json.
 export function perImplementFor(nameEn, equip) {
-  return equip === 'dumbbell' && !/goblet|single[-\s]?arm|one[-\s]?arm/i.test(nameEn)
+  return equip === 'dumbbell' && !/kettlebell|goblet|single[-\s]?arm|one[-\s]?arm/i.test(nameEn)
 }
 
 async function fetchAll() {

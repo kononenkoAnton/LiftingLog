@@ -45,4 +45,9 @@ describe('exercises.json', () => {
   it('flags at least some dumbbell movements', () => {
     expect(all.some((e) => e.perImplement)).toBe(true)
   })
+  it('never flags kettlebell movements (single-bell despite dumbbell classification)', () => {
+    for (const e of all) {
+      if (/kettlebell/i.test(e.nameEn)) expect(e.perImplement, e.id).toBeFalsy()
+    }
+  })
 })
