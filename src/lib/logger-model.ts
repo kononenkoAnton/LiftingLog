@@ -311,8 +311,9 @@ export function workoutVolumeLb(w: Workout): number {
 
 /**
  * Pre-fill a WorkoutExercise from the user's last actual sets for it.
- * Added (non-coach) exercises adopt last session's full sets; coach exercises only
- * fill in weights the coach left unspecified (keeping the prescribed reps/set count).
+ * Added (non-coach) exercises adopt last session's full sets; coach exercises fill in
+ * the weight AND reps the coach left unspecified (e.g. a rep range → null reps),
+ * keeping any value the coach did set and the prescribed set count.
  */
 export function withLastActual(we: WorkoutExercise, last: LoggedSet[] | null): WorkoutExercise {
   if (!last || !last.length) return we
@@ -322,9 +323,10 @@ export function withLastActual(we: WorkoutExercise, last: LoggedSet[] | null): W
   }
   return {
     ...we,
-    sets: we.sets.map((s, i) =>
-      s.weightLb === null ? { ...s, weightLb: last[Math.min(i, last.length - 1)].weightLb } : s,
-    ),
+    sets: we.sets.map((s, i) => {
+      const ref = last[Math.min(i, last.length - 1)]
+      return { ...s, weightLb: s.weightLb ?? ref.weightLb, reps: s.reps ?? ref.reps }
+    }),
   }
 }
 

@@ -282,6 +282,17 @@ describe('withLastActual', () => {
     const coach = we({ isCoachPrescribed: true, sets: [{ weightLb: 220, reps: 5, done: false, restSec: 90 }] })
     expect(withLastActual(coach, [doneSet(999, 1)]).sets[0].weightLb).toBe(220)
   })
+  it('a coach exercise fills reps the coach left blank (e.g. a rep range) from last', () => {
+    const coach = we({ isCoachPrescribed: true, sets: [{ weightLb: null, reps: null, done: false, restSec: 150 }] })
+    const out = withLastActual(coach, [doneSet(80, 12)])
+    expect(out.sets[0].weightLb).toBe(80) // filled from last
+    expect(out.sets[0].reps).toBe(12)     // reps filled from last (coach left it blank)
+    expect(out.sets[0].done).toBe(false)  // still needs confirming
+  })
+  it('a coach exercise does NOT override reps the coach already set', () => {
+    const coach = we({ isCoachPrescribed: true, sets: [{ weightLb: null, reps: 5, done: false, restSec: 90 }] })
+    expect(withLastActual(coach, [doneSet(80, 12)]).sets[0].reps).toBe(5)
+  })
 })
 
 describe('trainerLog', () => {
