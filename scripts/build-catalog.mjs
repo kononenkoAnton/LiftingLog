@@ -3,7 +3,7 @@
 // Data © wger.de contributors, licensed CC-BY-SA 4.0 (https://wger.de).
 // Usage: node scripts/build-catalog.mjs   (npm run build:catalog)
 import { writeFileSync, readFileSync, existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -41,6 +41,14 @@ function restFor(nameEn) {
   if (n.includes('deadlift')) return 300
   if (n.includes('bench')) return 150
   return 90
+}
+
+// Two-dumbbell movement? Weight is per-dumbbell, so the logger labels it "each" and
+// doubles volume. Heuristic for USER-ADDED catalog lifts (coach lifts carry a curated
+// perImplement from program.json via parse-program.mjs). Dumbbell, minus unilateral /
+// goblet holds. Correct a misclassification by overriding the entry in catalog-extras.json.
+export function perImplementFor(nameEn, equip) {
+  return equip === 'dumbbell' && !/goblet|single[-\s]?arm|one[-\s]?arm/i.test(nameEn)
 }
 
 async function fetchAll() {
@@ -81,36 +89,45 @@ function build(raw) {
       aliasesEn: aliasList(en.aliases),
       aliasesRu: aliasList(ru?.aliases),
       defaultRestSec: restFor(en.name),
+      ...(perImplementFor(en.name, equip) ? { perImplement: true } : {}),
     })
   }
   return { items, ruFallback }
 }
 
-const raw = await fetchAll()
-let { items, ruFallback } = build(raw)
+async function main() {
+  const raw = await fetchAll()
+  let { items, ruFallback } = build(raw)
 
-// Apply the Russian-name overlay (id → nameRu) so the catalog is bilingual.
-if (existsSync(RU_OVERLAY)) {
-  const ru = JSON.parse(readFileSync(RU_OVERLAY, 'utf8'))
-  let applied = 0
-  for (const it of items) {
-    if (ru[it.id] && it.ruIsFallback) { it.nameRu = ru[it.id]; it.ruIsFallback = false; applied++ }
+  // Apply the Russian-name overlay (id → nameRu) so the catalog is bilingual.
+  if (existsSync(RU_OVERLAY)) {
+    const ru = JSON.parse(readFileSync(RU_OVERLAY, 'utf8'))
+    let applied = 0
+    for (const it of items) {
+      if (ru[it.id] && it.ruIsFallback) { it.nameRu = ru[it.id]; it.ruIsFallback = false; applied++ }
+    }
+    console.log(`RU overlay applied to ${applied} exercises`)
   }
-  console.log(`RU overlay applied to ${applied} exercises`)
+
+  if (existsSync(EXTRAS)) {
+    const extras = JSON.parse(readFileSync(EXTRAS, 'utf8'))
+    const byId = new Map(items.map((i) => [i.id, i]))
+    for (const e of extras) {
+      if (!e.id) throw new Error(`catalog-extras.json: entry missing 'id': ${JSON.stringify(e)}`)
+      byId.set(e.id, e)
+    }
+    items = [...byId.values()]
+  }
+
+  items.sort((a, b) => a.nameEn.localeCompare(b.nameEn, 'en'))
+  writeFileSync(OUT, JSON.stringify(items, null, 2) + '\n')
+  console.log(`wrote ${items.length} exercises → src/data/exercises.json`)
+  console.log(`RU fallback (nameRu = nameEn): ${ruFallback.length}`)
+  if (ruFallback.length) console.log('  e.g.:', ruFallback.slice(0, 30).join(', '))
 }
 
-if (existsSync(EXTRAS)) {
-  const extras = JSON.parse(readFileSync(EXTRAS, 'utf8'))
-  const byId = new Map(items.map((i) => [i.id, i]))
-  for (const e of extras) {
-    if (!e.id) throw new Error(`catalog-extras.json: entry missing 'id': ${JSON.stringify(e)}`)
-    byId.set(e.id, e)
-  }
-  items = [...byId.values()]
+// Only fetch + rebuild when run directly (node scripts/build-catalog.mjs); importing
+// the module (tests, the perImplement reapply) gets the pure helpers with no side effects.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await main()
 }
-
-items.sort((a, b) => a.nameEn.localeCompare(b.nameEn, 'en'))
-writeFileSync(OUT, JSON.stringify(items, null, 2) + '\n')
-console.log(`wrote ${items.length} exercises → src/data/exercises.json`)
-console.log(`RU fallback (nameRu = nameEn): ${ruFallback.length}`)
-if (ruFallback.length) console.log('  e.g.:', ruFallback.slice(0, 30).join(', '))
