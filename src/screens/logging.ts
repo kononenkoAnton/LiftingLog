@@ -98,25 +98,22 @@ export function renderLogging(el: HTMLElement, sessionNum: number, onExit: () =>
 
     el.innerHTML = `
       <div class="screen lg${!edit && rest ? ' resting' : ''}">
+        <a class="back" id="lgBack" href="#/session/${w.sessionNum}">‹ Schedule</a>
         <div class="lg-top">
           <div class="lg-clock">
             ${edit ? '<span class="lg-elapsed mono">Editing</span>'
               : `<button class="lg-pause" id="lgPause" type="button">${paused ? '▶' : '⏸'}</button>
             <span class="lg-elapsed mono ${paused ? 'paused' : ''}" id="lgElapsed">${fmt(workoutDurationSec(w, Date.now()))}</span>`}
           </div>
-          ${edit ? '<button class="lg-finish" id="lgDone" type="button">Done</button>'
-            : `<div class="lg-actions">
-            <button class="lg-cancel-x" id="lgCancel" type="button" aria-label="Cancel workout">✕</button>
-            <button class="lg-finish" id="lgFinish" type="button">Finish</button>
-          </div>`}
+          ${edit ? '' : `<button class="lg-cancel-x" id="lgCancel" type="button" aria-label="Cancel workout">✕</button>`}
         </div>
-        <a class="back" id="lgBack" href="#/session/${w.sessionNum}">‹ Schedule</a>
         <div class="lg-day">Day ${w.sessionNum} · logging</div>
         ${!edit ? restBannerHtml() : ''}
         <div id="lgEx">${w.exercises.map((ex, i) => exerciseHtml(ex, i, lastActualFor(history, ex.exerciseRef))).join('') || '<div class="note">No exercises — add one below.</div>'}</div>
         <button class="btn-add" id="lgAddEx" type="button">+ Add Exercise</button>
         <label class="lg-msg-l">Message to coach (optional)</label>
         <textarea class="lg-msg" id="lgMsg" rows="2" placeholder="e.g. left knee tight on set 2"></textarea>
+        <button class="lg-finish" id="${edit ? 'lgDone' : 'lgFinish'}" type="button">${edit ? 'Done' : 'Finish'}</button>
       </div>`
 
     const msg = el.querySelector<HTMLTextAreaElement>('#lgMsg')!
