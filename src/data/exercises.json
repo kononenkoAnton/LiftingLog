@@ -65,7 +65,8 @@
     "bodyPart": "Cardio",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "4-count-burpees",
@@ -87,7 +88,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "ab-wheel",
@@ -164,7 +166,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "alternating-biceps-curls-with-dumbbell",
@@ -175,7 +178,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "alternating-dumbbell-hammer-curl",
@@ -186,7 +190,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "alternating-high-cable-row",
@@ -208,7 +213,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "ankle-dorsiflexion-rocks",
@@ -290,7 +296,8 @@
       "Dumbbell Corkscrew Press"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "assisted-chin-ups",
@@ -334,7 +341,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "back-bridge",
@@ -701,7 +709,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "bear-walk-2",
@@ -778,7 +787,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "bent-high-pulls",
@@ -789,7 +799,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "bent-over-cable-flye",
@@ -813,7 +824,8 @@
       "One Arm DB Rows"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "bent-over-row-to-external-rotation",
@@ -879,7 +891,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "bicep",
@@ -945,7 +958,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "biceps-curls-with-sz-bar",
@@ -1000,7 +1014,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "black-widow-knee-slides",
@@ -1033,7 +1048,8 @@
     "bodyPart": "Cardio",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "body-ups",
@@ -1167,7 +1183,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 300,
+    "perImplement": true
   },
   {
     "id": "burpees",
@@ -1651,7 +1668,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "child-s-pose",
@@ -1903,7 +1921,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "cross-body-cable-y-raise",
@@ -2006,7 +2025,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "curl-de-biceps-con-agarre-prono",
@@ -2017,7 +2037,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "curl-with-kettlebell-two-hands",
@@ -2061,7 +2082,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "db-ucv",
@@ -2072,7 +2094,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "db-underhand-bench-press",
@@ -2083,7 +2106,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "db-upper-chest-variation",
@@ -2094,7 +2118,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "db-wrist-extension",
@@ -2105,7 +2130,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "deadbug",
@@ -2171,7 +2197,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "decline-pushups",
@@ -2226,7 +2253,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "diagonal-shoulder-press",
@@ -2382,7 +2410,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-bent-over-face-pull",
@@ -2393,7 +2422,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-bicep-curl-to-press",
@@ -2404,7 +2434,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-bradford-press",
@@ -2415,7 +2446,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-cheat-curl",
@@ -2426,7 +2458,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-close-grip-bench-press",
@@ -2437,7 +2470,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "dumbbell-concentration-curl",
@@ -2448,7 +2482,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-crunches",
@@ -2459,7 +2494,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-curl",
@@ -2470,7 +2506,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-deadlift",
@@ -2481,7 +2518,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 300,
+    "perImplement": true
   },
   {
     "id": "dumbbell-drag-curls",
@@ -2492,7 +2530,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-farmer-s-carry",
@@ -2503,7 +2542,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-floor-press",
@@ -2514,7 +2554,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-frog-press",
@@ -2525,7 +2566,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-front-squat",
@@ -2536,7 +2578,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 300,
+    "perImplement": true
   },
   {
     "id": "dumbbell-goblet-squat",
@@ -2558,7 +2601,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-hex-press",
@@ -2569,7 +2613,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-hip-thrust",
@@ -2580,7 +2625,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-incline-curl",
@@ -2591,7 +2637,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-lunges-standing",
@@ -2602,7 +2649,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-lunges-walking",
@@ -2613,7 +2661,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-pullover",
@@ -2624,7 +2673,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-push-up",
@@ -2635,7 +2685,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-rear-delt-row",
@@ -2646,7 +2697,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-rear-lunge",
@@ -2657,7 +2709,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-romanian-deadlift",
@@ -2668,7 +2721,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 300,
+    "perImplement": true
   },
   {
     "id": "dumbbell-scaption",
@@ -2679,7 +2733,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-shoulder-rotations",
@@ -2690,7 +2745,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-shrug",
@@ -2701,7 +2757,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-side-bend",
@@ -2712,7 +2769,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-side-squat",
@@ -2723,7 +2781,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 300,
+    "perImplement": true
   },
   {
     "id": "dumbbell-single-leg-hip-thrust",
@@ -2734,7 +2793,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-snatch",
@@ -2745,7 +2805,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-split-squat",
@@ -2756,7 +2817,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 300,
+    "perImplement": true
   },
   {
     "id": "dumbbell-sumo-deadlift",
@@ -2767,7 +2829,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 300,
+    "perImplement": true
   },
   {
     "id": "dumbbell-thruster",
@@ -2778,7 +2841,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-triceps-extension",
@@ -2789,7 +2853,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-underhand-dead-row",
@@ -2800,7 +2865,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbell-wide-bicep-curls",
@@ -2811,7 +2877,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dumbbells-on-scott-machine",
@@ -2833,7 +2900,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "dynamic-planche",
@@ -2855,7 +2923,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "elbows-tucked-db-bench-press",
@@ -2866,7 +2935,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "elephant-walks",
@@ -3103,7 +3173,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "floor-dips",
@@ -3169,7 +3240,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "fly-with-dumbbells-decline-bench",
@@ -3180,7 +3252,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "foam-roll-adductors",
@@ -3268,7 +3341,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "forward-arm-circles",
@@ -3559,7 +3633,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "hammercurls-on-cable",
@@ -3717,7 +3792,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "hercules-pillars",
@@ -4029,7 +4105,8 @@
       "Incline Dumbbell Press"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "incline-bench-press-mp",
@@ -4051,7 +4128,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 150
+    "defaultRestSec": 150,
+    "perImplement": true
   },
   {
     "id": "incline-chest-press-db",
@@ -4062,7 +4140,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "incline-chest-supported-dumbbell-row",
@@ -4073,7 +4152,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "incline-close-grip-barbell-bench-press",
@@ -4106,7 +4186,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "incline-dumbbell-fly",
@@ -4117,7 +4198,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "incline-dumbbell-press",
@@ -4128,7 +4210,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "incline-dumbbell-row",
@@ -4139,7 +4222,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "incline-ohp-db",
@@ -4150,7 +4234,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "incline-plank-with-alternate-floor-touch",
@@ -4216,7 +4301,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "inverted-lat-pull-down",
@@ -4328,7 +4414,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "jal-n-cerrado",
@@ -4581,7 +4668,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "kopf-ber-gewichtaufheben",
@@ -4592,7 +4680,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "kreis-press-db",
@@ -4603,7 +4692,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "kroc-row",
@@ -4713,7 +4803,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "lat-pull-down",
@@ -4785,7 +4876,8 @@
       "Side raises"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "lateral-rows-on-cable-one-armed",
@@ -4820,7 +4912,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "left-levator-scapulae-stretch",
@@ -5064,7 +5157,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "leverage-machine-chest-press",
@@ -5207,7 +5301,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "lying-dumbbell-row-ss-seated-shrug",
@@ -5218,7 +5313,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "lying-figure-four-stretch",
@@ -5273,7 +5369,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "lying-triceps-extensions",
@@ -5295,7 +5392,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "machine-chest-fly",
@@ -5562,7 +5660,8 @@
     "bodyPart": "Chest",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "no-push-up-burpees",
@@ -5776,7 +5875,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "patadas-traseras",
@@ -5787,7 +5887,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "pause-bench",
@@ -6073,7 +6174,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "preacher-curl-internally-rotated",
@@ -6084,7 +6186,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "preacher-curls",
@@ -6216,7 +6319,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "pullover-machine",
@@ -6417,7 +6521,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "rear-delt-raises",
@@ -6428,7 +6533,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "rear-foot-elevated-hip-flexor-stretch",
@@ -6516,7 +6622,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "respiraci-n-profunda-de-pie-o-sentado",
@@ -6958,7 +7065,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "scapula-pulls",
@@ -6980,7 +7088,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "schwimmen",
@@ -7090,7 +7199,8 @@
     "bodyPart": "Calves",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "seated-dumbbell-curls",
@@ -7101,7 +7211,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "seated-dumbbell-side-lateral",
@@ -7112,7 +7223,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "seated-figure-four",
@@ -7189,7 +7301,8 @@
     "bodyPart": "Back",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "seated-row-machine",
@@ -7222,7 +7335,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "seated-v-grip-row",
@@ -7244,7 +7358,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "shinbox-ir-stretch",
@@ -7288,7 +7403,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "shoulder-external-rotation-cable",
@@ -7310,7 +7426,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "shoulder-internal-rotation-cable",
@@ -7351,7 +7468,8 @@
       "Military Press with Dumbbells"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "shoulder-press-on-machine",
@@ -7384,7 +7502,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "shoulder-shrug",
@@ -7461,7 +7580,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "side-bends-on-machine",
@@ -7496,7 +7616,8 @@
       "Side bends"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "side-lateral-raise-back-cable",
@@ -7775,7 +7896,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 300
+    "defaultRestSec": 300,
+    "perImplement": true
   },
   {
     "id": "single-leg-lunge-with-kettlebell",
@@ -7890,7 +8012,8 @@
       "French Press Dumbbells"
     ],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "skullcrusher-sz-bar",
@@ -8225,7 +8348,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "standing-biceps-stretch-left",
@@ -8474,7 +8598,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "sumo-deadlift",
@@ -8518,7 +8643,8 @@
     "bodyPart": "Legs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "supine-press",
@@ -8757,7 +8883,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "tricep-pushdown-on-cable",
@@ -8834,7 +8961,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "triceps-pushdown",
@@ -8999,7 +9127,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "typewriter-pull-ups",
@@ -9098,7 +9227,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "upright-row-on-multi-press",
@@ -9293,7 +9423,8 @@
     "bodyPart": "Abs",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "weighted-push-ups",
@@ -9386,7 +9517,8 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "yoga-exercise-cow-cat",
@@ -9408,7 +9540,8 @@
     "bodyPart": "Shoulders",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   },
   {
     "id": "ywts",
@@ -9441,6 +9574,7 @@
     "bodyPart": "Arms",
     "aliasesEn": [],
     "aliasesRu": [],
-    "defaultRestSec": 90
+    "defaultRestSec": 90,
+    "perImplement": true
   }
 ]

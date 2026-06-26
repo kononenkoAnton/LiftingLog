@@ -23,7 +23,7 @@ export function renderExerciseHistory(el: HTMLElement, ref: string) {
       const row = document.createElement('div')
       row.className = 'hist-set'
       const repStr = s.reps === null ? '–' : `${s.reps}${o.isTimed ? 's' : ''}`
-      row.textContent = `${setWeightDisplay(s.weightLb, o.equipment, unit)} × ${repStr}`
+      row.textContent = `${setWeightDisplay(s.weightLb, o.equipment, unit, o.perImplement)} × ${repStr}`
       root.appendChild(row)
     }
     return root

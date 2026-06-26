@@ -19,7 +19,7 @@ matching skill file:
 | Plate set, bar weight, or rounding (`src/lib/load.ts`) | `parsing-rules.md` notes + `README.md` "Plates & bar" |
 | How the doc is fetched/exported, or its markdown shape | `update-program/SKILL.md` |
 | Added a new skill or workflow | give it a `SKILL.md` and note it here |
-| Added/renamed catalog data, the wger equipment/rest mapping, or RU↔EN entries | `scripts/build-catalog.mjs` (`classifyEquip`/`restFor`) + the `scripts/catalog-extras.json` overrides + `scripts/catalog-ru.json` + `README.md` "Exercise catalog" |
+| Added/renamed catalog data, the wger equipment/rest mapping, or RU↔EN entries | `scripts/build-catalog.mjs` (`classifyEquip`/`restFor`/`perImplementFor`) + the `scripts/catalog-extras.json` overrides + `scripts/catalog-ru.json` + `README.md` "Exercise catalog" |
 | The rest-timer default heuristic (`restDefaultFor` in `src/lib/logger-model.ts`) | keep it identical to `scripts/build-catalog.mjs` `restFor` — the catalog bakes it in, the logger resolves it for coach lifts |
 
 The glossary lives in two places on purpose (code + docs) — change both or they
@@ -64,6 +64,12 @@ still produces 0 unknowns and type-checks.
     (runtime only — no parser / `program.json` change). The logger shows a
     `⇄ <name>` pill; `swapVariant` toggles active⇄alt and each side keeps its own
     pre-filled sets. Add new swaps to `ALT_PATTERNS` in `logger-model.ts`.
+  - **Per-implement (two-dumbbell) lifts.** A `perImplement` exercise (coach flag from
+    `program.json`, or the `build-catalog.mjs` heuristic for catalog lifts) is logged as
+    the **per-dumbbell** weight but displays " each" (`setWeightDisplay`) and counts
+    **both bells (×2)** in volume (`setLoadLb`/`exerciseVolumeLb`). The trainer log adds
+    `(кажд.)` (no doubling — the coach prescribes per-dumbbell). e1RM is barbell-only, so
+    it is unaffected. Correct a catalog misclassification via `scripts/catalog-extras.json`.
 - **Barbell viz is a static 2D SVG** (`src/components/barbell-svg.ts`). three.js
   was removed — do not reintroduce it without reason.
 - **PWA / service worker.** The app is an installable PWA. `index.html` references a
@@ -112,7 +118,7 @@ still produces 0 unknowns and type-checks.
 - `src/lib/unit.ts` — shared kg/lb display-unit setting (localStorage `liftinglog:unit`)
 - `src/lib/progress.ts` — finished-day persistence
 - `src/data/{types,program.json,program}.ts` — schema, data, loader
-- `src/data/exercises.json` — bilingual exercise catalog (GENERATED; never hand-edit — use `scripts/catalog-extras.json` + `npm run build:catalog`)
+- `src/data/exercises.json` — bilingual exercise catalog (GENERATED; never hand-edit — use `scripts/catalog-extras.json` + `npm run build:catalog`); `CatalogExercise.perImplement` is set by `perImplementFor` in `build-catalog.mjs` (override via `catalog-extras.json`)
 - `src/data/catalog-types.ts` — `CatalogExercise` schema
 - `src/lib/catalog.ts` — catalog search/filter (Cyrillic-aware, tested) + `makeUsageResolver`/`groupByUsage` for the picker's frequently-used section (exact-id then normalized-name match; frequent sorted by count→recency→name, deduped from A–Z)
 - `src/components/exercise-picker.ts` — the add-exercise picker sheet; shows a **Frequently used** section on top (bold green underlined title via `.picker-freq`, usage count `(n)`, sorted by frequency then recency) and removes those items from the A–Z list (dedup); counts computed live via `tallyUsage`+`makeUsageResolver`
@@ -124,7 +130,7 @@ still produces 0 unknowns and type-checks.
 - `scripts/parse-program.mjs` — deterministic doc → program.json parser
 - `.claude/skills/update-program/` — the re-parse skill + rules
 - `docs/superpowers/` — original spec and plan
-- `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; `allSetsForRef` = all done sets for an exerciseRef over time; `exerciseVolumeLb`/`workoutVolumeLb` = total weight lifted (Σ full-weight × reps, barbell incl. the 45 lb bar, timed/null-rep sets skipped); `tallyUsage` = per-catalog-id usage `{count,lastUsedAt}` over finished workouts (every occurrence counts; same lift twice in a session ⇒ +2); tested)
+- `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; `allSetsForRef` = all done sets for an exerciseRef over time; `exerciseVolumeLb`/`workoutVolumeLb` = total weight lifted (Σ full-weight × reps, barbell incl. the 45 lb bar, per-implement doubles for both bells, timed/null-rep sets skipped); `setWeightDisplay(lb, equipment, unit, perImplement?)` adds " each" for two-dumbbell sets; `tallyUsage` = per-catalog-id usage `{count,lastUsedAt}` over finished workouts (every occurrence counts; same lift twice in a session ⇒ +2); tested)
 - `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
 - `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)
 - `src/screens/logging.ts` — logging-mode screen (set table, timers, notes, finish/cancel). On **finish** it navigates to `#/history/<id>` (History, that workout pre-expanded) instead of returning to the session; cancel/done still return to the session. Rest timer is a **fixed bottom bar** (`.lg-rest` is `position:fixed`; `.lg.resting` reserves space) and plays a gong + vibrates at 0. Stays reliable when backgrounded via a **silent keep-alive loop** (`keepalive.ts`) plus a **`visibilitychange` catch-up** (`fireRestDone`) that fires the late cue from wall-clock on return; all rest teardown funnels through `endRest()`.

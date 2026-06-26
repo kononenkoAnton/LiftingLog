@@ -115,6 +115,12 @@ describe('buildWorkoutExercises', () => {
     expect(we.alt?.sets[0].reps).toBe(8)
     expect(we.alt?.sets[0].weightLb).toBeNull()
   })
+  it('carries the coach perImplement flag onto the WorkoutExercise', () => {
+    const [we] = buildWorkoutExercises(mkSession([ex({ equipment: 'dumbbell', perImplement: true, weight: { kind: 'single', kg: 20 } })]))
+    expect(we.perImplement).toBe(true)
+    const [plain] = buildWorkoutExercises(mkSession([ex({ equipment: 'barbell' })]))
+    expect(plain.perImplement).toBeUndefined()
+  })
 })
 
 describe('altFromNotes', () => {
@@ -224,6 +230,11 @@ describe('catalogToWorkoutExercise', () => {
     expect(we.sets).toHaveLength(1)
     expect(we.sets[0]).toEqual({ weightLb: null, reps: null, done: false, restSec: 90 })
   })
+  it('carries the catalog perImplement flag', () => {
+    const db: CatalogExercise = { ...c, id: 'db-press', nameEn: 'DB Press', equipment: 'dumbbell', perImplement: true }
+    expect(catalogToWorkoutExercise(db).perImplement).toBe(true)
+    expect(catalogToWorkoutExercise(c).perImplement).toBeUndefined()
+  })
 })
 
 describe('workoutDurationSec while paused', () => {
@@ -316,6 +327,10 @@ describe('trainerLog', () => {
     ] })
     expect(trainerLog(w)).toBe('Планка\nб/в × 1 — 1\n\nПодтягивания с весом\nб/в +14 × 8 — 1') // 30 lb → 14 kg added
   })
+  it('marks a per-implement (two-dumbbell) set with (кажд.), no doubling', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'i', nameEn: 'Incline DB', nameRu: 'Жим гантелей', equipment: 'dumbbell', isCoachPrescribed: true, coachTarget: '', perImplement: true, sets: [doneSet(44, 3)] }] })
+    expect(trainerLog(w)).toBe('Жим гантелей\n20 (кажд.) × 3 — 1')
+  })
 })
 
 describe('setWeightDisplay', () => {
@@ -337,6 +352,14 @@ describe('setWeightDisplay', () => {
     expect(setWeightDisplay(null, 'bodyweight', 'lb')).toBe('BW')
     expect(setWeightDisplay(30, 'bodyweight', 'kg')).toBe('BW +14 kg')
     expect(setWeightDisplay(30, 'bodyweight', 'lb')).toBe('BW +30 lb')
+  })
+  it('appends "each" for a per-implement (two-dumbbell) set', () => {
+    expect(setWeightDisplay(44, 'dumbbell', 'kg', true)).toBe('20 kg each')
+    expect(setWeightDisplay(44, 'dumbbell', 'lb', true)).toBe('44 lb each')
+  })
+  it('omits "each" when perImplement is false/absent (regression)', () => {
+    expect(setWeightDisplay(44, 'dumbbell', 'kg', false)).toBe('20 kg')
+    expect(setWeightDisplay(44, 'dumbbell', 'kg')).toBe('20 kg')
   })
 })
 
@@ -453,6 +476,12 @@ describe('allSetsForRef', () => {
     const out = allSetsForRef([w], 'coach:plank')
     expect(out[0]).toMatchObject({ nameEn: 'Plank', nameRu: 'Планка', equipment: 'bodyweight', isTimed: true })
   })
+  it('surfaces perImplement on the occurrence', () => {
+    const w = wk({ exercises: [wex({ exerciseRef: 'db', nameEn: 'DB Press', equipment: 'dumbbell', perImplement: true, sets: [set(40, 10)] })] })
+    expect(allSetsForRef([w], 'db')[0].perImplement).toBe(true)
+    const plain = wk({ exercises: [wex({ exerciseRef: 'bb', sets: [set(135, 5)] })] })
+    expect(allSetsForRef([plain], 'bb')[0].perImplement).toBe(false)
+  })
 })
 
 describe('exerciseVolumeLb / workoutVolumeLb', () => {
@@ -488,6 +517,13 @@ describe('exerciseVolumeLb / workoutVolumeLb', () => {
 
   it('returns 0 for a timed hold (weight × seconds is not volume)', () => {
     expect(exerciseVolumeLb(wex({ equipment: 'bodyweight', isTimed: true, sets: [set(0, 45)] }))).toBe(0)
+  })
+
+  it('doubles the load for a per-implement (two-dumbbell) movement', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'dumbbell', perImplement: true, sets: [set(50, 10)] }))).toBe(1000)
+  })
+  it('a non-per-implement dumbbell still counts one bell', () => {
+    expect(exerciseVolumeLb(wex({ equipment: 'dumbbell', sets: [set(50, 10)] }))).toBe(500)
   })
 
   it('workoutVolumeLb sums volume across all exercises', () => {

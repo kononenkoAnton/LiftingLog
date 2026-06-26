@@ -53,7 +53,7 @@ function exerciseHtml(ex: WorkoutExercise, i: number, last: LoggedSet[] | null):
       </div>
       ${ex.alt ? `<button class="lg-swap" data-ex="${i}" type="button">⇄ ${ex.alt.nameEn}</button>` : ''}
       ${ex.coachTarget || lastStr ? `<div class="lg-coach">${ex.coachTarget ? 'Coach · ' + ex.coachTarget : ''}${ex.coachTarget && lastStr ? ' · ' : ''}${lastStr}</div>` : ''}
-      <div class="lg-thead"><span>Set</span><span class="r">lb</span><span class="r">${ex.isTimed ? 'Sec' : 'Reps'}</span><span class="r">✓</span><span></span></div>
+      <div class="lg-thead"><span>Set</span><span class="r">${ex.perImplement ? 'lb · ea' : 'lb'}</span><span class="r">${ex.isTimed ? 'Sec' : 'Reps'}</span><span class="r">✓</span><span></span></div>
       ${ex.sets.map((st, si) => {
         const lp = last && last[si] ? last[si] : null
         // per-set plate line for barbell lifts; recomputed live by the input handler

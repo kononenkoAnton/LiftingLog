@@ -11,14 +11,14 @@ export type Unit = 'kg' | 'lb'
  * Display label for a logged set's weight in the chosen unit. Bodyweight shows "BW"
  * (or "BW +N u" for added weight). A barbell log is the PLATE weight (excl. bar), so
  * it shows "<plates> u (<full> w/ bar)". Other equipment shows the weight as-is.
- * null (no weight) → '–'.
+ * null (no weight) → '–'. A perImplement (two-dumbbell) set adds " each".
  */
-export function setWeightDisplay(lb: number | null, equipment: string, unit: Unit): string {
+export function setWeightDisplay(lb: number | null, equipment: string, unit: Unit, perImplement = false): string {
   const conv = (x: number) => (unit === 'kg' ? Math.round(x / KG_TO_LB) : x)
   if (equipment === 'bodyweight') return lb === null || lb <= 0 ? 'BW' : `BW +${conv(lb)} ${unit}`
   if (lb === null) return '–'
   if (equipment === 'barbell') return `${conv(lb)} ${unit} (${conv(lb + BAR_LB)} w/ bar)`
-  return `${conv(lb)} ${unit}`
+  return `${conv(lb)} ${unit}${perImplement ? ' each' : ''}`
 }
 
 /**
@@ -131,6 +131,7 @@ function buildOne(e: Exercise): WorkoutExercise {
     isCoachPrescribed: true,
     coachTarget: coachTargetText(e),
     isTimed,
+    ...(e.perImplement ? { perImplement: true } : {}),
     sets,
   }
 }
@@ -227,6 +228,7 @@ export interface ExerciseOccurrence {
   nameRu: string
   equipment: Equipment
   isTimed: boolean
+  perImplement: boolean      // two dumbbells → display appends "each"
   sets: LoggedSet[]          // that workout's DONE sets for the ref
 }
 
@@ -243,7 +245,7 @@ export function allSetsForRef(history: Workout[], exerciseRef: string): Exercise
       if (!ex) return null
       const sets = ex.sets.filter((s) => s.done)
       if (!sets.length) return null
-      return { dateIso: w.startedAt, nameEn: ex.nameEn, nameRu: ex.nameRu, equipment: ex.equipment, isTimed: !!ex.isTimed, sets }
+      return { dateIso: w.startedAt, nameEn: ex.nameEn, nameRu: ex.nameRu, equipment: ex.equipment, isTimed: !!ex.isTimed, perImplement: !!ex.perImplement, sets }
     })
     .filter((o): o is ExerciseOccurrence => o !== null)
     .sort((a, b) => Date.parse(b.dateIso) - Date.parse(a.dateIso))
@@ -282,10 +284,12 @@ export function tallyUsage(
   return out
 }
 
-/** Full lifted lb for one set: barbell adds the 45 lb bar, other equipment as-is; null plates → 0. */
-function setLoadLb(weightLb: number | null, equipment: Equipment): number {
+/** Full lifted lb for one set: barbell adds the 45 lb bar, other equipment as-is; null
+ *  plates → 0. A per-implement (two-dumbbell) set counts both bells (×2). */
+function setLoadLb(weightLb: number | null, equipment: Equipment, perImplement = false): number {
   const w = weightLb ?? 0
-  return equipment === 'barbell' ? w + BAR_LB : w
+  const base = equipment === 'barbell' ? w + BAR_LB : w
+  return perImplement ? base * 2 : base
 }
 
 /**
@@ -293,13 +297,14 @@ function setLoadLb(weightLb: number | null, equipment: Equipment): number {
  * Barbell includes the 45 lb bar; dumbbell/machine/cable count the weight as-is; bodyweight
  * counts only added load. Timed holds → 0 (weight × seconds isn't volume); sets with null /
  * non-integer / <1 reps are skipped; null plates count as 0 (an empty bar still = 45 lb).
+ * Per-implement (two-dumbbell) movements count both bells (×2).
  */
 export function exerciseVolumeLb(ex: WorkoutExercise): number {
   if (ex.isTimed) return 0
   let v = 0
   for (const s of ex.sets) {
     if (!s.done || s.reps === null || !Number.isInteger(s.reps) || s.reps < 1) continue
-    v += setLoadLb(s.weightLb, ex.equipment) * s.reps
+    v += setLoadLb(s.weightLb, ex.equipment, ex.perImplement) * s.reps
   }
   return v
 }
@@ -359,6 +364,7 @@ export function catalogToWorkoutExercise(c: CatalogExercise): WorkoutExercise {
     equipment: c.equipment,
     isCoachPrescribed: false,
     coachTarget: '',
+    ...(c.perImplement ? { perImplement: true } : {}),
     sets: [blankSet(c.defaultRestSec)],
   }
 }
@@ -373,7 +379,7 @@ export function trainerLog(w: Workout): string {
         if (ex.equipment === 'bodyweight') return lb === null || lb <= 0 ? 'б/в' : `б/в +${Math.round(lb / KG_TO_LB)}`
         if (lb === null) return 'б/в'
         const full = ex.equipment === 'barbell' ? lb + BAR_LB : lb
-        return String(Math.round(full / KG_TO_LB))
+        return `${Math.round(full / KG_TO_LB)}${ex.perImplement ? ' (кажд.)' : ''}`
       }
       const lines: string[] = []
       let i = 0

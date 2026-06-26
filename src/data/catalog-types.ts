@@ -11,5 +11,6 @@ export interface CatalogExercise {
   aliasesEn: string[]
   aliasesRu: string[]
   defaultRestSec: number
+  perImplement?: boolean  // two-dumbbell movement (set by build-catalog heuristic)
   thumb?: string
 }

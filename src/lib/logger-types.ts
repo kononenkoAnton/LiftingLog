@@ -22,6 +22,7 @@ export interface WorkoutExercise {
   isCoachPrescribed: boolean
   coachTarget: string        // display string, e.g. "100 kg × 5"; '' when none
   isTimed?: boolean          // true for holds (plank): `reps` is seconds, not reps
+  perImplement?: boolean     // two dumbbells, weight is per-dumbbell → "each" label + ×2 volume
   alt?: WorkoutExercise      // the coach "(or …)" alternative; toggling swaps active⇄alt
   sets: LoggedSet[]
 }

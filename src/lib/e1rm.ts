@@ -36,6 +36,7 @@ export function e1rmSeries(history: Workout[], match: RegExp): E1rmPoint[] {
     if (w.status !== 'finished') continue
     let best: E1rmPoint | null = null
     for (const exr of w.exercises) {
+      // Barbell-only: perImplement (dumbbell ×2 volume) intentionally never reaches e1RM — strength is per-implement.
       if (exr.equipment !== 'barbell' || !match.test(exr.nameEn)) continue
       for (const s of exr.sets) {
         if (!s.done || s.weightLb === null || s.reps === null) continue

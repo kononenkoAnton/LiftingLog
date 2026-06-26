@@ -59,6 +59,7 @@ Equipment is inferred from each exercise's English name; Russian names are used
 where wger provides them, otherwise they fall back to English (flagged
 `ruIsFallback`). Hand-authored entries/overrides live in
 `scripts/catalog-extras.json` and are merged on top during the build.
+Two-dumbbell movements are auto-detected (dumbbell, excluding kettlebells, goblet / single-arm / one-arm) and marked `perImplement`, so the logger shows "each" and counts both dumbbells in volume; override via `scripts/catalog-extras.json`.
 
 ## Updating the program (re-parse)
 Source: the trainer's Google Doc. The app reads `src/data/program.json`. When the
