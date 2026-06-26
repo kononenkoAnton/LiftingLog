@@ -379,7 +379,7 @@ export function trainerLog(w: Workout): string {
         if (ex.equipment === 'bodyweight') return lb === null || lb <= 0 ? 'б/в' : `б/в +${Math.round(lb / KG_TO_LB)}`
         if (lb === null) return 'б/в'
         const full = ex.equipment === 'barbell' ? lb + BAR_LB : lb
-        return String(Math.round(full / KG_TO_LB))
+        return `${Math.round(full / KG_TO_LB)}${ex.perImplement ? ' (кажд.)' : ''}`
       }
       const lines: string[] = []
       let i = 0

@@ -327,6 +327,10 @@ describe('trainerLog', () => {
     ] })
     expect(trainerLog(w)).toBe('Планка\nб/в × 1 — 1\n\nПодтягивания с весом\nб/в +14 × 8 — 1') // 30 lb → 14 kg added
   })
+  it('marks a per-implement (two-dumbbell) set with (кажд.), no doubling', () => {
+    const w = wk({ exercises: [{ exerciseRef: 'i', nameEn: 'Incline DB', nameRu: 'Жим гантелей', equipment: 'dumbbell', isCoachPrescribed: true, coachTarget: '', perImplement: true, sets: [doneSet(44, 3)] }] })
+    expect(trainerLog(w)).toBe('Жим гантелей\n20 (кажд.) × 3 — 1')
+  })
 })
 
 describe('setWeightDisplay', () => {
