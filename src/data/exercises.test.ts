@@ -29,4 +29,20 @@ describe('exercises.json', () => {
     expect(all.some((e) => /bench press/i.test(e.nameEn)), 'bench').toBe(true)
     expect(all.some((e) => /deadlift/i.test(e.nameEn)), 'deadlift').toBe(true)
   })
+
+  it('only dumbbell entries are flagged per-implement', () => {
+    for (const e of all) {
+      if (e.perImplement) expect(e.equipment, e.id).toBe('dumbbell')
+    }
+  })
+  it('never flags goblet / single-arm / one-arm dumbbell lifts', () => {
+    for (const e of all) {
+      if (/goblet|single[-\s]?arm|one[-\s]?arm/i.test(e.nameEn)) {
+        expect(e.perImplement, e.id).toBeFalsy()
+      }
+    }
+  })
+  it('flags at least some dumbbell movements', () => {
+    expect(all.some((e) => e.perImplement)).toBe(true)
+  })
 })
