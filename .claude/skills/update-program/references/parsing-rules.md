@@ -24,7 +24,7 @@ interface Exercise {
   descEn: string
   descRu: string
   equipment: Equipment
-  perImplement?: boolean   // two dumbbells; weight is per dumbbell
+  perImplement?: boolean   // two dumbbells; weight is per dumbbell. In the logger: adds an "each" label, doubles volume (both bells ×2), and marks the trainer log with "(кажд.)". The catalog auto-sets this via build-catalog.mjs's perImplementFor heuristic.
   weight: Weight
   sets: number | null
   reps: string             // "3", "15-20", "45s" (plank duration)
