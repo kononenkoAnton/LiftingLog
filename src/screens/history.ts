@@ -90,7 +90,7 @@ export function renderHistory(el: HTMLElement, openIdParam?: string) {
           row.className = 'hist-set'
           const done = s.done ? '✓' : '·'
           const repStr = s.reps === null ? '–' : `${s.reps}${ex.isTimed ? 's' : ''}`
-          row.textContent = `${done} ${setWeightDisplay(s.weightLb, ex.equipment, unit)} × ${repStr}`
+          row.textContent = `${done} ${setWeightDisplay(s.weightLb, ex.equipment, unit, ex.perImplement)} × ${repStr}`
           exEl.appendChild(row)
         }
         const vol = exerciseVolumeLb(ex)
