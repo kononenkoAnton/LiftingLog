@@ -1,8 +1,10 @@
 # LiftingLog — project guide for AI agents
 
-Mobile-first static web app (Vite + TypeScript, vanilla) that renders a trainer's
-strength program. Bilingual EN/RU, kg→lb conversion, per-side barbell plate
-loading, and a logger (mark days finished). No backend.
+Mobile-first web app (Vite + TypeScript, vanilla) that renders a trainer's strength
+program and logs the lifter's actual workouts against it. Bilingual EN/RU, kg→lb
+conversion, per-side barbell plate loading, a full workout logger (sets/reps, rest
+timer, history, e1RM trends), and an installable PWA. Local-first (localStorage) with
+an optional Supabase backend (auth + sync) behind the storage seams.
 
 ## Keep skills in sync (do this every iteration)
 
@@ -104,8 +106,9 @@ still produces 0 unknowns and type-checks.
 ## Workflow
 
 - `npm run dev` / `npm run build` / `npm run preview`
-- `npm run test` — Vitest (plate math, focus/tags, data shape). Keep green.
+- `npm run test` — Vitest (plate math, e1RM, logger model, focus/tags, catalog, data shape). Keep green.
 - `npm run parse` — regenerate `program.json` from the doc (see `update-program`).
+- `npm run build:catalog` — regenerate `exercises.json` from wger (see `build-catalog.mjs`).
 - Verify UI changes in a real browser at phone width (~390px); confirm zero
   console errors before claiming done.
 - Commit per change with a clear message.
@@ -129,7 +132,9 @@ still produces 0 unknowns and type-checks.
 - `src/components/sparkline-svg.ts` — pure inline-SVG sparkline string (normalized polyline + area + end dot; tested)
 - `scripts/parse-program.mjs` — deterministic doc → program.json parser
 - `.claude/skills/update-program/` — the re-parse skill + rules
-- `docs/superpowers/` — original spec and plan
+- `docs/SPEC.md` — full screen-by-screen application spec (the current app)
+- `docs/DESIGN-BRIEF.md` — designer-facing brief: visual tokens (from `src/styles/`), per-screen wireframes/states, component inventory, motion, and the frozen-vs-free redesign contract
+- `docs/superpowers/` — original specs and implementation plans
 - `src/lib/logger-model.ts` — pure logger model (rest defaults, pre-fill from coach, duration, Last reference; `allSetsForRef` = all done sets for an exerciseRef over time; `exerciseVolumeLb`/`workoutVolumeLb` = total weight lifted (Σ full-weight × reps, barbell incl. the 45 lb bar, per-implement doubles for both bells, timed/null-rep sets skipped); `setWeightDisplay(lb, equipment, unit, perImplement?)` adds " each" for two-dumbbell sets; `tallyUsage` = per-catalog-id usage `{count,lastUsedAt}` over finished workouts (every occurrence counts; same lift twice in a session ⇒ +2); tested)
 - `src/lib/logger-types.ts` — `Workout`/`WorkoutExercise`/`LoggedSet` types
 - `src/lib/workouts.ts` — workout storage seam (Supabase JSONB + localStorage mirror)

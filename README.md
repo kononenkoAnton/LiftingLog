@@ -1,14 +1,15 @@
 # LiftingLog
 
-Mobile-first viewer for a strength program. Bilingual (EN/RU), kg→lb conversion,
-and exact per-side barbell plate loading. Static app — no backend.
+Mobile-first app for a strength program: view the trainer's plan and log your actual
+workouts against it. Bilingual (EN/RU), kg→lb conversion, and exact per-side barbell
+plate loading. Local-first (localStorage) with an optional Supabase backend.
 
-Built with Vite + TypeScript, GSAP, and a three.js barbell hero.
+Built with Vite + TypeScript and GSAP; the barbell is a static 2D SVG.
 
 ## Develop
 - `npm install`
 - `npm run dev` — local dev server
-- `npm run test` — unit tests (load math, focus, data shape)
+- `npm run test` — unit tests (plate math, e1RM, logger model, focus/tags, catalog, data shape)
 - `npm run build` — production build to `dist/`
 - `npm run preview` — preview the build
 
@@ -72,17 +73,22 @@ targets, sets/reps, names, and notes — no math to redo.
 ## Project layout
 - `src/lib/load.ts` — kg→lb + plate math (pure, tested)
 - `src/lib/focus.ts` — derives a session focus label ("Bench + Deadlift")
-- `src/data/` — `types.ts`, `program.json` (55 sessions), `program.ts` loader
-- `src/screens/` — `list.ts` (program), `session.ts` (detail), `progress.ts` (e1RM trends), `exercise-history.ts` (per-exercise set history)
+- `src/data/` — `types.ts`, `program.json` (sessions parsed from the trainer's doc;
+  the count grows as the coach adds days), `program.ts` loader
+- `src/screens/` — `list.ts` (program), `session.ts` (detail), `logging.ts` (workout logger), `history.ts` (past workouts), `progress.ts` (e1RM trends), `exercise-history.ts` (per-exercise set history)
 - `src/components/sparkline-svg.ts` — pure inline-SVG sparkline (e1RM trend on `#/progress`)
-- `src/components/` — `barbell.ts` (three.js hero), `barbell-svg.ts` (fallback)
+- `src/components/` — `barbell-svg.ts` (2D SVG renderer), `barbell.ts` (thin wrapper)
 - `src/router.ts` — hash router; `src/styles/` — Reactor theme
+- `docs/SPEC.md` — full screen-by-screen application spec
+- `docs/DESIGN-BRIEF.md` — designer-facing brief (visual system, states, redesign contract)
 
 ## Accessibility / fallbacks
 - Mobile-first (~390px), scales up.
-- `prefers-reduced-motion`: animations disabled, barbell renders as static SVG.
-- No WebGL: barbell falls back to SVG automatically.
+- `prefers-reduced-motion`: GSAP entry animations disabled.
+- The barbell is a static 2D SVG (no WebGL) — renders everywhere.
 
-## Roadmap (Phase 2)
-Logger: mark sets done, rest timer, notes to the trainer (reserved `localStorage`
-namespace `liftinglog:logs`).
+## Workout logging & sync
+Beyond viewing the plan, the app logs actual workouts (sets/reps, rest timer, coach
+message), keeps a history + per-exercise history, and shows estimated-1RM trends.
+Progress and workouts persist to `localStorage` (keys under `liftinglog:`) and sync to
+Supabase when configured. See `docs/SPEC.md` for the full feature spec.
