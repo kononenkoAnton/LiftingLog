@@ -33,6 +33,11 @@ still produces 0 unknowns and type-checks.
 - **Data holds kilograms only.** Pounds and plate breakdowns are computed at
   runtime by `src/lib/load.ts` — never store lb or plate math in
   `src/data/program.json`.
+  - **Bodyweight is stored as kg too** (one row per local day in the `bodyweight`
+    seam, `src/lib/bodyweight.ts`). The screen interprets typed input in the active
+    unit and converts to kg via `parseWeightInput`; display via `formatWeight` in the
+    shared kg/lb unit. This is separate from the `bodyweight` *equipment type*, which
+    logs only added load.
 - **Plate math is correctness-critical and unit-tested.** Targets round UP (never
   under the trainer's number) — **per side to the smallest plate (5 lb); no 2.5 lb
   microplates**. Bar = 45 lb; plates per side = 45/35/25/10/5. `computeBarbellLoad`
@@ -88,7 +93,8 @@ still produces 0 unknowns and type-checks.
   production build (`vite build` → `dist/sw.js`), not `npm run dev`.
 - **Progress** persists to `localStorage` under `liftinglog:logs` as
   `{ finished: {...} }`. Other keys: `liftinglog:workouts` + `liftinglog:activeWorkout`
-  (logger), `liftinglog:unit` (shared History + home kg/lb display toggle, defaults to kg).
+  (logger), `liftinglog:unit` (shared History + home kg/lb display toggle, defaults to kg),
+  `liftinglog:bodyweight` (bodyweight mirror, `{ 'YYYY-MM-DD': kg }`).
 - **Rendering uses `innerHTML` with trusted static data.** User-entered text is a
   stored-XSS sink and must use `textContent` / an input's `.value` property — NEVER
   an `innerHTML` template. Live sinks: the **coach message** in `logging.ts`
@@ -146,5 +152,9 @@ still produces 0 unknowns and type-checks.
 - `src/screens/history.ts` — past finished workouts (`#/history`, or `#/history/:id` to pre-expand one — used by the post-finish redirect; `renderHistory(el, openIdParam?)`). Each collapsed row shows the **per-training total weight** (`workoutVolumeLb`, `.hist-head-vol`, in the shared unit). Exercise names link to the per-exercise history (`#/exercise/<encoded ref>`). Each expanded workout shows **per-exercise volume** (`exerciseVolumeLb`, full weight incl. bar, shared unit).
 - `src/screens/progress.ts` — Progress/Trends (`#/progress` + `#/progress/:lift`): e1RM sparkline per main barbell lift (squat/bench/deadlift) + per-session drill-down. Read-only over stored workouts; reuses the shared kg/lb unit. Add a lift by extending `LIFTS`.
 - `src/screens/exercise-history.ts` — per-exercise history (`#/exercise/:ref`): all done sets for one exercise (exact `exerciseRef`) over time, newest first. Companion to Progress; reuses `setWeightDisplay` + the shared kg/lb unit. Reached by tapping an exercise name in History.
+- `src/lib/bodyweight-model.ts` — pure bodyweight helpers (`parseWeightInput`, `formatWeight`; tested)
+- `src/lib/bodyweight.ts` — bodyweight storage seam (Supabase `bodyweight` table + localStorage mirror; one row per local day, kg only; `todayLocalIso`/`listBodyweight`/`getBodyweight`/`logBodyweight`/`deleteBodyweight`)
+- `src/screens/bodyweight.ts` — `#/bodyweight` screen: log today's bodyweight, sparkline trend, editable history. Stores kg, displays in the shared unit. Linked from home + Progress.
 - `supabase/workouts.sql` — the workouts table migration (run in Supabase SQL editor)
+- `supabase/bodyweight.sql` — the bodyweight table migration (run in Supabase SQL editor)
 - `vite.config.ts` — Vite build + `vite-plugin-pwa` (service worker / PWA; the manifest stays hand-written in `public/manifest.webmanifest`)

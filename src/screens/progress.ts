@@ -76,6 +76,7 @@ export function renderProgress(el: HTMLElement) {
           ${unitToggle(unit)}
         </div>
         <div class="prog-cards">${LIFTS.map(cardHtml).join('')}</div>
+        <a class="hist-link prog-bw-link" href="#/bodyweight">Bodyweight ›</a>
       </div>`
 
     bindUnitToggle(el, unit, (u) => { unit = u }, draw)

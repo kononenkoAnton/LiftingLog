@@ -80,10 +80,44 @@ signal) is the normal case.
 
 ### Tier 2 — Training features (capture → give back; mostly cheap, reuse the pure model + `sparkline-svg`)
 
-2. **Bodyweight tracking** — *value Med-High, effort M.* First feature needing **new
-   storage** (table/field + a small input + a sparkline on Progress). The `bodyweight`
-   equipment type logs *added* load only; the lifter's actual bodyweight over time is
-   never recorded. Unlocks relative-strength / DOTS later.
+2. **Bodyweight tracking** — *value Med-High, effort M.* ✅ **Implemented** on
+   `feature/bodyweight-tracking` — dedicated `#/bodyweight` screen (one entry per local
+   day, sparkline trend, editable history) backed by a new `bodyweight` table +
+   localStorage mirror (kg only), pure parse/format model (tested). The `bodyweight`
+   *equipment type* still logs *added* load only; this records the lifter's actual
+   bodyweight over time. Unlocks the metrics in #2a.
+
+2a. **Body-composition & strength metrics** — *value High (DOTS) → Med, effort S→M each.*
+   Builds directly on #2 (bodyweight series) + existing **e1RM**. Inputs split into
+   **profile constants** (set once: height, sex, birthdate, activity) and **time-series**
+   (logged over time: weight ✓, body-fat %, tape measurements). Cheapest high-value wins
+   first: **sex → DOTS / relative strength**; then a **body-fat % series → FFMI / recomp**;
+   then **height + age → BMR / TDEE**.
+
+   | Metric | Needs | New params (beyond current) | Value |
+   |---|---|---|---|
+   | Strength-to-bodyweight (e1RM ÷ BW) | bodyweight, e1RM | none | ★★★ |
+   | DOTS / Wilks / IPF points | bodyweight, sex, lifted total/e1RM | sex | ★★★ |
+   | BMI | weight, height | height | ★ (misleading for lifters) |
+   | BMR (Mifflin-St Jeor) | weight, height, age, sex | height, age, sex | ★★ |
+   | BMR (Katch-McArdle, best for lean) | lean body mass | body-fat % | ★★ |
+   | TDEE (calorie burn) | BMR × activity level | + activity setting | ★★ |
+   | Body-fat % (Navy tape) | neck, waist, (hip), height | tape measurements + height | ★★ |
+   | LBM / FFMI (muscularity index) | body-fat %, height | body-fat %, height | ★★★ (recomp) |
+   | Calorie cut/bulk target | TDEE ± deficit | (everything for TDEE) | ★★ |
+   | Protein target | bodyweight or LBM | none / body-fat % | ★★ |
+
+   **Suggested data model:** a one-row `profile` (height_cm, sex, birthdate, activity_level)
+   for the constants + the existing `bodyweight` series + an optional `bodyfat` series
+   (day → pct, optional neck/waist). **Recommended first step:** a sex-only profile →
+   DOTS + strength-to-bodyweight (both nearly free given bodyweight + e1RM already exist).
+   BMI is cheapest but least useful here (flags muscular lifters as "overweight" — show
+   with a caveat, if at all).
+
+   Reference formulas: BMI = kg ÷ m²; Mifflin-St Jeor BMR = 10·kg + 6.25·cm − 5·age +
+   (men +5 / women −161); Katch-McArdle = 370 + 21.6·LBM(kg), LBM = kg×(1−bf%);
+   FFMI = LBM ÷ m² (normalized + 6.1·(1.8−m)); TDEE = BMR × {1.2 sedentary … 1.9
+   extra-active}; DOTS = lifted-kg × polynomial(bodyweight, sex).
 3. **Generalize Progress + weekly-volume trend** — *value Med-High, effort S-M.*
    `progress.ts` hardcodes the 3 barbell lifts. Add (a) an e1RM/volume trend for any
    tapped exercise, (b) a **weekly total-volume** chart (reuse `workoutVolumeLb` +

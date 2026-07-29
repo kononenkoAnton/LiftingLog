@@ -9,8 +9,10 @@ import { renderExercises } from './screens/exercises'
 import { renderHistory } from './screens/history'
 import { renderProgress, renderProgressDetail } from './screens/progress'
 import { renderExerciseHistory } from './screens/exercise-history'
+import { renderBodyweight } from './screens/bodyweight'
 import { loadProgress } from './lib/progress'
 import { loadWorkouts } from './lib/workouts'
+import { loadBodyweight } from './lib/bodyweight'
 import { supabase } from './lib/supabase'
 
 route('/', (el) => renderList(el))
@@ -21,6 +23,7 @@ route('/history/:id', (el, p) => renderHistory(el, decodeURIComponent(p.id)))
 route('/progress', (el) => renderProgress(el))
 route('/progress/:lift', (el, p) => renderProgressDetail(el, p.lift))
 route('/exercise/:ref', (el, p) => renderExerciseHistory(el, decodeURIComponent(p.ref)))
+route('/bodyweight', (el) => renderBodyweight(el))
 
 const app = document.querySelector<HTMLElement>('#app')!
 
@@ -38,7 +41,7 @@ function launch() {
 async function boot() {
   // No backend configured → run locally (localStorage, no auth).
   if (!supabase) {
-    await Promise.all([loadProgress(), loadWorkouts()])
+    await Promise.all([loadProgress(), loadWorkouts(), loadBodyweight()])
     launch()
     return
   }
@@ -47,7 +50,7 @@ async function boot() {
     renderLogin(app) // login form; on success it reloads and boot() sees the session
     return
   }
-  await Promise.all([loadProgress(), loadWorkouts()]) // hydrate the user's rows, then render the app
+  await Promise.all([loadProgress(), loadWorkouts(), loadBodyweight()]) // hydrate the user's rows, then render the app
   launch()
 }
 
