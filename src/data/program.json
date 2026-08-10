@@ -6415,6 +6415,246 @@
           "reps": "45s"
         }
       ]
+    },
+    {
+      "num": 78,
+      "date": "2026-08-11",
+      "dateLabel": "11 Aug",
+      "focus": "",
+      "exercises": [
+        {
+          "order": 1,
+          "nameEn": "Squat",
+          "nameRu": "Приседание 110-120-130 кг",
+          "descEn": "Squat.",
+          "descRu": "Приседание 110-120-130 кг, 3/4.",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "progression",
+            "kg": [
+              110,
+              120,
+              130
+            ]
+          },
+          "sets": 3,
+          "reps": "4"
+        },
+        {
+          "order": 2,
+          "nameEn": "Bench Press (medium grip)",
+          "nameRu": "Жим лежа средним хватом",
+          "descEn": "Bench Press (medium grip).",
+          "descRu": "Жим лежа средним хватом, приблизительно 55 см между указательными пальцами, 75-80 кг, 3/6 (без пауз)",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "range",
+            "minKg": 75,
+            "maxKg": 80
+          },
+          "sets": 3,
+          "reps": "6"
+        },
+        {
+          "order": 3,
+          "nameEn": "Lying Triceps Extension (Skullcrusher)",
+          "nameRu": "Французский жим лежа штангой",
+          "descEn": "Lying Triceps Extension (Skullcrusher).",
+          "descRu": "Французский жим лежа штангой, 3/15 средний вес.",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "qualitative",
+            "level": "medium"
+          },
+          "sets": 3,
+          "reps": "15"
+        },
+        {
+          "order": 4,
+          "nameEn": "Hyperextension",
+          "nameRu": "Гиперэкстензия динамика 4/12 с дополнительным весом 10 кг",
+          "descEn": "Hyperextension.",
+          "descRu": "Гиперэкстензия динамика 4/12 с дополнительным весом 10 кг.",
+          "equipment": "bodyweight",
+          "weight": {
+            "kind": "single",
+            "kg": 10
+          },
+          "sets": 4,
+          "reps": "12"
+        },
+        {
+          "order": 5,
+          "nameEn": "Crunches",
+          "nameRu": "Пресс скручивание",
+          "descEn": "Crunches.",
+          "descRu": "Пресс скручивание, 3/15.",
+          "equipment": "bodyweight",
+          "weight": {
+            "kind": "bodyweight"
+          },
+          "sets": 3,
+          "reps": "15"
+        }
+      ]
+    },
+    {
+      "num": 79,
+      "date": "2026-08-13",
+      "dateLabel": "13 Aug",
+      "focus": "",
+      "exercises": [
+        {
+          "order": 1,
+          "nameEn": "Bench Press",
+          "nameRu": "Жим лежа обычный с паузой 1-1",
+          "descEn": "Bench Press.",
+          "descRu": "Жим лежа обычный с паузой 1-1,5 сек 90 кг, 4/2-3 повторения.",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "single",
+            "kg": 90
+          },
+          "sets": 4,
+          "reps": "2-3"
+        },
+        {
+          "order": 2,
+          "nameEn": "Conventional Deadlift",
+          "nameRu": "Становая тяга классика с пола",
+          "descEn": "Conventional Deadlift.",
+          "descRu": "Становая тяга классика с пола, 120-140-140 кг, 3/3 (если оч легко то по 4 повторения).",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "progression",
+            "kg": [
+              120,
+              140,
+              140
+            ]
+          },
+          "sets": 3,
+          "reps": "3"
+        },
+        {
+          "order": 3,
+          "nameEn": "Good Morning",
+          "nameRu": "Наклоны со штангой “доброе утро” 3/12 вес 50 кг",
+          "descEn": "Good Morning.",
+          "descRu": "Наклоны со штангой “доброе утро” 3/12 вес 50 кг.",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "single",
+            "kg": 50
+          },
+          "sets": 3,
+          "reps": "12"
+        },
+        {
+          "order": 4,
+          "nameEn": "Seated Cable Row",
+          "nameRu": "Тяга горизонтального блока в тренажере",
+          "descEn": "Seated Cable Row.",
+          "descRu": "Тяга горизонтального блока в тренажере, ручка чуть шире хватом чем на картинке, ориентировочно ширина плеч, 3/12 вес средний-тяжелый.",
+          "equipment": "cable",
+          "weight": {
+            "kind": "qualitative",
+            "level": "heavy"
+          },
+          "sets": 3,
+          "reps": "12"
+        },
+        {
+          "order": 5,
+          "nameEn": "Lat Pulldown",
+          "nameRu": "Тяга верхнего блока к груди в тренажере 4/12 средняя нагрузка",
+          "descEn": "Lat Pulldown.",
+          "descRu": "Тяга верхнего блока к груди в тренажере 4/12 средняя нагрузка.(здесь ручка узкая)",
+          "equipment": "cable",
+          "weight": {
+            "kind": "qualitative",
+            "level": "medium"
+          },
+          "sets": 4,
+          "reps": "12"
+        }
+      ]
+    },
+    {
+      "num": 80,
+      "date": "2026-08-15",
+      "dateLabel": "15 Aug",
+      "focus": "",
+      "exercises": [
+        {
+          "order": 1,
+          "nameEn": "Bench Press",
+          "nameRu": "Жим штанги лежа с груди 80 кг",
+          "descEn": "Bench Press.",
+          "descRu": "Жим штанги лежа с груди 80 кг, 4 подхода по 5 повторений (пауза 0,5 сек).",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "single",
+            "kg": 80
+          },
+          "sets": 4,
+          "reps": "5"
+        },
+        {
+          "order": 2,
+          "nameEn": "Squat, paused",
+          "nameRu": "Приседание с паузой в нижней точке",
+          "descEn": "Squat, paused.",
+          "descRu": "Приседание с паузой в нижней точке, 100 кг, 3/4 пауза 2 сек.",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "single",
+            "kg": 100
+          },
+          "sets": 3,
+          "reps": "4"
+        },
+        {
+          "order": 3,
+          "nameEn": "Cable Triceps Pushdown",
+          "nameRu": "Разгибание на трицепс в блоке",
+          "descEn": "Cable Triceps Pushdown.",
+          "descRu": "Разгибание на трицепс в блоке, 3/12-15 повторений.",
+          "equipment": "cable",
+          "weight": {
+            "kind": "qualitative",
+            "level": "medium"
+          },
+          "sets": 3,
+          "reps": "12-15"
+        },
+        {
+          "order": 4,
+          "nameEn": "Push-ups",
+          "nameRu": "Отжимание от пола стандартные",
+          "descEn": "Push-ups.",
+          "descRu": "Отжимание от пола стандартные, 3/15-20 повторений.(видео)",
+          "equipment": "bodyweight",
+          "weight": {
+            "kind": "bodyweight"
+          },
+          "sets": 3,
+          "reps": "15-20"
+        },
+        {
+          "order": 5,
+          "nameEn": "Plank",
+          "nameRu": "Пресс планка 3/45 сек",
+          "descEn": "Plank.",
+          "descRu": "Пресс планка 3/45 сек. (отдых 45-60 сек).",
+          "equipment": "bodyweight",
+          "weight": {
+            "kind": "bodyweight"
+          },
+          "sets": 3,
+          "reps": "45s"
+        }
+      ]
     }
   ]
 }
