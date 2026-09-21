@@ -7784,6 +7784,70 @@
           "reps": "45s"
         }
       ]
+    },
+    {
+      "num": 96,
+      "date": "2026-09-22",
+      "dateLabel": "22 Sep",
+      "focus": "",
+      "exercises": [
+        {
+          "order": 1,
+          "nameEn": "Squat",
+          "nameRu": "Приседание 130 кг",
+          "descEn": "Squat.",
+          "descRu": "Приседание 130 кг, ⅖-6 повторений.",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "single",
+            "kg": 130
+          },
+          "sets": null,
+          "reps": ""
+        },
+        {
+          "order": 2,
+          "nameEn": "Bench Press (medium grip)",
+          "nameRu": "Жим лежа средним хватом (**без пауз**)",
+          "descEn": "Bench Press (medium grip).",
+          "descRu": "Жим лежа средним хватом (**без пауз**), приблизительно 45-55 см между указательными пальцами, ¾-5 вес 80 кг.",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "single",
+            "kg": 80
+          },
+          "sets": null,
+          "reps": ""
+        },
+        {
+          "order": 3,
+          "nameEn": "Lying Triceps Extension (Skullcrusher)",
+          "nameRu": "Французский жим лежа штангой",
+          "descEn": "Lying Triceps Extension (Skullcrusher).",
+          "descRu": "Французский жим лежа штангой, 4 подхода/12 средний вес.",
+          "equipment": "barbell",
+          "weight": {
+            "kind": "qualitative",
+            "level": "medium"
+          },
+          "sets": 4,
+          "reps": "12"
+        },
+        {
+          "order": 4,
+          "nameEn": "Hyperextension",
+          "nameRu": "Гиперэкстензия",
+          "descEn": "Hyperextension.",
+          "descRu": "Гиперэкстензия, 4/10 с весом 20 кг. (на шее желательно).",
+          "equipment": "bodyweight",
+          "weight": {
+            "kind": "single",
+            "kg": 20
+          },
+          "sets": 4,
+          "reps": "10"
+        }
+      ]
     }
   ]
 }
